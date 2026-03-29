@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,84 +9,75 @@
 <title>DACE ARECIBO</title>
 <style>
   :root { --blue: #0a192f; --gold: #c5a059; --bg: #f8fafc; }
-  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
-  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; overflow-x: hidden; }
   
-  /* CABECERA: LOGO | TEXTO | LOGO */
   .app-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 60px 15px 20px; background: white; border-bottom: 2px solid var(--gold);
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
   .header-logo { width: 55px; height: 55px; object-fit: contain; flex-shrink: 0; }
-  .header-text { text-align: center; flex: 1; padding: 0 10px; }
-  .header-text h1 { margin: 0; font-size: 18px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
-  .header-text p { margin: 2px 0; font-size: 10px; font-weight: 700; color: #444; }
-  .oficial-info { color: var(--gold) !important; font-size: 9px !important; text-transform: uppercase; font-weight: 800; }
+  .header-text { text-align: center; flex: 1; padding: 0 5px; }
+  .header-text h1 { margin: 0; font-size: 17px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
+  .header-text p { margin: 1px 0; font-size: 10px; font-weight: 700; color: #444; }
+  .oficial-info { color: var(--gold) !important; font-size: 9px !important; text-transform: uppercase; font-weight: 800; margin-top: 2px !important; }
 
-  /* CONTENIDO */
+  .nav-bar {
+    position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
+    background: white; display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
+  }
+  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .nav-btn.active { color: var(--blue); }
+  .nav-icon { display: block; font-size: 22px; margin-bottom: 4px; }
+
   .main-content { padding: 20px 15px 120px; }
-  .tab-content { display: none; animation: fadeIn 0.3s ease; }
-  .tab-content.active { display: block; }
+  .tab-page { display: none; }
+  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 15px; border-left: 6px solid var(--blue); }
   .card h2 { margin: 0; font-size: 38px; color: var(--blue); font-weight: 900; }
   .card p { margin: 5px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-
-  /* NAVEGACIÓN INFERIOR (BOTONES REALES) */
-  .nav-bar {
-    position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
-    background: white; display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
-  }
-  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; text-align: center; }
-  .nav-btn.active { color: var(--blue); }
-  .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
 </style>
 </head>
 <body>
 
   <header class="app-header">
-    <img src="Logo_DACE_Arecibo_12x12_Final.jpg" class="header-logo" alt="DACE">
+    <img src="Logo.png" class="header-logo" alt="DACE">
     <div class="header-text">
       <h1>DACE ARECIBO</h1>
       <p>Negociado de la Policía de Puerto Rico</p>
       <p class="oficial-info">Agte. Jose Aponte Cancel 31093</p>
-      <p class="oficial-info">Coordinador Auxiliar</p>
+      <p class="oficial-info">Coordinador Auxiliar DACE Arecibo</p>
     </div>
-    <img src="Policia.png" class="header-logo" alt="PRPD">
+    <img src="policia.png" class="header-logo" alt="PPR">
   </header>
 
   <main class="main-content">
-    <div id="inicio" class="tab-content active">
+    <div id="inicio" class="tab-page active">
       <div class="card"><h2>0</h2><p>Querellas 137.1</p></div>
       <div class="card"><h2>0</h2><p>Inspecciones 137.3</p></div>
     </div>
-    <div id="q137" class="tab-content"><h3 style="color:var(--blue)">Módulo PPR-137.1</h3><p>Registro oficial de querellas.</p></div>
-    <div id="i137" class="tab-content"><h3 style="color:var(--blue)">Módulo PPR-137.3</h3><p>Inspecciones de edificios.</p></div>
-    <div id="config" class="tab-content"><h3 style="color:var(--blue)">Configuración</h3><p>Gestión de base de datos y perfil.</p></div>
+    <div id="q137" class="tab-page"><h3 style="color:var(--blue)">Registro PPR-137.1</h3><p>Módulo operativo de querellas administrativas.</p></div>
+    <div id="i137" class="tab-page"><h3 style="color:var(--blue)">Registro PPR-137.3</h3><p>Módulo de inspección de estructuras.</p></div>
+    <div id="config" class="tab-page"><h3 style="color:var(--blue)">Configuración</h3><p>Gestión de base de datos local.</p></div>
   </main>
 
   <nav class="nav-bar">
-    <button class="nav-btn active" onclick="showTab('inicio', this)"><span class="nav-icon">📊</span>PANEL</button>
-    <button class="nav-btn" onclick="showTab('q137', this)"><span class="nav-icon">⚖️</span>137.1</button>
-    <button class="nav-btn" onclick="showTab('i137', this)"><span class="nav-icon">🏗️</span>137.3</button>
-    <button class="nav-btn" onclick="showTab('config', this)"><span class="nav-icon">⚙️</span>CONFIG</button>
+    <button class="nav-btn active" onclick="goTab('inicio', this)"><span class="nav-icon">📊</span>PANEL</button>
+    <button class="nav-btn" onclick="goTab('q137', this)"><span class="nav-icon">⚖️</span>137.1</button>
+    <button class="nav-btn" onclick="goTab('i137', this)"><span class="nav-icon">🏗️</span>137.3</button>
+    <button class="nav-btn" onclick="goTab('config', this)"><span class="nav-icon">⚙️</span>CONFIG</button>
   </nav>
 
   <script>
-    function showTab(tabId, btn) {
-      // Ocultar todos los contenidos
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      // Quitar clase activa de botones
+    function goTab(id, btn) {
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      
-      // Mostrar el seleccionado
-      document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
-      
-      // Feedback táctil para iPhone
-      if (window.navigator.vibrate) window.navigator.vibrate(10);
+      window.scrollTo(0,0);
     }
   </script>
 </body>
