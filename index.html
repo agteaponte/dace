@@ -13,33 +13,38 @@
   * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
   body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; overflow-x: hidden; }
   
-  /* Cabecera Transparente con Logos Solicitada */
+  /* Cabecera Profesional Solicitada */
   .app-header {
-    display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center;
-    padding: 55px 10px 20px; background: transparent; border-bottom: 1.5px solid rgba(10,25,47,0.1);
+    display: grid; 
+    grid-template-columns: 70px 1fr 70px; /* Espacio fijo para logos para centrar el texto */
+    align-items: center;
+    padding: 60px 10px 20px; 
+    background: transparent; 
+    border-bottom: 1.5px solid rgba(10,25,47,0.1);
   }
-  .header-logo { height: 55px; width: auto; object-fit: contain; }
-  .header-text { text-align: center; }
+  .header-logo { width: 60px; height: 60px; object-fit: contain; justify-self: center; }
+  .header-text { text-align: center; width: 100%; }
   .header-text h1 { margin: 0; font-size: 19px; color: var(--p-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-  .header-text p { margin: 2px 0; font-size: 11px; line-height: 1.2; font-weight: 500; }
-  .oficial-info { color: #64748b; font-size: 9px !important; margin-top: 4px !important; }
+  .header-text p { margin: 2px 0; font-size: 11px; line-height: 1.2; font-weight: 600; }
+  .oficial-info { color: #4a5568; font-size: 10px !important; margin-top: 5px !important; font-weight: 700 !important; }
 
-  /* Menú de Navegación Nivel iPhone */
+  /* Menú de Navegación iPhone */
   .nav-bar {
     position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.94); backdrop-filter: blur(15px);
-    display: flex; padding: 12px 0 32px; border-top: 1px solid #e2e8f0; z-index: 1000;
+    background: rgba(255,255,255,0.96); backdrop-filter: blur(15px);
+    display: flex; padding: 12px 0 35px; border-top: 1px solid #e2e8f0; z-index: 1000;
   }
-  .nav-item { flex: 1; text-align: center; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; }
+  .nav-item { flex: 1; text-align: center; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; outline: none; }
   .nav-item.active { color: var(--p-blue); }
   .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
 
   /* Contenedor de Contenido */
-  .main-content { padding: 20px 15px 120px; }
-  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 6px solid var(--p-blue); }
-  .card h2 { margin: 0; font-size: 38px; color: var(--p-blue); font-weight: 900; }
+  .main-content { padding: 25px 15px 120px; animation: fadeIn 0.3s ease-in; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 15px; border-left: 6px solid var(--p-blue); }
+  .card h2 { margin: 0; font-size: 40px; color: var(--p-blue); font-weight: 900; }
   .card p { margin: 6px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-  .btn-action { width: 100%; padding: 18px; background: var(--p-blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; box-shadow: 0 4px 12px rgba(10,25,47,0.2); }
+  .btn-action { width: 100%; padding: 18px; background: var(--p-blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; box-shadow: 0 4px 12px rgba(10,25,47,0.2); margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -51,7 +56,6 @@ function App() {
   const [tab, setTab] = useState('inicio');
   const [data, setData] = useState({ q: [], i: [], c: [], n: [] });
 
-  // Carga de datos local (Persistencia)
   useEffect(() => {
     const saved = localStorage.getItem('dace_v5');
     if (saved) { try { setData(JSON.parse(saved).data); } catch(e) {} }
@@ -68,29 +72,39 @@ function App() {
         ),
         React.createElement('button', { className: 'btn-action' }, '+ NUEVA ACTIVIDAD DACE')
       );
-      case '137.1': return React.createElement('div', null, React.createElement('h3', null, 'Módulo PPR-137.1'));
-      case '137.3': return React.createElement('div', null, React.createElement('h3', null, 'Módulo PPR-137.3'));
-      case 'config': return React.createElement('div', null, React.createElement('h3', null, 'Configuración y Respaldos'));
+      case '137.1': return React.createElement('div', null, 
+        React.createElement('h3', { style: {color: 'var(--p-blue)'} }, 'Registro de Querellas PPR-137.1'),
+        React.createElement('p', null, 'Módulo de ingreso de datos para querellas administrativas.')
+      );
+      case '137.3': return React.createElement('div', null, 
+        React.createElement('h3', { style: {color: 'var(--p-blue)'} }, 'Registro de Inspecciones PPR-137.3'),
+        React.createElement('p', null, 'Módulo de inspección de edificios y estructuras.')
+      );
+      case 'config': return React.createElement('div', null, 
+        React.createElement('h3', { style: {color: 'var(--p-blue)'} }, 'Configuración y Respaldos'),
+        React.createElement('button', { className: 'btn-action', style: {background: '#64748b'} }, 'EXPORTAR BASE DE DATOS')
+      );
       default: return null;
     }
   };
 
   return React.createElement('div', null,
-    // CABECERA OFICIAL CON LOGOS SOLICITADA
+    // CABECERA CORREGIDA: LOGO IZQ | TEXTO CENTRO | LOGO DER
     React.createElement('div', { className: 'app-header' },
-      React.createElement('img', { src: 'Logo_DACE_Arecibo_12x12_Final.jpg', className: 'header-logo', onError: (e) => e.target.style.display='none' }),
+      React.createElement('img', { src: 'Logo_DACE_Arecibo_12x12_Final.jpg', className: 'header-logo', alt: 'Logo DACE' }),
       React.createElement('div', { className: 'header-text' },
         React.createElement('h1', null, 'DACE ARECIBO'),
         React.createElement('p', null, 'Negociado de la Policía de Puerto Rico'),
-        React.createElement('p', { className: 'oficial-info' }, 'Agte. Jose Aponte Cancel 31093 / Coordinador Auxiliar DACE Arecibo')
+        React.createElement('p', { className: 'oficial-info' }, 'Agte. Jose Aponte Cancel 31093'),
+        React.createElement('p', { className: 'oficial-info', style: {marginTop: '0'} }, 'Coordinador Auxiliar DACE Arecibo')
       ),
-      React.createElement('img', { src: 'Policia.png', className: 'header-logo', onError: (e) => e.target.style.display='none' })
+      React.createElement('img', { src: 'Policia.png', className: 'header-logo', alt: 'Logo Policia' })
     ),
 
-    // ÁREA DE TRABAJO
+    // ÁREA DE CONTENIDO
     React.createElement('div', { className: 'main-content' }, renderContent()),
 
-    // NAVEGACIÓN INFERIOR FUNCIONAL
+    // NAVEGACIÓN INFERIOR
     React.createElement('nav', { className: 'nav-bar' },
       [['inicio', '📊', 'PANEL'], ['137.1', '⚖️', '137.1'], ['137.3', '🏗️', '137.3'], ['config', '⚙️', 'CONFIG']].map(([id, icon, label]) => 
         React.createElement('button', {
