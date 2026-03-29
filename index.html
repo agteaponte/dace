@@ -5,153 +5,105 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DACE">
-<title>DACE Arecibo - Oficial</title>
+<title>DACE Arecibo Oficial</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
-  :root {
-    --bg-light: #F8FAFC;
-    --text-main: #1D1D1F;
-    --police-blue: #0A192F;
-    --police-gold: #C5A059;
-    --text-white: #FFFFFF;
-  }
-  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg-light); margin: 0; padding: 0; color: var(--text-main); -webkit-user-select: none; }
+  :root { --p-blue: #0a192f; --p-gold: #c5a059; --bg: #f8fafc; }
+  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; overflow-x: hidden; }
   
-  /* Cabecera Transparente con Logos Laterales y Texto Centrado */
+  /* Cabecera Transparente con Logos Solicitada */
   .app-header {
-    background: transparent; /* Fondo Transparente solicitado */
-    padding: 60px 20px 25px; /* Espacio para el Notch del iPhone */
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    align-items: center;
-    justify-items: center;
-    border-bottom: 2px solid rgba(0,0,0,0.1); /* Línea divisoria sutil */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center;
+    padding: 55px 10px 20px; background: transparent; border-bottom: 1.5px solid rgba(10,25,47,0.1);
   }
-  .header-logo {
-    height: 60px; /* Tamaño de los logos solicitado */
-    width: auto;
-  }
-  .header-center-text {
-    text-align: center;
-    color: var(--police-blue);
-  }
-  .header-center-text h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-  .header-center-text p.institucion { margin: 4px 0 2px; font-size: 13px; font-weight: 500; }
-  .header-center-text p.oficial { margin: 2px 0 0; font-size: 11px; font-weight: 400; opacity: 0.9; }
+  .header-logo { height: 55px; width: auto; object-fit: contain; }
+  .header-text { text-align: center; }
+  .header-text h1 { margin: 0; font-size: 19px; color: var(--p-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header-text p { margin: 2px 0; font-size: 11px; line-height: 1.2; font-weight: 500; }
+  .oficial-info { color: #64748b; font-size: 9px !important; margin-top: 4px !important; }
 
-  /* Contenedor de Tarjetas de Estadísticas */
-  .summary-section {
-    padding: 20px;
-    background: white;
-    border-bottom: 1px solid #E5E7EB;
-  }
-  .summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-  }
-  .stat-card {
-    background: #F9FAFB;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    border: 1px solid #F3F4F6;
-  }
-  .stat-card h2 { margin: 0; font-size: 34px; font-weight: 800; color: var(--police-blue); }
-  .stat-card p { margin: 5px 0 0; font-size: 11px; color: #6B7280; font-weight: 700; text-transform: uppercase; }
-
-  /* Botón de Acción Principal Oficial */
-  .action-container {
-    padding: 0 20px;
-    margin-top: 25px;
-    margin-bottom: 100px;
-  }
-  .btn-primary {
-    width: 100%;
-    padding: 18px;
-    background: var(--police-blue);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 17px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 10px rgba(10,25,47,0.2);
-    cursor: pointer;
-  }
-
-  /* Menú de Navegación Inferior Estilo iOS Nivel 17 */
+  /* Menú de Navegación Nivel iPhone */
   .nav-bar {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(15px);
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0 28px; /* Espacio para el Home Indicator del iPhone */
-    border-top: 1px solid #E5E7EB;
-    z-index: 1000;
+    position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.94); backdrop-filter: blur(15px);
+    display: flex; padding: 12px 0 32px; border-top: 1px solid #e2e8f0; z-index: 1000;
   }
-  .nav-item {
-    text-align: center;
-    color: #9CA3AF;
-    text-decoration: none;
-    font-size: 10px;
-    font-weight: 600;
-    flex: 1;
-  }
-  .nav-item.active {
-    color: var(--police-blue);
-  }
-  .nav-icon {
-    font-size: 24px;
-    display: block;
-    margin-bottom: 4px;
-  }
+  .nav-item { flex: 1; text-align: center; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; }
+  .nav-item.active { color: var(--p-blue); }
+  .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
+
+  /* Contenedor de Contenido */
+  .main-content { padding: 20px 15px 120px; }
+  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 6px solid var(--p-blue); }
+  .card h2 { margin: 0; font-size: 38px; color: var(--p-blue); font-weight: 900; }
+  .card p { margin: 6px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+  .btn-action { width: 100%; padding: 18px; background: var(--p-blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; box-shadow: 0 4px 12px rgba(10,25,47,0.2); }
 </style>
 </head>
 <body>
-  <div class="app-header">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAMAAAC77UzTAAAAA5BMVEX///8AXUk5AAAAAXRSTlMAQObYZgAAAI9JREFUeNrt0QENgDAMRFHWCf5VwEwKloE64m6XvkA7TfN0m69b59w6v1XWwH+F9wruFTwreFbwfAXPCp6v4FnB8xU8K3i+gmcFz1fwrOD5Cp4VPF/Bs4LnK3hW8HwFzwqer+BZwfMVPCh4UPCg4EHBg4IHBQ8KHhQ8KHhQ8KHhQ8KHhQ8KHhQ8KHhQ8HwFzwqer+BZwfNf2wD//f+y9AALF7wHAAAAAElFTkSuQmCC" alt="DACE Oficial" class="header-logo">
-    
-    <div class="header-center-text">
-      <h1>DACE ARECIBO</h1>
-      <p class="institucion">Negociado de la Policía de Puerto Rico</p>
-      <p class="oficial">Agte. Jose Aponte Cancel 31093 / Coordinador Auxiliar DACE Arecibo</p>
-    </div>
+<div id="root"></div>
+<script>
+const { useState, useEffect } = React;
 
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAMAAAC77UzTAAAAA5BMVEX///8AXUk5AAAAAXRSTlMAQObYZgAAAI9JREFUeNrt0QENgDAMRFHWCf5VwEwKloE64m6XvkA7TfN0m69b59w6v1XWwH+F9wruFTwreFbwfAXPCp6v4FnB8xU8K3i+gmcFz1fwrOD5Cp4VPF/Bs4LnK3hW8HwFzwqer+BZwfMVPCh4UPCg4EHBg4IHBQ8KHhQ8KHhQ8KHhQ8KHhQ8KHhQ8KHhQ8HwFzwqer+BZwfNf2wD//f+y9AALF7wHAAAAAElFTkSuQmCC" alt="Policía PR Oficial" class="header-logo">
-  </div>
+function App() {
+  const [tab, setTab] = useState('inicio');
+  const [data, setData] = useState({ q: [], i: [], c: [], n: [] });
 
-  <div class="summary-section">
-    <div class="summary-grid">
-      <div class="stat-card">
-        <h2 id="q-count">0</h2>
-        <p>Querellas PPR-137.1</p>
-      </div>
-      <div class="stat-card">
-        <h2 id="i-count">0</h2>
-        <p>Inspecciones PPR-137.3</p>
-      </div>
-    </div>
-  </div>
+  // Carga de datos local (Persistencia)
+  useEffect(() => {
+    const saved = localStorage.getItem('dace_v5');
+    if (saved) { try { setData(JSON.parse(saved).data); } catch(e) {} }
+  }, []);
 
-  <div class="action-container">
-    <button class="btn-primary" onclick="alert('NUEVA ENTRADA OFICIAL EN DESARROLLO')">
-      + NUEVA ENTRADA
-    </button>
-  </div>
+  const renderContent = () => {
+    switch(tab) {
+      case 'inicio': return React.createElement('div', null,
+        React.createElement('div', { className: 'card' }, 
+          React.createElement('h2', null, data.q.length), React.createElement('p', null, 'Querellas Activas (137.1)')
+        ),
+        React.createElement('div', { className: 'card' }, 
+          React.createElement('h2', null, data.i.length), React.createElement('p', null, 'Inspecciones Pendientes (137.3)')
+        ),
+        React.createElement('button', { className: 'btn-action' }, '+ NUEVA ACTIVIDAD DACE')
+      );
+      case '137.1': return React.createElement('div', null, React.createElement('h3', null, 'Módulo PPR-137.1'));
+      case '137.3': return React.createElement('div', null, React.createElement('h3', null, 'Módulo PPR-137.3'));
+      case 'config': return React.createElement('div', null, React.createElement('h3', null, 'Configuración y Respaldos'));
+      default: return null;
+    }
+  };
 
-  <nav class="nav-bar">
-    <a href="#" class="nav-item active"><span class="nav-icon">📊</span>PANEL</a>
-    <a href="#" class="nav-item"><span class="nav-icon">⚖️</span>137.1</a>
-    <a href="#" class="nav-item"><span class="nav-icon">🏗️</span>137.3</a>
-    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span>CONFIG</a>
-  </nav>
+  return React.createElement('div', null,
+    // CABECERA OFICIAL CON LOGOS SOLICITADA
+    React.createElement('div', { className: 'app-header' },
+      React.createElement('img', { src: 'Logo_DACE_Arecibo_12x12_Final.jpg', className: 'header-logo', onError: (e) => e.target.style.display='none' }),
+      React.createElement('div', { className: 'header-text' },
+        React.createElement('h1', null, 'DACE ARECIBO'),
+        React.createElement('p', null, 'Negociado de la Policía de Puerto Rico'),
+        React.createElement('p', { className: 'oficial-info' }, 'Agte. Jose Aponte Cancel 31093 / Coordinador Auxiliar DACE Arecibo')
+      ),
+      React.createElement('img', { src: 'Policia.png', className: 'header-logo', onError: (e) => e.target.style.display='none' })
+    ),
 
-  </body>
+    // ÁREA DE TRABAJO
+    React.createElement('div', { className: 'main-content' }, renderContent()),
+
+    // NAVEGACIÓN INFERIOR FUNCIONAL
+    React.createElement('nav', { className: 'nav-bar' },
+      [['inicio', '📊', 'PANEL'], ['137.1', '⚖️', '137.1'], ['137.3', '🏗️', '137.3'], ['config', '⚙️', 'CONFIG']].map(([id, icon, label]) => 
+        React.createElement('button', {
+          key: id,
+          className: `nav-item ${tab === id ? 'active' : ''}`,
+          onClick: () => setTab(id)
+        }, React.createElement('span', { className: 'nav-icon' }, icon), label)
+      )
+    )
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById('root'));
+</script>
+</body>
 </html>
