@@ -113,7 +113,7 @@ const SH='0 12px 40px rgba(0,0,0,.7)';
 
 /* ═══ EMBLEMA DACE ═══ */
 const EmblemaDACE=()=>h('img',{
-  src:'Logo.png',
+  src:'logo.png',
   style:{height:'64px',width:'auto',flexShrink:0,filter:'drop-shadow(0 2px 8px rgba(0,0,0,.5))',objectFit:'contain'}
 });
 
@@ -200,7 +200,7 @@ function ALog({log=[],onAdd,onDel}){const[txt,setTxt]=useState('');const add=()=
 function Toast(){const[msg,setMsg]=useState('');const[vis,setVis]=useState(false);const t=useRef();_tf=(m)=>{setMsg(m);setVis(true);clearTimeout(t.current);t.current=setTimeout(()=>setVis(false),2800);};return h('div',{style:{position:'fixed',bottom:'78px',left:'50%',transform:`translateX(-50%) translateY(${vis?0:'16px'})`,background:C.ok,color:'#000',borderRadius:'50px',padding:'10px 22px',fontSize:'13px',fontWeight:'700',zIndex:900,opacity:vis?1:0,transition:'all .28s cubic-bezier(.16,1,.3,1)',pointerEvents:'none',whiteSpace:'nowrap',boxShadow:SH}},msg);}
 
 /* ═══ DASHBOARD ═══ */
-function Dashboard({D,setTab}){
+function Dashboard({D,setTab,descargarBackup,lbk,lmod}){
   const td=ymd();
   const stats=[{l:'Querellas activas',v:D.q.filter(x=>x.st!=='Cerrada').length,c:C.warn,tab:'querellas',i:'⚖'},{l:'Inspecciones pend.',v:D.i.filter(x=>x.st!=='Completada').length,c:C.info,tab:'inspecciones',i:'🏗'},{l:'Casos abiertos',v:D.c.filter(x=>x.st!=='Resuelto').length,c:C.purple,tab:'casos',i:'📁'},{l:'Notas guardadas',v:D.n.length,c:C.ok,tab:'notas',i:'✏'}];
   const venc=D.c.filter(x=>x.st!=='Resuelto'&&x.fl&&diffD(x.fl)<0);
@@ -208,7 +208,15 @@ function Dashboard({D,setTab}){
   const evHoy=D.ev.filter(x=>x.fecha===td).sort((a,b)=>a.hora.localeCompare(b.hora));
   const ev7=D.ev.filter(x=>x.fecha>td&&diffD(x.fecha)<=7).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   const alta=D.c.filter(x=>x.st!=='Resuelto'&&x.pr==='Alta').slice(0,4);
+  const needsBkp=lmod>lbk&&D.r.length>0;
   return h('div',{style:{padding:'16px 14px 100px'}},
+    needsBkp&&h('div',{style:{...CARD,background:`linear-gradient(to right,${C.danger}18,transparent)`,borderLeft:`4px solid ${C.danger}`,marginBottom:'16px',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      h('div',{},h('div',{style:{fontSize:'13px',fontWeight:'800',color:C.danger,marginBottom:'3px'}},'⚠ Información sin respaldar'),h('div',{style:{fontSize:'11px',color:C.txt}},'Tienes cambios recientes en la app.')),
+      h(PBtn,{onClick:descargarBackup,col:C.danger,fg:'#111',sm:true,sx:{padding:'10px 14px'}},'Sincronizar ahora')
+    ),
+    !needsBkp&&D.r.length>0&&h('div',{style:{marginBottom:'16px',display:'flex',justifyContent:'flex-end'}},
+      h(PBtn,{onClick:descargarBackup,col:C.s2,fg:C.info,sm:true,sx:{border:`1px solid ${C.bdr}`,padding:'8px 12px'}},'✓ Nube Privada al día — Forzar Sincronización')
+    ),
     h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))',gap:'12px',marginBottom:'16px'}},
       stats.map(s=>h('div',{key:s.l,onClick:()=>setTab(s.tab),style:{background:`linear-gradient(135deg,${C.s1} 0%,${s.c}0c 100%)`,border:`1px solid ${C.bdr}`,borderLeft:`3px solid ${s.c}`,borderRadius:12,padding:'14px 12px',cursor:'pointer',transition:'border-color .15s'}},
         h('div',{style:{fontSize:'14px',marginBottom:'5px'}},s.i),
@@ -512,10 +520,10 @@ function Registro({D}){
 }
 
 /* ═══ CONFIGURACIÓN ═══ */
-function Config({cfg,setCfg,D,setD,addLog}){
+function Config({cfg,setCfg,D,setD,addLog,descargarBackup}){
   const[fm,setFm]=useState({...cfg});const fv=(k,v)=>setFm(p=>({...p,[k]:v}));const[bkp,setBkp]=useState(false);const[rtxt,setRtxt]=useState('');
   const saveP=()=>{setCfg({...fm});addLog('CONFIG','Perfil actualizado','PERFIL');showToast('✓ Perfil guardado');};
-  const expBkp=()=>{doShare(JSON.stringify({v:'6.0',ts:new Date().toISOString(),data:D,cfg},null,2),'Backup DACE Arecibo');};
+  const expBkp=descargarBackup;
   const restore=()=>{try{const b=JSON.parse(rtxt);if(!b.data||!b.v)throw 0;if(!confirm(`¿Restaurar backup del ${new Date(b.ts).toLocaleDateString('es-PR',{dateStyle:'long'})}?`))return;setD(b.data);if(b.cfg)setCfg(b.cfg);setRtxt('');setBkp(false);showToast('✓ Datos restaurados');}catch{showToast('⚠ Formato inválido');}};
   const clearAll=()=>{if(!confirm('⚠ ¿ELIMINAR TODOS LOS DATOS? Acción irreversible.'))return;if(!confirm('Confirmación final: se borrarán todos los registros.'))return;setD({q:[],i:[],c:[],n:[],ev:[],r:[],ti:[]});showToast('Datos eliminados');};
   const cts=[{l:'Querellas',v:D.q.length,c:C.warn},{l:'Inspecciones',v:D.i.length,c:C.info},{l:'Trabajos',v:(D.ti||[]).length,c:C.s3},{l:'Casos',v:D.c.length,c:C.purple},{l:'Notas',v:D.n.length,c:C.ok},{l:'Log',v:D.r.length,c:C.muted}];
@@ -589,9 +597,11 @@ function App(){
   const[tab,setTab]=useState('dashboard');
   const[D,setD]=useState(D0);
   const[cfg,setCfg]=useState(G0);
+  const[lbk,setLbk]=useState(0);
+  const[lmod,setLmod]=useState(0);
   const[ready,setReady]=useState(false);
   const[clk,setClk]=useState(hm());
-  const sv=useRef(null);
+  const sv=useRef(null);const init=useRef(true);
 
   useEffect(()=>{const t=setInterval(()=>setClk(hm()),30000);return()=>clearInterval(t);},[]);
 
@@ -599,7 +609,7 @@ function App(){
     (async()=>{
       try{
         const raw=localStorage.getItem('dace_v6');
-        if(raw){const p=JSON.parse(raw);setD(p.data||D0);setCfg({...G0,...(p.cfg||{})});}
+        if(raw){const p=JSON.parse(raw);setD(p.data||D0);setCfg({...G0,...(p.cfg||{})});setLbk(p.lbk||0);setLmod(p.lmod||0);}
       }catch{}
       setReady(true);
     })();
@@ -607,19 +617,37 @@ function App(){
 
   useEffect(()=>{
     if(!ready)return;
+    if(init.current){init.current=false;}else{setLmod(Date.now());}
     clearTimeout(sv.current);
     sv.current=setTimeout(()=>{
-      try{localStorage.setItem('dace_v6',JSON.stringify({data:D,cfg}));}catch{}
+      try{localStorage.setItem('dace_v6',JSON.stringify({data:D,cfg,lbk,lmod:init.current?lmod:Date.now()}));}catch{}
     },800);
     return()=>clearTimeout(sv.current);
-  },[D,cfg,ready]);
+  },[D,cfg,ready,lbk]);
+
+  const descargarBackup=useCallback(()=>{
+    try{
+      const dStr=new Date().toISOString().split('T')[0];
+      const payload=JSON.stringify({v:'6.0',ts:new Date().toISOString(),data:D,cfg,lbk:Date.now(),lmod:Date.now()},null,2);
+      const b=new Blob([payload],{type:'application/json'});
+      const url=URL.createObjectURL(b);
+      const a=document.createElement('a');
+      a.href=url;a.download=`DACE_SYNC_${dStr}.json`;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setLbk(Date.now());
+      setLmod(Date.now());
+      showToast('✓ Sincronizado a Nube/USB');
+    }catch(e){alert('Error al exportar: '+e.message);}
+  },[D,cfg]);
+
 
   const addLog=useCallback((tp,desc,ref='')=>{
     const n=snap();
     setD(p=>({...p,r:[{id:gid(),tp,desc,ref:ref||'',f:n.f,h:n.h},...p.r].slice(0,600)}));
   },[]);
 
-  const props={D,setD,addLog,cfg};
+  const props={D,setD,addLog,cfg,descargarBackup,lbk,lmod};
 
   const TABS=[
     {id:'dashboard',icon:'⊞',l:'Inicio'},
