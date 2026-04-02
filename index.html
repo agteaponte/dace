@@ -13,43 +13,47 @@
 <style>
   :root { --blue: #0a192f; --gold: #c5a059; --bg: #f8fafc; }
   * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; }
+  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; overflow-x: hidden; }
   
-  /* CABECERA ORIGINAL */
+  /* CABECERA PROFESIONAL */
   .app-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 60px 15px 20px; background: white; border-bottom: 2px solid var(--gold);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
+    padding: 60px 15px 25px; background: white; border-bottom: 3px solid var(--gold);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
   }
-  .header-logo { width: 55px; height: 55px; object-fit: contain; flex-shrink: 0; }
-  .header-text { text-align: center; flex: 1; padding: 0 5px; }
-  .header-text h1 { margin: 0; font-size: 18px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
-  .header-text p { margin: 1px 0; font-size: 10px; font-weight: 700; color: #444; }
-  .oficial-info { color: var(--gold) !important; font-size: 9px !important; text-transform: uppercase; font-weight: 800; margin-top: 2px !important; }
+  .header-logo { width: 70px; height: 70px; object-fit: contain; flex-shrink: 0; }
+  .header-text { text-align: center; flex: 1; padding: 0 10px; }
+  .header-text h1 { margin: 0; font-size: 20px; color: var(--blue); font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header-text p { margin: 2px 0; font-size: 11px; font-weight: 700; color: #555; }
+  .oficial-info { color: var(--gold) !important; font-size: 10px !important; text-transform: uppercase; font-weight: 800; margin-top: 4px !important; }
 
-  /* NAVEGACIÓN INFERIOR */
+  /* NAVEGACIÓN ESTILO IPHONE */
   .nav-bar {
-    position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
-    background: white; display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
+    position: fixed; bottom: 0; width: 100%; max-width: 600px; left: 50%; transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+    display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
   }
-  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; }
+  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
   .nav-btn.active { color: var(--blue); }
-  .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
+  .nav-icon { display: block; font-size: 26px; margin-bottom: 4px; }
 
-  /* CONTENIDO */
-  .main-content { padding: 25px 15px 120px; }
+  /* CONTENIDO PRINCIPAL */
+  .main-content { padding: 25px 18px 130px; max-width: 600px; margin: 0 auto; }
   .tab-page { display: none; }
-  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .tab-page.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 15px; border-left: 6px solid var(--blue); }
-  .card h2 { margin: 0; font-size: 42px; color: var(--blue); font-weight: 900; }
-  .card p { margin: 5px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+  /* TARJETAS */
+  .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); margin-bottom: 20px; border-left: 8px solid var(--blue); }
+  .card h2 { margin: 0; font-size: 48px; color: var(--blue); font-weight: 900; line-height: 1; }
+  .card p { margin: 8px 0 0; font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
   
-  .input-group { margin-bottom: 15px; text-align: left; }
-  label { display: block; font-size: 11px; font-weight: 800; color: var(--blue); margin-bottom: 5px; text-transform: uppercase; }
-  input, textarea { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 16px; outline: none; }
-  .btn-save { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; margin-top: 10px; }
+  /* FORMULARIO */
+  .input-group { margin-bottom: 20px; text-align: left; }
+  label { display: block; font-size: 12px; font-weight: 800; color: var(--blue); margin-bottom: 8px; text-transform: uppercase; }
+  input, textarea { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 15px; font-size: 17px; outline: none; background: #fff; transition: 0.3s; }
+  input:focus, textarea:focus { border-color: var(--gold); background: #fff; }
+  .btn-save { width: 100%; padding: 20px; background: var(--blue); color: white; border: none; border-radius: 18px; font-weight: 800; font-size: 18px; margin-top: 15px; box-shadow: 0 6px 15px rgba(10,25,47,0.2); }
 </style>
 </head>
 <body>
@@ -59,30 +63,31 @@
     <div class="header-text">
       <h1>DACE ARECIBO</h1>
       <p>Negociado de la Policía de Puerto Rico</p>
-      <p class="oficial-info">Agte. Jose Aponte Cancel 31093</p>
-      <p class="oficial-info">Coordinador Auxiliar DACE Arecibo</p>
+      <div class="oficial-info">Agte. Jose Aponte Cancel 31093</div>
+      <div class="oficial-info" style="margin-top:0 !important">Coordinador Auxiliar DACE Arecibo</div>
     </div>
     <img src="policia.png" class="header-logo" alt="PPR">
   </header>
 
   <main class="main-content">
     <div id="inicio" class="tab-page active">
-      <div class="card"><h2 id="countQ">0</h2><p>Querellas 137.1</p></div>
+      <div class="card"><h2 id="countQ">0</h2><p>Querellas 137.1 (Sincronizadas)</p></div>
       <div class="card" style="border-left-color: var(--gold);"><h2 id="countI">0</h2><p>Inspecciones 137.3</p></div>
+      <p style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin: 25px 0 10px;">Registros Recientes:</p>
       <div id="listaRegistros"></div>
     </div>
 
     <div id="q137" class="tab-page">
-      <h3 style="color:var(--blue); font-weight: 900;">NUEVO REGISTRO 137.1</h3>
+      <h3 style="color:var(--blue); font-weight: 900; margin-bottom: 25px; text-align: center;">NUEVO REGISTRO 137.1</h3>
       <div class="input-group">
-        <label>Número de Querella</label>
+        <label>Número de Querella / Caso</label>
         <input type="text" id="qNum" placeholder="Ej: Q-2026-001">
       </div>
       <div class="input-group">
-        <label>Detalles del Caso</label>
-        <textarea id="qNota" rows="5" placeholder="Anote aquí los hechos..."></textarea>
+        <label>Detalles y Observaciones</label>
+        <textarea id="qNota" rows="6" placeholder="Describa los hechos aquí..."></textarea>
       </div>
-      <button class="btn-save" onclick="guardar()">GUARDAR REGISTRO</button>
+      <button class="btn-save" onclick="guardarDato()">GUARDAR Y SINCRONIZAR</button>
     </div>
   </main>
 
@@ -93,7 +98,7 @@
   </nav>
 
 <script>
-  // Tu Firebase Config
+  // Tu Configuración Oficial de Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyAkjIRWdtpb3FKelk7rhKKPgzf5HgK90pc",
     authDomain: "dace-arecibo-oficial.firebaseapp.com",
@@ -115,24 +120,27 @@
     window.scrollTo(0,0);
   }
 
-  async function guardar() {
+  async function guardarDato() {
     const num = document.getElementById('qNum').value;
     const nota = document.getElementById('qNota').value;
-    if(!num || !nota) return alert("Complete los datos");
+    if(!num || !nota) return alert("Por favor, complete todos los campos.");
 
     try {
       await db.collection("querellas").add({
         numero: num,
         descripcion: nota,
-        fecha: new Date().toLocaleString()
+        fecha: new Date().toLocaleString(),
+        oficial: "31093"
       });
       document.getElementById('qNum').value = "";
       document.getElementById('qNota').value = "";
       showTab('inicio');
-    } catch(e) { alert("Error al sincronizar"); }
+    } catch(e) { 
+      alert("Error de conexión con la nube. Verifique sus reglas de Firebase."); 
+    }
   }
 
-  function cargar() {
+  function iniciarSincro() {
     db.collection("querellas").orderBy("fecha", "desc").onSnapshot((snapshot) => {
       document.getElementById('countQ').innerText = snapshot.size;
       const lista = document.getElementById('listaRegistros');
@@ -140,15 +148,15 @@
       snapshot.forEach((doc) => {
         const d = doc.data();
         lista.innerHTML += `
-          <div class="card" style="border-left-color: var(--gold)">
+          <div class="card" style="border-left-color: var(--gold); padding: 18px;">
             <small style="color:#94a3b8; font-weight:800; font-size:10px">${d.fecha}</small>
-            <div style="font-weight:900; color:var(--blue); margin: 5px 0;">${d.numero}</div>
-            <div style="font-size:14px; line-height:1.4">${d.descripcion}</div>
+            <div style="font-weight:900; color:var(--blue); margin: 5px 0; font-size: 18px;">${d.numero}</div>
+            <div style="font-size:14px; line-height:1.4; color: #444;">${d.descripcion}</div>
           </div>`;
       });
     });
   }
-  cargar();
+  iniciarSincro();
 </script>
 </body>
 </html>
