@@ -246,6 +246,64 @@ select {
   background-size: 18px; padding-right: 36px;
 }
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* ── FILTROS ── */
+.filter-box {
+  background: white; border-radius: 16px;
+  padding: 14px 15px; margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--gold);
+}
+.filter-box .filter-title {
+  font-size: 10px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.filter-search {
+  width: 100%; padding: 11px 12px 11px 36px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 15px; background: #f8fafc; color: var(--text);
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: 10px center;
+  background-size: 16px; margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.filter-search:focus { outline: none; border-color: var(--blue); background-color: white; }
+.filter-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.chip {
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; cursor: pointer;
+  border: 1.5px solid var(--border); background: white;
+  color: var(--muted); transition: all 0.15s;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.chip.active { background: var(--blue); color: white; border-color: var(--blue); }
+.chip.gold.active   { background: var(--gold); color: #1a0e00; border-color: var(--gold); }
+.chip.green.active  { background: var(--green); color: white; border-color: var(--green); }
+.chip.red.active    { background: var(--red); color: white; border-color: var(--red); }
+.filter-dates {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.filter-dates input {
+  width: 100%; padding: 9px 10px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 13px; background: #f8fafc; color: var(--text);
+  -webkit-appearance: none; appearance: none;
+}
+.filter-count {
+  font-size: 10px; color: var(--muted); font-weight: 600;
+  margin-top: 8px; text-align: right;
+}
+.btn-clear-filter {
+  background: none; border: none; color: var(--red);
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  float: right; margin-top: -2px;
+}
 
 /* ── BOTONES ── */
 .btn-save {
@@ -475,6 +533,27 @@ select {
     <hr class="sep">
     <div class="list-header">Registro (<span id="q1_total">0</span> querellas)</div>
     <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR QUERELLAS 137.1 A PDF</button>
+
+    <!-- FILTROS 137.1 -->
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q1')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, nombre, descripción..." oninput="aplicarFiltros('q1')">
+      <div class="filter-chips" id="q1_chips">
+        <span class="chip active" onclick="toggleChip(this,'q1','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q1','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q1','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Archivado')" data-val="Archivado">Archivado</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q1_desde" onchange="aplicarFiltros('q1')" placeholder="Desde">
+        <input type="date" id="q1_hasta" onchange="aplicarFiltros('q1')" placeholder="Hasta">
+      </div>
+      <div class="filter-count" id="q1_count"></div>
+    </div>
+
     <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -528,6 +607,33 @@ select {
     <hr class="sep">
     <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
     <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES 137.3 A PDF</button>
+
+    <!-- FILTROS 137.3 -->
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--gold)">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q3')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q3_search" placeholder="Buscar por número, lugar, hallazgos..." oninput="aplicarFiltros('q3')">
+      <div class="filter-chips" id="q3_chips">
+        <span class="chip active" onclick="toggleChip(this,'q3','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q3','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q3','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q3','estatus','Completado')" data-val="Completado">Completado</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'q3','tipo','')" data-val="">Tipo: Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q3','tipo','Estructural')" data-val="Estructural">Estructural</span>
+        <span class="chip" onclick="toggleChip(this,'q3','tipo','Celda / Calabozo')" data-val="Celda / Calabozo">Celda</span>
+        <span class="chip" onclick="toggleChip(this,'q3','tipo','Rutinaria')" data-val="Rutinaria">Rutinaria</span>
+        <span class="chip" onclick="toggleChip(this,'q3','tipo','Especial')" data-val="Especial">Especial</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q3_desde" onchange="aplicarFiltros('q3')">
+        <input type="date" id="q3_hasta" onchange="aplicarFiltros('q3')">
+      </div>
+      <div class="filter-count" id="q3_count"></div>
+    </div>
+
     <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -577,6 +683,33 @@ select {
     <hr class="sep">
     <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
     <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')">📄 EXPORTAR CASOS ACTIVOS A PDF</button>
+
+    <!-- FILTROS CASOS -->
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--green)">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('c')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="c_search" placeholder="Buscar por número, descripción, responsable..." oninput="aplicarFiltros('c')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Activo')" data-val="Activo">Activo</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Pendiente Resolución')" data-val="Pendiente Resolución">Pend. Resolución</span>
+        <span class="chip green" onclick="toggleChip(this,'c','estatus','Cerrado')" data-val="Cerrado">Cerrado</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','prioridad','')" data-val="">Prioridad: Todas</span>
+        <span class="chip red" onclick="toggleChip(this,'c','prioridad','Alta')" data-val="Alta">Alta</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','prioridad','Media')" data-val="Media">Media</span>
+        <span class="chip green" onclick="toggleChip(this,'c','prioridad','Baja')" data-val="Baja">Baja</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="c_desde" onchange="aplicarFiltros('c')">
+        <input type="date" id="c_hasta" onchange="aplicarFiltros('c')">
+      </div>
+      <div class="filter-count" id="c_count"></div>
+    </div>
+
     <div id="lista_casos"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -617,13 +750,146 @@ select {
     <hr class="sep">
     <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
     <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')">📄 EXPORTAR REGISTRO MAESTRO A PDF</button>
+
+    <!-- FILTROS MAESTRO -->
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('rm')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="rm_search" placeholder="Buscar por tipo, descripción, notas..." oninput="aplicarFiltros('rm')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'rm','tipo','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Querella 137.1')" data-val="Querella 137.1">137.1</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Inspección 137.3')" data-val="Inspección 137.3">137.3</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Gestión Administrativa')" data-val="Gestión Administrativa">Administrativa</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Reunión Oficial')" data-val="Reunión Oficial">Reunión</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Coordinación Interagencial')" data-val="Coordinación Interagencial">Interagencial</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="rm_desde" onchange="aplicarFiltros('rm')">
+        <input type="date" id="rm_hasta" onchange="aplicarFiltros('rm')">
+      </div>
+      <div class="filter-count" id="rm_count"></div>
+    </div>
+
     <div id="lista_maestro"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- MANTENIMIENTO -->
+  <div id="mantenimiento" class="tab-page">
+    <div class="page-title">🔧 Mantenimiento</div>
+    <div class="form-card">
+      <div class="form-section-label">Nuevo Trabajo de Mantenimiento</div>
+      <div class="input-group">
+        <label>Dependencia / Lugar *</label>
+        <select id="mt_lugar">
+          <option value="">— Seleccionar —</option>
+          <option>Comandancia Administracion</option>
+          <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+          <option>Prec. 107</option><option>Prec. 207</option>
+          <option>Almacen</option><option>UMA</option><option>Poligono</option>
+          <option>Operaciones Tacticas</option><option>Florida</option>
+          <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+          <option>Morovis</option><option>Transito Manati</option>
+          <option>Drogas Manati</option><option>Transito Arecibo</option>
+          <option>Vehiculos Hurtados</option><option>Maritima</option>
+          <option>Tecnologia</option><option>General</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Departamento / Tipo *</label>
+        <select id="mt_dept">
+          <option value="Refrigeración">Refrigeración / Aire Acondicionado</option>
+          <option value="Electricidad">Electricidad / Generador</option>
+          <option value="Plomería">Plomería / Agua</option>
+          <option value="Estructural">Estructural / Construcción</option>
+          <option value="Fumigación">Fumigación / Exterminación</option>
+          <option value="Combustible">Combustible / Diesel</option>
+          <option value="Equipos">Equipos / Tecnología</option>
+          <option value="Limpieza">Limpieza / Áreas Verdes</option>
+          <option value="Seguridad">Seguridad / Cámaras</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="mt_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="mt_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Trabajo *</label>
+        <textarea id="mt_desc" placeholder="Describa el trabajo realizado o la situación reportada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notificado A</label>
+        <input type="text" id="mt_notifico" placeholder="Nombre de quien se notificó" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Método de Notificación</label>
+        <select id="mt_metodo">
+          <option value="Personal">Personal</option>
+          <option value="Teléfono">Teléfono</option>
+          <option value="Correo Electrónico">Correo Electrónico</option>
+          <option value="Radio">Radio</option>
+          <option value="Sistema PADAWAN">Sistema PADAWAN</option>
+          <option value="No Aplica">No Aplica</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="mt_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+          <option value="Requiere Seguimiento">Requiere Seguimiento</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#7c3aed" onclick="guardarMantenimiento()">💾 GUARDAR MANTENIMIENTO</button>
+    </div>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="mt_total">0</span> trabajos)</div>
+    <button class="btn-pdf" style="background:#7c3aed" onclick="exportarPDF('mantenimiento')">📄 EXPORTAR MANTENIMIENTO A PDF</button>
+
+    <!-- FILTROS MANTENIMIENTO -->
+    <div class="filter-box" style="margin-top:12px; border-left-color:#7c3aed">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('mt')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="mt_search" placeholder="Buscar por lugar, descripción, tipo..." oninput="aplicarFiltros('mt')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'mt','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'mt','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip red" onclick="toggleChip(this,'mt','estatus','Requiere Seguimiento')" data-val="Requiere Seguimiento">Seguimiento</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','dept','')" data-val="">Tipo: Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Refrigeración')" data-val="Refrigeración">Refrigeración</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Electricidad')" data-val="Electricidad">Electricidad</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Plomería')" data-val="Plomería">Plomería</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Fumigación')" data-val="Fumigación">Fumigación</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Combustible')" data-val="Combustible">Combustible</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="mt_desde" onchange="aplicarFiltros('mt')">
+        <input type="date" id="mt_hasta" onchange="aplicarFiltros('mt')">
+      </div>
+      <div class="filter-count" id="mt_count"></div>
+    </div>
+
+    <div id="lista_mt"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- MÁS -->
   <div id="mas" class="tab-page">
     <div class="page-title">⋯ Más Opciones</div>
     <div class="more-grid">
+      <div class="more-card" onclick="changeTab('casos')">
+        <span class="more-icon">📋</span>
+        <div class="more-title">Casos Activos</div>
+        <div class="more-sub">Seguimiento de casos</div>
+      </div>
       <div class="more-card" onclick="changeTab('maestro')">
         <span class="more-icon">📁</span>
         <div class="more-title">Registro Maestro</div>
@@ -670,11 +936,11 @@ select {
 
 <!-- NAVEGACIÓN -->
 <nav class="nav-bar">
-  <button id="btn-inicio"  class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
-  <button id="btn-q137_1" class="nav-btn"         onclick="changeTab('q137_1')"><span class="nav-icon">⚖️</span>137.1</button>
-  <button id="btn-q137_3" class="nav-btn"         onclick="changeTab('q137_3')"><span class="nav-icon">🏗️</span>137.3</button>
-  <button id="btn-casos"  class="nav-btn"         onclick="changeTab('casos')"><span class="nav-icon">📋</span>CASOS</button>
-  <button id="btn-mas"    class="nav-btn"         onclick="changeTab('mas')"><span class="nav-icon">⋯</span>MÁS</button>
+  <button id="btn-inicio"        class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
+  <button id="btn-q137_1"        class="nav-btn"        onclick="changeTab('q137_1')"><span class="nav-icon">⚖️</span>137.1</button>
+  <button id="btn-q137_3"        class="nav-btn"        onclick="changeTab('q137_3')"><span class="nav-icon">🏗️</span>137.3</button>
+  <button id="btn-mantenimiento" class="nav-btn"        onclick="changeTab('mantenimiento')"><span class="nav-icon">🔧</span>MANT.</button>
+  <button id="btn-mas"           class="nav-btn"        onclick="changeTab('mas')"><span class="nav-icon">⋯</span>MÁS</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -683,6 +949,220 @@ select {
      JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
      ═══════════════════════════════════════════════════════════ -->
 <script>
+
+/* ═══ SISTEMA DE FILTROS ═══ */
+
+// Cache de datos completos para filtrar localmente
+const _cache = { q1:[], q3:[], c:[], rm:[], mt:[] };
+// Estado de filtros activos
+const _filtros = {
+  q1:  { texto:'', estatus:'', desde:'', hasta:'' },
+  q3:  { texto:'', estatus:'', tipo:'', desde:'', hasta:'' },
+  c:   { texto:'', estatus:'', prioridad:'', desde:'', hasta:'' },
+  rm:  { texto:'', tipo:'', desde:'', hasta:'' },
+  mt:  { texto:'', estatus:'', dept:'', desde:'', hasta:'' },
+};
+
+function toggleChip(el, modulo, campo, valor) {
+  // Desactiva todos los chips del mismo grupo
+  const grupo = el.parentElement;
+  grupo.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  _filtros[modulo][campo] = valor;
+  aplicarFiltros(modulo);
+}
+
+function aplicarFiltros(modulo) {
+  const f   = _filtros[modulo];
+  const txt = (document.getElementById(modulo + '_search')?.value || '').toLowerCase().trim();
+  const des = document.getElementById(modulo + '_desde')?.value || '';
+  const has = document.getElementById(modulo + '_hasta')?.value || '';
+
+  f.texto = txt;
+  f.desde = des;
+  f.hasta = has;
+
+  let datos = _cache[modulo];
+
+  // Filtro texto
+  if (txt) {
+    datos = datos.filter(d => {
+      const haystack = JSON.stringify(d).toLowerCase();
+      return haystack.includes(txt);
+    });
+  }
+
+  // Filtro estatus
+  if (f.estatus) {
+    datos = datos.filter(d => (d.estatus||'') === f.estatus);
+  }
+
+  // Filtro tipo / prioridad / dept
+  if (f.tipo)      datos = datos.filter(d => (d.tipo||'') === f.tipo);
+  if (f.prioridad) datos = datos.filter(d => (d.prioridad||'') === f.prioridad);
+  if (f.dept)      datos = datos.filter(d => (d.departamento||'') === f.dept);
+
+  // Filtro fechas — compara cadenas de fecha YYYY-MM-DD o DD/MM/YYYY
+  if (des || has) {
+    datos = datos.filter(d => {
+      const rawFecha = d.fecha || '';
+      // Normalizar a YYYY-MM-DD
+      let fechaNorm = rawFecha;
+      if (rawFecha.includes('/')) {
+        // Formato DD/MM/YYYY o M/D/YYYY
+        const parts = rawFecha.split('/');
+        if (parts.length === 3) {
+          const [a, b, c] = parts;
+          // Si el año está al final
+          if (c.length === 4) fechaNorm = `${c}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
+          else fechaNorm = rawFecha; // fallback
+        }
+      }
+      if (des && fechaNorm < des) return false;
+      if (has && fechaNorm > has) return false;
+      return true;
+    });
+  }
+
+  // Renderizar resultados filtrados
+  const configs = {
+    q1:  { container:'lista_q1',      fn: item_Q1_data,      count:'q1_count' },
+    q3:  { container:'lista_q3',      fn: item_Q3_data,      count:'q3_count' },
+    c:   { container:'lista_casos',   fn: item_Caso_data,    count:'c_count'  },
+    rm:  { container:'lista_maestro', fn: item_Maestro_data, count:'rm_count' },
+    mt:  { container:'lista_mt',      fn: item_Mt_data,      count:'mt_count' },
+  };
+
+  const cfg = configs[modulo];
+  const el  = document.getElementById(cfg.container);
+  const cnt = document.getElementById(cfg.count);
+
+  if (!datos.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🔍</span><p>No hay registros que coincidan con los filtros</p></div>';
+  } else {
+    el.innerHTML = datos.map(d => cfg.fn(d)).join('');
+  }
+
+  if (cnt) {
+    const total = _cache[modulo].length;
+    cnt.textContent = datos.length === total
+      ? `${total} registro(s) total`
+      : `${datos.length} de ${total} registro(s)`;
+  }
+}
+
+function limpiarFiltros(modulo) {
+  const f = _filtros[modulo];
+  Object.keys(f).forEach(k => f[k] = '');
+
+  const s = document.getElementById(modulo + '_search');
+  if (s) s.value = '';
+  const d = document.getElementById(modulo + '_desde');
+  if (d) d.value = '';
+  const h = document.getElementById(modulo + '_hasta');
+  if (h) h.value = '';
+
+  // Reset chips — activa el primero de cada grupo
+  document.querySelectorAll(`#${moduloTabId(modulo)} .filter-chips`).forEach(grupo => {
+    grupo.querySelectorAll('.chip').forEach((c, i) => {
+      c.classList.toggle('active', i === 0);
+    });
+  });
+
+  aplicarFiltros(modulo);
+}
+
+function moduloTabId(m) {
+  const map = { q1:'q137_1', q3:'q137_3', c:'casos', rm:'maestro', mt:'mantenimiento' };
+  return map[m] || m;
+}
+
+/* ── Render mantenimiento data ── */
+function item_Mt_data(d) {
+  const estatusColor = {
+    'Pendiente':'b-pending','En Proceso':'b-process',
+    'Completado':'b-done','Requiere Seguimiento':'b-alta'
+  };
+  return `<div class="record-item" style="border-left-color:#7c3aed">
+    <div class="record-head">
+      <span class="record-id">${d.lugar||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    <p class="record-body"><strong>${d.departamento||''}</strong></p>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.notificadoA ? `<p class="record-body"><strong>Notificado:</strong> ${d.notificadoA} · ${d.metodo||''}</p>` : ''}
+    <div class="record-foot">
+      <span class="badge ${estatusColor[d.estatus]||'b-pending'}">${d.estatus||'—'}</span>
+      <button class="btn-del" onclick="eliminar('dace_mantenimiento','${d._id}','Mantenimiento')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ── Versiones de render que reciben data plain (no Firestore doc) ── */
+function item_Q1_data(d) {
+  return `<div class="record-item">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.querellante ? `<p class="record-body"><strong>Querellante:</strong> ${d.querellante}</p>` : ''}
+    ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Querella')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+function item_Q3_data(d) {
+  return `<div class="record-item gold">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.lugar ? `<p class="record-body"><strong>Lugar:</strong> ${d.lugar}</p>` : ''}
+    ${d.tipo  ? `<p class="record-body"><strong>Tipo:</strong> ${d.tipo}</p>` : ''}
+    <p class="record-body">${d.hallazgos||''}</p>
+    ${d.recomendaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic"><strong>Rec:</strong> ${d.recomendaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_3','${d._id}','Inspección')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+function item_Caso_data(d) {
+  const cls = { Alta:'red', Media:'gold', Baja:'green' }[d.prioridad] || '';
+  return `<div class="record-item ${cls}">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.responsable ? `<p class="record-body"><strong>Responsable:</strong> ${d.responsable}</p>` : ''}
+    ${d.accion      ? `<p class="record-body"><strong>Próxima acción:</strong> ${d.accion}</p>` : ''}
+    <div class="record-foot">
+      ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_casos','${d._id}','Caso')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+function item_Maestro_data(d) {
+  return `<div class="record-item gray">
+    <div class="record-head">
+      <span class="record-id">${d.tipo||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
+    <div class="record-foot">
+      <button class="btn-del" onclick="eliminar('dace_maestro','${d._id}','Entrada')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
 
 /* ═══ EXPORTAR PDF ═══ */
 function pdfHeader(doc, titulo) {
@@ -960,6 +1440,57 @@ async function exportarPDF(modulo) {
       }
     }
 
+    else if (modulo === 'mantenimiento') {
+      titulo = 'Registro de Trabajos de Mantenimiento';
+      snap   = await db.collection('dace_mantenimiento').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay trabajos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          doc.setFillColor(245, 240, 255);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(124, 58, 237);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.departamento||''}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Notificado A', d.notificadoA],
+            ['Método', d.metodo],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(124, 58, 237);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
     // Pie de página en todas las páginas
     const totalPags = doc.internal.getNumberOfPages();
     for (let p = 1; p <= totalPags; p++) {
@@ -1229,10 +1760,10 @@ function hoy()  { return new Date().toISOString().split('T')[0]; }
 function ahora(){ return new Date().toTimeString().slice(0, 5); }
 
 function prefill() {
-  ['q1_fecha','q3_fecha','c_fecha','rm_fecha'].forEach(id => {
+  ['q1_fecha','q3_fecha','c_fecha','rm_fecha','mt_fecha'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = hoy();
   });
-  ['q1_hora','q3_hora','rm_hora'].forEach(id => {
+  ['q1_hora','q3_hora','rm_hora','mt_hora'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = ahora();
   });
 }
@@ -1268,7 +1799,8 @@ function initListeners() {
     .onSnapshot(snap => {
       document.getElementById('cnt1').textContent     = snap.size;
       document.getElementById('q1_total').textContent = snap.size;
-      renderLista('lista_q1', snap.docs, item_Q1);
+      _cache.q1 = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      aplicarFiltros('q1');
       feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('⚖️', d.data().numero||'Querella', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`));
       renderFeed();
     }, e => console.error('137.1:', e));
@@ -1279,7 +1811,8 @@ function initListeners() {
     .onSnapshot(snap => {
       document.getElementById('cnt3').textContent     = snap.size;
       document.getElementById('q3_total').textContent = snap.size;
-      renderLista('lista_q3', snap.docs, item_Q3);
+      _cache.q3 = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      aplicarFiltros('q3');
       feedCache.q3 = snap.docs.slice(0,3).map(d => feedRow('🏗️', d.data().numero||'Inspección', `137.3 · ${d.data().lugar||''} · ${d.data().estatus||''}`));
       renderFeed();
     }, e => console.error('137.3:', e));
@@ -1290,7 +1823,8 @@ function initListeners() {
     .onSnapshot(snap => {
       document.getElementById('cntC').textContent    = snap.size;
       document.getElementById('c_total').textContent = snap.size;
-      renderLista('lista_casos', snap.docs, item_Caso);
+      _cache.c = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      aplicarFiltros('c');
       feedCache.casos = snap.docs.slice(0,3).map(d => feedRow('📋', d.data().numero||'Caso', trunc(d.data().descripcion||'', 55)));
       renderFeed();
     }, e => console.error('casos:', e));
@@ -1301,10 +1835,22 @@ function initListeners() {
     .onSnapshot(snap => {
       document.getElementById('cntM').textContent     = snap.size;
       document.getElementById('rm_total').textContent = snap.size;
-      renderLista('lista_maestro', snap.docs, item_Maestro);
+      _cache.rm = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      aplicarFiltros('rm');
       feedCache.maestro = snap.docs.slice(0,2).map(d => feedRow('📁', d.data().tipo||'Entrada', trunc(d.data().descripcion||'', 55)));
       renderFeed();
     }, e => console.error('maestro:', e));
+
+  /* MANTENIMIENTO */
+  db.collection('dace_mantenimiento')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('mt_total').textContent = snap.size;
+      _cache.mt = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      aplicarFiltros('mt');
+      feedCache.mt = snap.docs.slice(0,2).map(d => feedRow('🔧', d.data().lugar||'Mantenimiento', trunc(d.data().descripcion||'', 55)));
+      renderFeed();
+    }, e => console.error('mantenimiento:', e));
 }
 
 /* ── FEED RECIENTE ── */
@@ -1462,6 +2008,30 @@ async function guardarCaso() {
     showToast('✅ Caso guardado y sincronizado', '#166534');
     limpiar(['c_num','c_desc','c_resp','c_accion']);
     set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ GUARDAR: MANTENIMIENTO ═══ */
+async function guardarMantenimiento() {
+  const lugar = v('mt_lugar'), desc = v('mt_desc');
+  if (!lugar || !desc) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_mantenimiento').add({
+      lugar:       lugar,
+      departamento:v('mt_dept'),
+      fecha:       v('mt_fecha'),
+      hora:        v('mt_hora'),
+      descripcion: desc,
+      notificadoA: v('mt_notifico'),
+      metodo:      v('mt_metodo'),
+      estatus:     v('mt_estatus'),
+      usuario:    'Agte. Aponte Cancel · 31093',
+      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Mantenimiento guardado y sincronizado', '#166534');
+    limpiar(['mt_desc','mt_notifico']);
+    set('mt_lugar',''); set('mt_estatus','Pendiente');
+    set('mt_fecha', hoy()); set('mt_hora', ahora());
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
 }
 
