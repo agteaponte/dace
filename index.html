@@ -5,105 +5,914 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DACE ARECIBO">
 <title>DACE ARECIBO</title>
+
+<!-- Firebase SDK (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <style>
-  :root { --blue: #0a192f; --gold: #c5a059; --bg: #f8fafc; }
-  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; overflow-x: hidden; }
-  
-  /* CABECERA: Logo Izq | Texto Centro | Logo Der */
-  .app-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 60px 15px 20px; background: white; border-bottom: 2px solid var(--gold);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  .header-logo { width: 55px; height: 55px; object-fit: contain; flex-shrink: 0; border-radius: 5px; }
-  .header-text { text-align: center; flex: 1; padding: 0 5px; }
-  .header-text h1 { margin: 0; font-size: 18px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
-  .header-text p { margin: 1px 0; font-size: 10px; font-weight: 700; color: #444; }
-  .oficial-info { color: var(--gold) !important; font-size: 9px !important; text-transform: uppercase; font-weight: 800; margin-top: 2px !important; }
+:root {
+  --blue:  #0a192f;
+  --gold:  #c5a059;
+  --bg:    #f0f4f8;
+  --red:   #dc2626;
+  --green: #16a34a;
+  --card:  #ffffff;
+  --text:  #1d1d1f;
+  --muted: #64748b;
+  --border:#e2e8f0;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-  /* MENÚ NAVEGACIÓN IPHONE */
-  .nav-bar {
-    position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
-    background: white; display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
-  }
-  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; }
-  .nav-btn.active { color: var(--blue); }
-  .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
+/* ── CABECERA ── */
+.app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 58px 14px 14px;
+  background: white;
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.1);
+  position: sticky; top: 0; z-index: 200;
+}
+.header-logo {
+  width: 52px; height: 52px; object-fit: contain;
+  flex-shrink: 0; border-radius: 6px;
+}
+.header-logo-placeholder {
+  width: 52px; height: 52px; background: var(--blue);
+  border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.header-text { text-align: center; flex: 1; padding: 0 8px; }
+.header-text h1 {
+  font-size: 17px; font-weight: 900; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;
+}
+.header-text .sub { font-size: 10px; font-weight: 600; color: #555; margin-top: 2px; }
+.header-text .oficial {
+  font-size: 9px; font-weight: 800; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;
+}
 
-  /* CONTENIDO INTERACTIVO */
-  .main-content { padding: 25px 15px 120px; }
-  .tab-page { display: none; }
-  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* ── BARRA FIREBASE ── */
+.firebase-bar {
+  background: var(--blue); color: rgba(255,255,255,0.85);
+  font-size: 10px; font-weight: 700; text-align: center;
+  padding: 6px 12px; letter-spacing: 0.3px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.fb-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #94a3b8; flex-shrink: 0; transition: background 0.4s;
+}
+.fb-dot.online { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+.fb-dot.error  { background: var(--red); }
 
-  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 15px; border-left: 6px solid var(--blue); }
-  .card h2 { margin: 0; font-size: 40px; color: var(--blue); font-weight: 900; }
-  .card p { margin: 5px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-  
-  /* Formulario Básico */
-  .input-group { margin-bottom: 15px; text-align: left; }
-  label { display: block; font-size: 10px; font-weight: 800; color: var(--blue); margin-bottom: 5px; }
-  input, textarea { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 16px; }
-  .btn-save { width: 100%; padding: 16px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: 800; }
+/* ── NAVEGACIÓN ── */
+.nav-bar {
+  position: fixed; bottom: 0;
+  width: 100%; max-width: 540px;
+  left: 50%; transform: translateX(-50%);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  padding: 10px 0 env(safe-area-inset-bottom, 22px);
+  border-top: 1px solid var(--border);
+  z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+.nav-btn {
+  flex: 1; border: none; background: none;
+  color: #94a3b8; font-size: 9px; font-weight: 700;
+  cursor: pointer; padding: 2px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-transform: uppercase; letter-spacing: 0.3px; transition: color 0.2s;
+}
+.nav-btn.active { color: var(--blue); }
+.nav-icon { font-size: 21px; line-height: 1; }
+
+/* ── CONTENIDO ── */
+.main-content {
+  padding: 18px 14px 120px;
+  max-width: 540px; margin: 0 auto;
+}
+.tab-page { display: none; }
+.tab-page.active { display: block; animation: fadeUp 0.25s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TÍTULO ── */
+.page-title {
+  font-size: 24px; font-weight: 900; color: var(--blue);
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--gold);
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ── DASHBOARD ── */
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 11px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card); padding: 18px 14px; border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+  border-left: 5px solid var(--blue); cursor: pointer;
+}
+.stat-card.gold  { border-left-color: var(--gold); }
+.stat-card.green { border-left-color: var(--green); }
+.stat-card.red   { border-left-color: var(--red); }
+.stat-num { font-size: 38px; font-weight: 900; color: var(--blue); line-height: 1; }
+.stat-card.gold  .stat-num { color: #92700a; }
+.stat-card.green .stat-num { color: var(--green); }
+.stat-card.red   .stat-num { color: var(--red); }
+.stat-label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
+
+/* ── FEED ── */
+.feed-title {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px; margin: 4px 0 10px;
+}
+.activity-item {
+  background: var(--card); padding: 13px 15px; border-radius: 14px;
+  margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex; align-items: center; gap: 12px;
+}
+.activity-icon { font-size: 22px; flex-shrink: 0; }
+.activity-info { flex: 1; min-width: 0; }
+.activity-info strong {
+  display: block; font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.activity-info span { font-size: 11px; color: #94a3b8; }
+
+/* ── FORMULARIO ── */
+.form-card {
+  background: var(--card); padding: 20px; border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07); margin-bottom: 16px;
+}
+.form-section-label {
+  font-size: 11px; font-weight: 800; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.input-group { margin-bottom: 13px; }
+label {
+  display: block; font-size: 10px; font-weight: 800; color: var(--blue);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px;
+}
+input[type=text], input[type=date], input[type=time], select, textarea {
+  width: 100%; padding: 13px 12px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 16px; background: #f8fafc;
+  color: var(--text); -webkit-appearance: none; appearance: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--blue); background: white;
+}
+textarea { resize: vertical; min-height: 88px; }
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 10px center;
+  background-size: 18px; padding-right: 36px;
+}
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+/* ── BOTONES ── */
+.btn-save {
+  width: 100%; padding: 17px; background: var(--blue); color: white;
+  border: none; border-radius: 14px; font-weight: 800; font-size: 14px;
+  cursor: pointer; margin-top: 4px; letter-spacing: 0.5px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-save:active { opacity: 0.82; transform: scale(0.99); }
+.btn-save.gold-btn  { background: var(--gold); color: #1a0e00; }
+.btn-save.green-btn { background: var(--green); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.b-pending  { background: #fef3c7; color: #92400e; }
+.b-process  { background: #dbeafe; color: #1e40af; }
+.b-done     { background: #dcfce7; color: #166534; }
+.b-archived { background: #f1f5f9; color: #475569; }
+.b-alta     { background: #fee2e2; color: #991b1b; }
+.b-media    { background: #fef3c7; color: #92400e; }
+.b-baja     { background: #f0fdf4; color: #166534; }
+
+/* ── LISTA REGISTROS ── */
+.list-header {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 12px;
+}
+.record-item {
+  background: var(--card); padding: 14px 15px; border-radius: 14px;
+  margin-bottom: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--blue);
+}
+.record-item.gold  { border-left-color: var(--gold); }
+.record-item.green { border-left-color: var(--green); }
+.record-item.red   { border-left-color: var(--red); }
+.record-item.gray  { border-left-color: #94a3b8; }
+.record-head {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 6px; gap: 8px;
+}
+.record-id {
+  font-size: 13px; font-weight: 800; color: var(--blue);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.record-ts { font-size: 10px; color: #94a3b8; flex-shrink: 0; }
+.record-body { font-size: 12px; color: #475569; line-height: 1.55; margin-bottom: 2px; }
+.record-body strong { color: var(--text); font-weight: 700; }
+.record-foot { margin-top: 9px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.btn-del {
+  background: none; border: none; color: var(--red);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  margin-left: auto; padding: 4px 8px; border-radius: 6px;
+}
+.btn-del:active { background: #fee2e2; }
+
+/* ── MÁS ── */
+.more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.more-card {
+  background: var(--card); padding: 22px 15px; border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.07); text-align: center; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.2s, transform 0.1s;
+}
+.more-card:active { border-color: var(--blue); transform: scale(0.97); }
+.more-icon { font-size: 30px; display: block; margin-bottom: 8px; }
+.more-title { font-size: 12px; font-weight: 800; color: var(--blue); text-transform: uppercase; }
+.more-sub { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+
+/* ── INFO CARD ── */
+.info-card {
+  background: var(--card); border-radius: 14px;
+  padding: 16px 18px; margin-top: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+.info-card p { font-size: 12px; color: #475569; margin: 5px 0; line-height: 1.5; }
+.info-card strong { color: var(--text); }
+.info-title {
+  font-size: 11px; font-weight: 800; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
+  background: #1d1d1f; color: white; padding: 13px 26px; border-radius: 30px;
+  font-size: 13px; font-weight: 700; z-index: 9999; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.toast.show { opacity: 1; }
+
+/* ── ESTADOS ── */
+.empty-state { text-align: center; padding: 36px 20px; color: #94a3b8; }
+.empty-icon  { font-size: 44px; display: block; margin-bottom: 10px; }
+.empty-state p { font-size: 13px; font-weight: 600; }
+.loading-state { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; font-weight: 600; }
+.sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 </style>
 </head>
 <body>
 
-  <header class="app-header">
-    <img src="./Logo.png" class="header-logo" alt="DACE">
-    <div class="header-text">
-      <h1>DACE ARECIBO</h1>
-      <p>Negociado de la Policía de Puerto Rico</p>
-      <p class="oficial-info">Agte. Jose Aponte Cancel 31093</p>
-      <p class="oficial-info">Coordinador Auxiliar DACE Arecibo</p>
-    </div>
-    <img src="./policia.png" class="header-logo" alt="PPR">
-  </header>
+<!-- CABECERA -->
+<header class="app-header">
+  <img src="./Logo.png" class="header-logo" alt="DACE"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>🏛️</div>'">
+  <div class="header-text">
+    <h1>DACE ARECIBO</h1>
+    <div class="sub">Negociado de la Policía de Puerto Rico</div>
+    <div class="oficial">Agte. Jose Aponte Cancel · Placa 31093</div>
+    <div class="oficial">Coordinador Auxiliar DACE Arecibo</div>
+  </div>
+  <img src="./policia.png" class="header-logo" alt="PPR"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>⚖️</div>'">
+</header>
 
-  <main class="main-content">
-    <div id="inicio" class="tab-page active">
-      <div class="card"><h2>0</h2><p>Querellas 137.1</p></div>
-      <div class="card"><h2>0</h2><p>Inspecciones 137.3</p></div>
-      <button class="btn-save" onclick="changeTab('q137')">+ REGISTRAR ACTIVIDAD</button>
-    </div>
+<!-- BARRA ESTADO FIREBASE -->
+<div class="firebase-bar">
+  <div class="fb-dot" id="fbDot"></div>
+  <span id="fbText">Conectando con Firebase...</span>
+</div>
 
-    <div id="q137" class="tab-page">
-      <h3 style="color:var(--blue)">Registro PPR-137.1</h3>
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+
+  <!-- PANEL -->
+  <div id="inicio" class="tab-page active">
+    <div class="page-title">📊 Panel General</div>
+    <div class="stats-grid">
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label">Querellas 137.1</div></div>
+      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label">Registro Maestro</div></div>
+    </div>
+    <div class="feed-title">Actividad Reciente</div>
+    <div id="feedArea"><div class="loading-state">⏳ Cargando actividad...</div></div>
+  </div>
+
+  <!-- PPR-137.1 -->
+  <div id="q137_1" class="tab-page">
+    <div class="page-title">⚖️ Querellas 137.1</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Querella</div>
       <div class="input-group">
-        <label>Número de Querella</label>
-        <input type="text" placeholder="Ej: Q-2026-001">
+        <label>Número de Querella *</label>
+        <input type="text" id="q1_num" placeholder="Ej: Q-137.1-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="q1_fecha"></div>
+        <div class="input-group"><label>Hora *</label><input type="time" id="q1_hora"></div>
       </div>
       <div class="input-group">
-        <label>Observaciones</label>
-        <textarea rows="4" placeholder="Anote aquí los detalles..."></textarea>
+        <label>Nombre del Querellante</label>
+        <input type="text" id="q1_querellante" placeholder="Nombre completo" autocomplete="off">
       </div>
-      <button class="btn-save" onclick="alert('Datos guardados localmente'); changeTab('inicio')">GUARDAR</button>
+      <div class="input-group">
+        <label>Agencia / Unidad Involucrada</label>
+        <input type="text" id="q1_agencia" placeholder="Ej: DACE, PPR, DSP..." autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Descripción del Asunto *</label>
+        <textarea id="q1_desc" placeholder="Describa los hechos de manera clara y concisa..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="q1_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+          <option value="Archivado">Archivado</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Observaciones / Seguimiento</label>
+        <textarea id="q1_obs" rows="3" placeholder="Notas adicionales, referencias, documentos..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarQ1()">💾 GUARDAR QUERELLA</button>
     </div>
-  </main>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q1_total">0</span> querellas)</div>
+    <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
 
-  <nav class="nav-bar">
-    <button id="btn-inicio" class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
-    <button id="btn-q137" class="nav-btn" onclick="changeTab('q137')"><span class="nav-icon">⚖️</span>137.1</button>
-    <button class="nav-btn" onclick="alert('Módulo en construcción')"><span class="nav-icon">🏗️</span>137.3</button>
-    <button class="nav-btn" onclick="alert('Ajustes de Sistema')"><span class="nav-icon">⚙️</span>CONFIG</button>
-  </nav>
+  <!-- PPR-137.3 -->
+  <div id="q137_3" class="tab-page">
+    <div class="page-title">🏗️ Inspecciones 137.3</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Inspección</div>
+      <div class="input-group">
+        <label>Número de Inspección *</label>
+        <input type="text" id="q3_num" placeholder="Ej: INS-137.3-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="q3_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="q3_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Lugar / Cuartel Inspeccionado *</label>
+        <input type="text" id="q3_lugar" placeholder="Nombre del lugar o cuartel" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Tipo de Inspección</label>
+        <select id="q3_tipo">
+          <option value="Estructural">Estructural</option>
+          <option value="Celda / Calabozo">Celda / Calabozo</option>
+          <option value="Seguridad General">Seguridad General</option>
+          <option value="Equipos y Material">Equipos y Material</option>
+          <option value="Rutinaria">Rutinaria</option>
+          <option value="Especial">Especial</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Hallazgos *</label>
+        <textarea id="q3_hallazgos" placeholder="Describa los hallazgos observados..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Recomendaciones</label>
+        <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="q3_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </div>
+      <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
+    <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
 
-  <script>
-    function changeTab(id) {
-      // Ocultar todas las páginas
-      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-      // Mostrar la seleccionada
-      document.getElementById(id).classList.add('active');
-      
-      // Actualizar botones del menú
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      if(id === 'inicio') document.getElementById('btn-inicio').classList.add('active');
-      if(id === 'q137') document.getElementById('btn-q137').classList.add('active');
-      
-      window.scrollTo(0,0);
-    }
-  </script>
+  <!-- CASOS ACTIVOS -->
+  <div id="casos" class="tab-page">
+    <div class="page-title">📋 Casos Activos</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Caso</div>
+      <div class="input-group">
+        <label>Número de Caso *</label>
+        <input type="text" id="c_num" placeholder="Ej: CASO-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha Apertura</label><input type="date" id="c_fecha"></div>
+        <div class="input-group">
+          <label>Prioridad</label>
+          <select id="c_prioridad">
+            <option value="Alta">Alta</option>
+            <option value="Media" selected>Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Caso *</label>
+        <textarea id="c_desc" placeholder="Describa el caso con todos los detalles relevantes..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Responsable / Asignado</label>
+        <input type="text" id="c_resp" placeholder="Nombre del agente responsable" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Próxima Acción</label>
+        <input type="text" id="c_accion" placeholder="¿Qué debe hacerse a continuación?" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="c_estatus">
+          <option value="Activo">Activo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Pendiente Resolución">Pendiente Resolución</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+      </div>
+      <button class="btn-save green-btn" onclick="guardarCaso()">💾 GUARDAR CASO</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
+    <div id="lista_casos"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- REGISTRO MAESTRO -->
+  <div id="maestro" class="tab-page">
+    <div class="page-title">📁 Registro Maestro</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Entrada</div>
+      <div class="input-group">
+        <label>Tipo de Actividad</label>
+        <select id="rm_tipo">
+          <option value="Querella 137.1">Querella 137.1</option>
+          <option value="Inspección 137.3">Inspección 137.3</option>
+          <option value="Caso Activo">Caso Activo</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Gestión Administrativa">Gestión Administrativa</option>
+          <option value="Capacitación / Adiestramiento">Capacitación / Adiestramiento</option>
+          <option value="Reunión Oficial">Reunión Oficial</option>
+          <option value="Comunicación Oficial">Comunicación Oficial</option>
+          <option value="Archivo / Documentación">Archivo / Documentación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="rm_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="rm_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Detalle *</label>
+        <textarea id="rm_desc" placeholder="Describa la actividad realizada de forma clara y detallada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notas / Referencias</label>
+        <textarea id="rm_notas" rows="3" placeholder="Notas adicionales, número de documento, referencias..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarMaestro()">💾 GUARDAR ENTRADA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
+    <div id="lista_maestro"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- MÁS -->
+  <div id="mas" class="tab-page">
+    <div class="page-title">⋯ Más Opciones</div>
+    <div class="more-grid">
+      <div class="more-card" onclick="changeTab('maestro')">
+        <span class="more-icon">📁</span>
+        <div class="more-title">Registro Maestro</div>
+        <div class="more-sub">Log de actividades</div>
+      </div>
+      <div class="more-card" onclick="showToast('🔧 Módulo Agenda — próximamente')">
+        <span class="more-icon">📅</span>
+        <div class="more-title">Agenda</div>
+        <div class="more-sub">Tareas y compromisos</div>
+      </div>
+      <div class="more-card" onclick="showToast('🔧 Módulo Directorio — próximamente')">
+        <span class="more-icon">👥</span>
+        <div class="more-title">Directorio</div>
+        <div class="more-sub">Personal DACE</div>
+      </div>
+      <div class="more-card" onclick="showToast('🔧 Módulo Reportes — próximamente')">
+        <span class="more-icon">📊</span>
+        <div class="more-title">Reportes</div>
+        <div class="more-sub">Estadísticas</div>
+      </div>
+      <div class="more-card" onclick="showToast('🔧 Módulo Archivo — próximamente')">
+        <span class="more-icon">🗃️</span>
+        <div class="more-title">Archivo DACE</div>
+        <div class="more-sub">Documentos</div>
+      </div>
+      <div class="more-card" onclick="showToast('⚙️ Sistema DACE Arecibo v7.0')">
+        <span class="more-icon">⚙️</span>
+        <div class="more-title">Configuración</div>
+        <div class="more-sub">Sistema v7.0</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">Estado del Sistema</div>
+      <p><strong>Versión:</strong> DACE Arecibo v7.0</p>
+      <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
+      <p><strong>Sincronización:</strong> Tiempo real (iPhone ↔ PC)</p>
+      <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel · 31093</p>
+      <p><strong>Unidad:</strong> DACE Arecibo — NPPR</p>
+      <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
+    </div>
+  </div>
+
+</main>
+
+<!-- NAVEGACIÓN -->
+<nav class="nav-bar">
+  <button id="btn-inicio"  class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
+  <button id="btn-q137_1" class="nav-btn"         onclick="changeTab('q137_1')"><span class="nav-icon">⚖️</span>137.1</button>
+  <button id="btn-q137_3" class="nav-btn"         onclick="changeTab('q137_3')"><span class="nav-icon">🏗️</span>137.3</button>
+  <button id="btn-casos"  class="nav-btn"         onclick="changeTab('casos')"><span class="nav-icon">📋</span>CASOS</button>
+  <button id="btn-mas"    class="nav-btn"         onclick="changeTab('mas')"><span class="nav-icon">⋯</span>MÁS</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+
+/* ── FIREBASE CONFIG — DACE-ARECIBO-OFICIAL ── */
+const firebaseConfig = {
+  apiKey:            "***REMOVED_API_KEY_1***",
+  authDomain:        "dace-arecibo-oficial.firebaseapp.com",
+  projectId:         "dace-arecibo-oficial",
+  storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
+  messagingSenderId: "1061384536706",
+  appId:             "1:1061384536706:web:0df609d6159739af58aa9b"
+};
+
+/* ── INICIALIZAR ── */
+let db;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+
+  // Persistencia offline: si pierdes internet, guarda local y sincroniza al reconectarte
+  db.enablePersistence({ synchronizeTabs: true })
+    .catch(err => {
+      if (err.code === 'failed-precondition') {
+        // Múltiples tabs abiertas — persistencia solo funciona en una
+        console.warn('Persistencia: múltiples tabs detectadas');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Persistencia offline no soportada en este navegador');
+      }
+    });
+
+  setFbStatus('online', '✅ Firebase conectado · dace-arecibo-oficial · Sincronización activa');
+  initListeners();
+
+} catch(e) {
+  setFbStatus('error', '❌ Error de conexión: ' + e.message);
+  console.error('Firebase init error:', e);
+}
+
+/* ── ESTADO CONEXIÓN ── */
+function setFbStatus(state, msg) {
+  document.getElementById('fbDot').className = 'fb-dot ' + state;
+  document.getElementById('fbText').textContent = msg;
+  const ms = document.getElementById('masStatus');
+  if (ms) {
+    ms.textContent = msg;
+    ms.style.color = state === 'online' ? '#16a34a' : '#dc2626';
+  }
+}
+
+/* ── NAVEGACIÓN ── */
+function changeTab(id) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + id);
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ── TOAST ── */
+let _tTimer;
+function showToast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg || '#1d1d1f';
+  clearTimeout(_tTimer);
+  t.classList.add('show');
+  _tTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ── FECHA / HORA ── */
+function hoy()  { return new Date().toISOString().split('T')[0]; }
+function ahora(){ return new Date().toTimeString().slice(0, 5); }
+
+function prefill() {
+  ['q1_fecha','q3_fecha','c_fecha','rm_fecha'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = hoy();
+  });
+  ['q1_hora','q3_hora','rm_hora'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = ahora();
+  });
+}
+
+/* ── BADGES ── */
+function bEstatus(e) {
+  const m = {
+    'Pendiente':'b-pending','En Proceso':'b-process',
+    'Completado':'b-done','Activo':'b-process',
+    'Cerrado':'b-done','Archivado':'b-archived',
+    'Pendiente Resolución':'b-pending'
+  };
+  return `<span class="badge ${m[e]||'b-pending'}">${e||'—'}</span>`;
+}
+function bPrio(p) {
+  const m = { 'Alta':'b-alta','Media':'b-media','Baja':'b-baja' };
+  return `<span class="badge ${m[p]||'b-media'}">${p||'—'}</span>`;
+}
+
+/* ═══ LISTENERS TIEMPO REAL ═══
+   onSnapshot dispara automáticamente cada vez que Firestore
+   detecta un cambio — en cualquier dispositivo conectado.
+   Sin necesidad de recargar la página.
+*/
+let feedCache = {};
+
+function initListeners() {
+  prefill();
+
+  /* 137.1 */
+  db.collection('dace_q137_1')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cnt1').textContent     = snap.size;
+      document.getElementById('q1_total').textContent = snap.size;
+      renderLista('lista_q1', snap.docs, item_Q1);
+      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('⚖️', d.data().numero||'Querella', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`));
+      renderFeed();
+    }, e => console.error('137.1:', e));
+
+  /* 137.3 */
+  db.collection('dace_q137_3')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cnt3').textContent     = snap.size;
+      document.getElementById('q3_total').textContent = snap.size;
+      renderLista('lista_q3', snap.docs, item_Q3);
+      feedCache.q3 = snap.docs.slice(0,3).map(d => feedRow('🏗️', d.data().numero||'Inspección', `137.3 · ${d.data().lugar||''} · ${d.data().estatus||''}`));
+      renderFeed();
+    }, e => console.error('137.3:', e));
+
+  /* CASOS */
+  db.collection('dace_casos')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cntC').textContent    = snap.size;
+      document.getElementById('c_total').textContent = snap.size;
+      renderLista('lista_casos', snap.docs, item_Caso);
+      feedCache.casos = snap.docs.slice(0,3).map(d => feedRow('📋', d.data().numero||'Caso', trunc(d.data().descripcion||'', 55)));
+      renderFeed();
+    }, e => console.error('casos:', e));
+
+  /* MAESTRO */
+  db.collection('dace_maestro')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cntM').textContent     = snap.size;
+      document.getElementById('rm_total').textContent = snap.size;
+      renderLista('lista_maestro', snap.docs, item_Maestro);
+      feedCache.maestro = snap.docs.slice(0,2).map(d => feedRow('📁', d.data().tipo||'Entrada', trunc(d.data().descripcion||'', 55)));
+      renderFeed();
+    }, e => console.error('maestro:', e));
+}
+
+/* ── FEED RECIENTE ── */
+function feedRow(icon, title, sub) { return { icon, title, sub }; }
+function trunc(s, n) { return s.length > n ? s.substring(0, n) + '…' : s; }
+
+function renderFeed() {
+  const all = Object.values(feedCache).flat().slice(0, 7);
+  const el  = document.getElementById('feedArea');
+  if (!all.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span><p>Sin actividad registrada aún</p></div>';
+    return;
+  }
+  el.innerHTML = all.map(r => `
+    <div class="activity-item">
+      <span class="activity-icon">${r.icon}</span>
+      <div class="activity-info">
+        <strong>${r.title}</strong>
+        <span>${r.sub}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ── RENDER GENÉRICO ── */
+function renderLista(cid, docs, fn) {
+  const el = document.getElementById(cid);
+  if (!docs || !docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">📄</span><p>No hay registros aún</p></div>';
+    return;
+  }
+  el.innerHTML = docs.map(fn).join('');
+}
+
+/* ── RENDER: 137.1 ── */
+function item_Q1(doc) {
+  const d = doc.data();
+  return `<div class="record-item">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.querellante ? `<p class="record-body"><strong>Querellante:</strong> ${d.querellante}</p>` : ''}
+    ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${doc.id}','Querella')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ── RENDER: 137.3 ── */
+function item_Q3(doc) {
+  const d = doc.data();
+  return `<div class="record-item gold">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.lugar ? `<p class="record-body"><strong>Lugar:</strong> ${d.lugar}</p>` : ''}
+    ${d.tipo  ? `<p class="record-body"><strong>Tipo:</strong> ${d.tipo}</p>` : ''}
+    <p class="record-body">${d.hallazgos||''}</p>
+    ${d.recomendaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic"><strong>Rec:</strong> ${d.recomendaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_3','${doc.id}','Inspección')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ── RENDER: CASOS ── */
+function item_Caso(doc) {
+  const d   = doc.data();
+  const cls = { Alta:'red', Media:'gold', Baja:'green' }[d.prioridad] || '';
+  return `<div class="record-item ${cls}">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'—'}</span>
+      <span class="record-ts">${d.fecha||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.responsable ? `<p class="record-body"><strong>Responsable:</strong> ${d.responsable}</p>` : ''}
+    ${d.accion      ? `<p class="record-body"><strong>Próxima acción:</strong> ${d.accion}</p>` : ''}
+    <div class="record-foot">
+      ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_casos','${doc.id}','Caso')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ── RENDER: MAESTRO ── */
+function item_Maestro(doc) {
+  const d = doc.data();
+  return `<div class="record-item gray">
+    <div class="record-head">
+      <span class="record-id">${d.tipo||'—'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
+    <div class="record-foot">
+      <button class="btn-del" onclick="eliminar('dace_maestro','${doc.id}','Entrada')">🗑 Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ═══ GUARDAR: 137.1 ═══ */
+async function guardarQ1() {
+  const num  = v('q1_num'), desc = v('q1_desc');
+  if (!num || !desc) { showToast('⚠️ Número y descripción son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_q137_1').add({
+      numero: num, fecha: v('q1_fecha'), hora: v('q1_hora'),
+      querellante: v('q1_querellante'), agencia: v('q1_agencia'),
+      descripcion: desc, estatus: v('q1_estatus'), observaciones: v('q1_obs'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Querella guardada y sincronizada', '#166534');
+    limpiar(['q1_num','q1_querellante','q1_agencia','q1_desc','q1_obs']);
+    set('q1_estatus','Pendiente'); set('q1_fecha', hoy()); set('q1_hora', ahora());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ GUARDAR: 137.3 ═══ */
+async function guardarQ3() {
+  const num = v('q3_num'), hall = v('q3_hallazgos');
+  if (!num || !hall) { showToast('⚠️ Número y hallazgos son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_q137_3').add({
+      numero: num, fecha: v('q3_fecha'), hora: v('q3_hora'),
+      lugar: v('q3_lugar'), tipo: v('q3_tipo'),
+      hallazgos: hall, recomendaciones: v('q3_rec'), estatus: v('q3_estatus'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Inspección guardada y sincronizada', '#166534');
+    limpiar(['q3_num','q3_lugar','q3_hallazgos','q3_rec']);
+    set('q3_estatus','Pendiente'); set('q3_fecha', hoy()); set('q3_hora', ahora());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ GUARDAR: CASOS ═══ */
+async function guardarCaso() {
+  const num = v('c_num'), desc = v('c_desc');
+  if (!num || !desc) { showToast('⚠️ Número y descripción son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_casos').add({
+      numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
+      descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
+      estatus: v('c_estatus'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Caso guardado y sincronizado', '#166534');
+    limpiar(['c_num','c_desc','c_resp','c_accion']);
+    set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ GUARDAR: MAESTRO ═══ */
+async function guardarMaestro() {
+  const desc = v('rm_desc');
+  if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
+  try {
+    await db.collection('dace_maestro').add({
+      tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
+      descripcion: desc, notas: v('rm_notas'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Entrada guardada y sincronizada', '#166534');
+    limpiar(['rm_desc','rm_notas']);
+    set('rm_fecha', hoy()); set('rm_hora', ahora());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ ELIMINAR ═══ */
+async function eliminar(col, id, tipo) {
+  if (!confirm(`¿Eliminar este registro de ${tipo}?\n\nEsta acción es permanente.`)) return;
+  try {
+    await db.collection(col).doc(id).delete();
+    showToast(`🗑 ${tipo} eliminado`, '#475569');
+  } catch(e) { showToast('❌ Error al eliminar: ' + e.message, '#dc2626'); }
+}
+
+/* ── HELPERS ── */
+function v(id)        { return document.getElementById(id)?.value?.trim() || ''; }
+function set(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function limpiar(ids) { ids.forEach(id => set(id, '')); }
+</script>
 </body>
 </html>
