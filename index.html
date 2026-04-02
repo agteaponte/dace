@@ -4,108 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DACE ARECIBO - SISTEMA INTEGRADO</title>
-    
+    <title>DACE ARECIBO - SISTEMA OFICIAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
     <style>
         :root { --dark-bg: #0f172a; --card-bg: #1e293b; --blue: #3b82f6; --gold: #f59e0b; --green: #10b981; }
-        * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--dark-bg); color: white; margin: 0; padding: 0; overflow-x: hidden; }
-
-        /* CABECERA OFICIAL */
-        .app-header { padding: 60px 15px 20px; background: var(--dark-bg); border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .logo-img { width: 55px; height: 55px; object-fit: contain; }
-        .header-text { text-align: center; flex: 1; }
-        .header-text h1 { font-size: 16px; margin: 0; letter-spacing: 1px; }
-        .header-text .oficial { color: var(--gold); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; }
-
-        /* INDICADOR DE NUBE */
-        .cloud-status { background: rgba(16, 185, 129, 0.1); color: var(--green); padding: 8px; font-size: 10px; text-align: center; border-radius: 8px; margin: 10px 15px; border: 1px solid var(--green); font-weight: bold; }
-
-        /* PANEL DE CONTROL (GRID) */
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--dark-bg); color: white; margin: 0; padding: 0; }
+        .app-header { padding: 60px 15px 20px; text-align: center; border-bottom: 1px solid #334155; }
+        .logos-row { display: flex; justify-content: space-between; align-items: center; }
+        .logo-img { width: 50px; height: 50px; }
+        .header-info h1 { font-size: 16px; margin: 0; }
+        .header-info p { font-size: 11px; margin: 2px 0; color: var(--gold); font-weight: bold; }
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .card { background: var(--card-bg); padding: 22px; border-radius: 18px; border-bottom: 4px solid transparent; position: relative; }
-        .card i { font-size: 28px; display: block; margin-bottom: 10px; }
-        .card h2 { font-size: 34px; margin: 0; font-weight: 900; }
-        .card p { font-size: 11px; margin: 5px 0 0; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-        
-        .c-blue { border-bottom-color: var(--blue); }
-        .c-gold { border-bottom-color: var(--gold); }
-        .c-purple { border-bottom-color: #a855f7; }
-        .c-green { border-bottom-color: var(--green); }
-
-        /* LISTADO DE REGISTROS SINCRONIZADOS */
-        .section-label { font-size: 11px; font-weight: 800; color: #64748b; margin: 20px 15px 10px; text-transform: uppercase; }
-        .feed { padding: 0 15px 120px; }
-        .item { background: var(--card-bg); border-radius: 15px; padding: 18px; margin-bottom: 12px; border-left: 5px solid var(--blue); }
-        .item .meta { font-size: 10px; color: #64748b; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .item h3 { margin: 0 0 8px; font-size: 17px; color: white; }
-        .item p { margin: 0; font-size: 14px; color: #cbd5e1; line-height: 1.5; }
-
-        /* FORMULARIO DE ENTRADA */
+        .card { background: var(--card-bg); padding: 20px; border-radius: 15px; border-bottom: 4px solid var(--blue); }
+        .card h2 { font-size: 32px; margin: 0; }
+        .card p { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .activity-list { padding: 0 15px 120px; }
+        .activity-item { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--blue); }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1e293b; display: flex; padding: 10px 0 35px; border-top: 1px solid #334155; }
+        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 10px; border: none; background: none; }
+        .nav-item.active { color: white; }
         .form-page { display: none; padding: 20px 15px 120px; }
-        .form-page.active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        label { display: block; font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; }
-        input, textarea { width: 100%; background: #0f172a; border: 2px solid #334155; padding: 16px; border-radius: 12px; color: white; font-size: 17px; margin-bottom: 20px; outline: none; }
-        input:focus { border-color: var(--blue); }
-        .btn-submit { width: 100%; padding: 20px; background: var(--blue); color: white; border: none; border-radius: 15px; font-weight: 800; font-size: 17px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-
-        /* NAVEGACIÓN INFERIOR */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; left: 50%; transform: translateX(-50%); background: #1e293b; display: flex; padding: 12px 0 35px; border-top: 1px solid #334155; z-index: 1000; }
-        .nav-btn { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .nav-btn.active { color: white; }
-        .nav-btn i { display: block; font-size: 24px; margin-bottom: 5px; }
+        .form-page.active { display: block; }
+        input, textarea { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 10px; color: white; margin-bottom: 15px; }
+        .btn-action { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <header class="app-header">
-        <div class="header-top">
+        <div class="logos-row">
             <img src="Logo.png" class="logo-img">
-            <div class="header-text">
+            <div class="header-info">
                 <h1>DACE ARECIBO</h1>
-                <div class="oficial">Agte. Jose Aponte 31093</div>
-                <div style="font-size: 9px; color: #94a3b8; margin-top: 2px;">SISTEMA DE SINCRONIZACIÓN FIREBASE</div>
+                <p>Agte. Jose Aponte 31093</p>
             </div>
             <img src="policia.png" class="logo-img">
         </div>
-        <div id="cloud-sync" class="cloud-status">☁️ CONECTADO A LA NUBE</div>
     </header>
 
-    <div id="page-inicio" class="form-page active">
+    <div id="tab-inicio" class="form-page active">
         <div class="dashboard">
-            <div class="card c-blue"><i>⚖️</i><h2 id="qCount">0</h2><p>Querellas 137.1</p></div>
-            <div class="card c-gold"><i>🏗️</i><h2 id="iCount">0</h2><p>Inspecciones</p></div>
-            <div class="card c-purple"><i>📁</i><h2 id="tCount">0</h2><p>Casos Totales</p></div>
-            <div class="card c-green"><i>✏️</i><h2 id="nCount">0</h2><p>Anotaciones</p></div>
+            <div class="card"><i>⚖️</i><h2 id="numQ">0</h2><p>Querellas</p></div>
+            <div class="card" style="border-color: var(--gold)"><i>🏗️</i><h2 id="numI">0</h2><p>Inspecciones</p></div>
         </div>
-        <div class="section-label">Registros Sincronizados (Cloud)</div>
-        <div id="feed-actividad" class="feed"></div>
+        <div id="listaActividad" class="activity-list"></div>
     </div>
 
-    <div id="page-nuevo" class="form-page">
-        <h2 style="margin-bottom: 25px;">Nuevo Trabajo / Nota</h2>
-        <label>Título o Número de Caso</label>
-        <input type="text" id="input-titulo" placeholder="Ej: Q-2026-005">
-        <label>Detalles del Trabajo</label>
-        <textarea id="input-detalle" rows="8" placeholder="Escriba aquí sus anotaciones..."></textarea>
-        <button class="btn-submit" onclick="enviarAFirebase()">GUARDAR EN LA NUBE</button>
+    <div id="tab-nuevo" class="form-page">
+        <h2>Nueva Anotación</h2>
+        <input type="text" id="tTitulo" placeholder="Número de Caso o Título">
+        <textarea id="tNota" rows="6" placeholder="Escriba los detalles aquí..."></textarea>
+        <button class="btn-action" onclick="guardar()">GUARDAR EN LA NUBE</button>
     </div>
 
     <nav class="nav-bar">
-        <button class="nav-btn active" onclick="navegar('inicio', this)"><i>🏠</i>Inicio</button>
-        <button class="nav-btn" onclick="navegar('nuevo', this)"><i>➕</i>Anotar</button>
-        <button class="nav-btn" onclick="location.reload()"><i>🔄</i>Refrescar</button>
+        <button class="nav-item active" onclick="go('inicio')">🏠 Inicio</button>
+        <button class="nav-item" onclick="go('nuevo')">➕ Anotar</button>
+        <button class="nav-item" onclick="location.reload()">🔄 Sincro</button>
     </nav>
 
 <script>
-    // CREDENCIALES OFICIALES DE SU PROYECTO
     const firebaseConfig = {
         apiKey: "AIzaSyAkjIRWdtpb3FKelk7rhKKPgzf5HgK90pc",
         authDomain: "dace-arecibo-oficial.firebaseapp.com",
@@ -114,95 +73,49 @@
         messagingSenderId: "1061384536706",
         appId: "1:1061384536706:web:0df609d6159739af58aa9b"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function navegar(page, btn) {
+    function go(tab) {
         document.querySelectorAll('.form-page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + page).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-        btn.classList.add('active');
-        window.scrollTo(0,0);
+        document.getElementById('tab-' + tab).classList.add('active');
     }
 
-    // FUNCIÓN DE GUARDADO UNIVERSAL
-    async function enviarAFirebase() {
-        const titulo = document.getElementById('input-titulo').value;
-        const detalle = document.getElementById('input-detalle').value;
-        if(!titulo || !detalle) return alert("Por favor complete los campos.");
+    async function guardar() {
+        const t = document.getElementById('tTitulo').value;
+        const n = document.getElementById('tNota').value;
+        if(!t || !n) return alert("Complete los campos");
+        await db.collection("registros").add({ titulo: t, nota: n, fecha: new Date().toLocaleString() });
+        document.getElementById('tTitulo').value = "";
+        document.getElementById('tNota').value = "";
+        go('inicio');
+    }
 
-        const status = document.getElementById('cloud-sync');
-        status.innerHTML = "⏳ SINCRONIZANDO...";
-        status.style.color = "var(--gold)";
-
-        try {
-            await db.collection("registros_dace").add({
-                titulo: titulo,
-                detalle: detalle,
-                fecha_iso: new Date().toISOString(),
-                fecha_txt: new Date().toLocaleString(),
-                agente: "31093"
+    // ESTO RESCATA SUS DATOS DEL IPHONE AUTOMÁTICAMENTE
+    async function rescatar() {
+        const local = JSON.parse(localStorage.getItem('querellas')) || 
+                      JSON.parse(localStorage.getItem('dace_data')) || [];
+        for(let x of local) {
+            await db.collection("registros").add({
+                titulo: x.numero || x.titulo || "RESCATADO",
+                nota: x.descripcion || x.nota || "Sin detalle",
+                fecha: x.fecha || new Date().toLocaleString()
             });
-            document.getElementById('input-titulo').value = "";
-            document.getElementById('input-detalle').value = "";
-            status.innerHTML = "✅ SINCRONIZADO CON ÉXITO";
-            status.style.color = "var(--green)";
-            navegar('inicio', document.querySelectorAll('.nav-btn')[0]);
-        } catch(e) {
-            alert("Error de red: " + e.message);
-            status.innerHTML = "❌ ERROR DE CONEXIÓN";
         }
+        if(local.length > 0) localStorage.clear();
     }
 
-    // LÓGICA DE MIGRACIÓN: RESCATA TRABAJOS DEL IPHONE Y LOS SUBE A LA NUBE
-    async function migrarDatosViejos() {
-        // Buscamos en todas las posibles memorias locales antiguas
-        const local = JSON.parse(localStorage.getItem('dace_data')) || 
-                      JSON.parse(localStorage.getItem('querellas')) || 
-                      JSON.parse(localStorage.getItem('notas')) || [];
-        
-        if(local.length > 0) {
-            console.log("Detectados datos antiguos en el iPhone. Migrando a Firebase...");
-            for(let dato of local) {
-                await db.collection("registros_dace").add({
-                    titulo: dato.numero || dato.titulo || "Migrado",
-                    detalle: dato.descripcion || dato.detalle || dato.nota || "Sin detalle",
-                    fecha_iso: new Date().toISOString(),
-                    fecha_txt: dato.fecha || new Date().toLocaleString(),
-                    agente: "31093 (MIGRACIÓN)"
-                });
-            }
-            localStorage.clear(); // Borramos la memoria local para que no se dupliquen
-            console.log("Migración terminada con éxito.");
-        }
-    }
-
-    // ESCUCHA EN VIVO: CUALQUIER CAMBIO EN LA PC SE VE EN EL CELULAR Y VICEVERSA
-    function conectarNube() {
-        db.collection("registros_dace").orderBy("fecha_iso", "desc").onSnapshot((snap) => {
-            const lista = document.getElementById('feed-actividad');
-            const total = snap.size;
-            document.getElementById('qCount').innerText = total;
-            document.getElementById('tCount').innerText = total;
-            document.getElementById('nCount').innerText = total;
-            
-            lista.innerHTML = "";
-            snap.forEach((doc) => {
-                const d = doc.data();
-                lista.innerHTML += `
-                    <div class="item">
-                        <div class="meta"><span>📅 ${d.fecha_txt}</span> <span>ID: ${doc.id.substring(0,5)}</span></div>
-                        <h3>${d.titulo}</h3>
-                        <p>${d.detalle}</p>
-                    </div>`;
-            });
+    db.collection("registros").orderBy("fecha", "desc").onSnapshot((snap) => {
+        document.getElementById('numQ').innerText = snap.size;
+        const lista = document.getElementById('listaActividad');
+        lista.innerHTML = "";
+        snap.forEach((doc) => {
+            const d = doc.data();
+            lista.innerHTML += `<div class="activity-item"><b>${d.titulo}</b><p>${d.nota}</p><small>${d.fecha}</small></div>`;
         });
-    }
+    });
 
-    // Arrancar procesos
-    migrarDatosViejos().then(() => conectarNube());
-
+    rescatar();
 </script>
 </body>
 </html>
