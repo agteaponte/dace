@@ -895,40 +895,291 @@ select {
         <div class="more-title">Registro Maestro</div>
         <div class="more-sub">Log de actividades</div>
       </div>
-      <div class="more-card" onclick="showToast('🔧 Módulo Agenda — próximamente')">
+      <div class="more-card" onclick="changeTab('agenda')">
         <span class="more-icon">📅</span>
         <div class="more-title">Agenda</div>
         <div class="more-sub">Tareas y compromisos</div>
       </div>
-      <div class="more-card" onclick="showToast('🔧 Módulo Directorio — próximamente')">
+      <div class="more-card" onclick="changeTab('directorio')">
         <span class="more-icon">👥</span>
         <div class="more-title">Directorio</div>
         <div class="more-sub">Personal DACE</div>
       </div>
-      <div class="more-card" onclick="showToast('🔧 Módulo Reportes — próximamente')">
+      <div class="more-card" onclick="changeTab('reportes')">
         <span class="more-icon">📊</span>
         <div class="more-title">Reportes</div>
         <div class="more-sub">Estadísticas</div>
       </div>
-      <div class="more-card" onclick="showToast('🔧 Módulo Archivo — próximamente')">
+      <div class="more-card" onclick="changeTab('archivo')">
         <span class="more-icon">🗃️</span>
         <div class="more-title">Archivo DACE</div>
         <div class="more-sub">Documentos</div>
       </div>
-      <div class="more-card" onclick="showToast('⚙️ Sistema DACE Arecibo v7.0')">
+      <div class="more-card" onclick="changeTab('config')">
         <span class="more-icon">⚙️</span>
         <div class="more-title">Configuración</div>
-        <div class="more-sub">Sistema v7.0</div>
+        <div class="more-sub">Sistema v8.0</div>
       </div>
     </div>
+  </div>
+
+  <!-- ══════════ AGENDA ══════════ -->
+  <div id="agenda" class="tab-page">
+    <div class="page-title">📅 Agenda</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Tarea / Compromiso</div>
+      <div class="input-group">
+        <label>Título *</label>
+        <input type="text" id="ag_titulo" placeholder="Ej: Inspección Cuartel Camuy" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="ag_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="ag_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Tipo</label>
+        <select id="ag_tipo">
+          <option value="Inspección">Inspección</option>
+          <option value="Reunión">Reunión</option>
+          <option value="Entrega de Documentos">Entrega de Documentos</option>
+          <option value="Seguimiento de Caso">Seguimiento de Caso</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Capacitación">Capacitación</option>
+          <option value="Mantenimiento Programado">Mantenimiento Programado</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Notas</label>
+        <textarea id="ag_desc" rows="3" placeholder="Detalles del compromiso..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Prioridad</label>
+        <select id="ag_prioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media" selected>Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#0369a1" onclick="guardarAgenda()">💾 GUARDAR TAREA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Tareas (<span id="ag_total">0</span>)</div>
+    <div id="lista_agenda"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ DIRECTORIO ══════════ -->
+  <div id="directorio" class="tab-page">
+    <div class="page-title">👥 Directorio DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Agregar Personal</div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Nombre Completo *</label>
+          <input type="text" id="dir_nombre" placeholder="Apellido, Nombre" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Placa / ID</label>
+          <input type="text" id="dir_placa" placeholder="Ej: 31093" autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Rango / Clasificación</label>
+        <select id="dir_rango">
+          <option value="Agente">Agente</option>
+          <option value="Sargento">Sargento</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
+          <option value="Comandante">Comandante</option>
+          <option value="Civil">Civil / Administrativo</option>
+          <option value="Contratista">Contratista</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Unidad / Dependencia</label>
+        <select id="dir_unidad">
+          <option value="DACE Arecibo">DACE Arecibo</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="General / Otra">General / Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Teléfono</label>
+          <input type="text" id="dir_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Extensión</label>
+          <input type="text" id="dir_ext" placeholder="Ext." autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <input type="text" id="dir_email" placeholder="correo@nppr.pr.gov" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Notas</label>
+        <textarea id="dir_notas" rows="2" placeholder="Información adicional..."></textarea>
+      </div>
+      <button class="btn-save" style="background:#0f766e" onclick="guardarDirectorio()">💾 GUARDAR CONTACTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="dir_search" placeholder="🔍 Buscar por nombre, placa, unidad..." oninput="buscarDirectorio()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Contactos (<span id="dir_total">0</span>)</div>
+    <div id="lista_dir"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ REPORTES ══════════ -->
+  <div id="reportes" class="tab-page">
+    <div class="page-title">📊 Reportes</div>
+
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Querellas 137.1</div></div>
+      <div class="stat-card gold"><div class="stat-num" id="rpt_q3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green"><div class="stat-num" id="rpt_casos">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"><div class="stat-num" id="rpt_mt">—</div><div class="stat-label">Mantenimientos</div></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Querellas 137.1</div>
+      <div id="rpt_q1_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Inspecciones 137.3</div>
+      <div id="rpt_q3_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Tipo — Mantenimiento</div>
+      <div id="rpt_mt_tipo" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Top 5 Dependencias — Mantenimiento</div>
+      <div id="rpt_mt_dep" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <button class="btn-save" onclick="generarReportes()" style="margin-top:4px">🔄 ACTUALIZAR REPORTES</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()" style="margin-top:8px">📄 EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- ══════════ ARCHIVO DACE ══════════ -->
+  <div id="archivo" class="tab-page">
+    <div class="page-title">🗃️ Archivo DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Documento</div>
+      <div class="input-group">
+        <label>Nombre del Documento *</label>
+        <input type="text" id="arc_nombre" placeholder="Ej: PPR-137.1 Cuartel Camuy Mar 2026" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Categoría</label>
+        <select id="arc_cat">
+          <option value="PPR-137.1">PPR-137.1 Querella</option>
+          <option value="PPR-137.3">PPR-137.3 Inspección</option>
+          <option value="Correspondencia">Correspondencia Oficial</option>
+          <option value="Memorando">Memorando</option>
+          <option value="Solicitud">Solicitud / Requisición</option>
+          <option value="Informe">Informe</option>
+          <option value="Certificación">Certificación</option>
+          <option value="Orden de Trabajo">Orden de Trabajo</option>
+          <option value="PADAWAN">PADAWAN / JEDI</option>
+          <option value="Legal">Documento Legal</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Dependencia Relacionada</label>
+        <select id="arc_dep">
+          <option value="General">General</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="Almacen">Almacén</option>
+          <option value="Poligono">Polígono</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="arc_fecha"></div>
+        <div class="input-group">
+          <label>Año</label>
+          <select id="arc_anio">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Referencia</label>
+        <textarea id="arc_desc" rows="3" placeholder="Descripción del documento o referencia..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Número de Referencia / Radicado</label>
+        <input type="text" id="arc_ref" placeholder="Ej: SAOC-CA-2-DACE-1-94" autocomplete="off">
+      </div>
+      <button class="btn-save" style="background:#b45309" onclick="guardarArchivo()">💾 REGISTRAR DOCUMENTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="arc_search" placeholder="🔍 Buscar documento..." oninput="buscarArchivo()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Documentos (<span id="arc_total">0</span>)</div>
+    <div id="lista_arc"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ CONFIGURACIÓN ══════════ -->
+  <div id="config" class="tab-page">
+    <div class="page-title">⚙️ Configuración</div>
     <div class="info-card">
       <div class="info-title">Estado del Sistema</div>
-      <p><strong>Versión:</strong> DACE Arecibo v7.0</p>
+      <p><strong>Versión:</strong> DACE Arecibo v8.0</p>
       <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
       <p><strong>Sincronización:</strong> Tiempo real (iPhone ↔ PC)</p>
       <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel · 31093</p>
       <p><strong>Unidad:</strong> DACE Arecibo — NPPR</p>
       <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Módulos Activos</div>
+      <p>✅ Panel General</p>
+      <p>✅ Querellas PPR-137.1</p>
+      <p>✅ Inspecciones PPR-137.3</p>
+      <p>✅ Casos Activos</p>
+      <p>✅ Mantenimiento</p>
+      <p>✅ Registro Maestro</p>
+      <p>✅ Agenda</p>
+      <p>✅ Directorio Personal</p>
+      <p>✅ Reportes Estadísticos</p>
+      <p>✅ Archivo DACE</p>
+      <p>✅ Exportar PDF</p>
+      <p>✅ Filtros y Búsqueda</p>
+      <p>✅ Sincronización Firebase</p>
+      <p>✅ Protección PIN</p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Acciones</div>
+      <button class="btn-save" style="margin-bottom:10px" onclick="generarReportes();showToast('✅ Estadísticas actualizadas','#166534')">🔄 Actualizar Estadísticas</button>
+      <button class="btn-save" style="background:#dc2626" onclick="cerrarSesion()">🔒 Cerrar Sesión / Bloquear</button>
     </div>
   </div>
 
@@ -1162,6 +1413,208 @@ function item_Maestro_data(d) {
       <button class="btn-del" onclick="eliminar('dace_maestro','${d._id}','Entrada')">🗑 Eliminar</button>
     </div>
   </div>`;
+}
+
+/* ═══ AGENDA ═══ */
+let _agendaCache = [];
+
+async function guardarAgenda() {
+  const titulo = v('ag_titulo'), fecha = v('ag_fecha');
+  if (!titulo || !fecha) { showToast('⚠️ Título y fecha son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_agenda').add({
+      titulo, fecha, hora: v('ag_hora'),
+      tipo: v('ag_tipo'), descripcion: v('ag_desc'),
+      prioridad: v('ag_prioridad'), estatus: 'Pendiente',
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Tarea guardada', '#166534');
+    limpiar(['ag_titulo','ag_desc']);
+    set('ag_fecha', hoy()); set('ag_hora', ahora());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+function renderAgenda(docs) {
+  const hoyStr = hoy();
+  const el = document.getElementById('lista_agenda');
+  if (!docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">📅</span><p>No hay tareas registradas</p></div>';
+    return;
+  }
+  // Ordenar por fecha
+  const sorted = [...docs].sort((a,b) => (a.fecha||'').localeCompare(b.fecha||''));
+  el.innerHTML = sorted.map(d => {
+    const vencida  = d.fecha < hoyStr && d.estatus !== 'Completado';
+    const hoy_     = d.fecha === hoyStr;
+    const borde    = vencida ? 'var(--red)' : hoy_ ? 'var(--gold)' : '#0369a1';
+    const prioMap  = { Alta:'b-alta', Media:'b-media', Baja:'b-baja' };
+    return `<div class="record-item" style="border-left-color:${borde}">
+      <div class="record-head">
+        <span class="record-id">${d.titulo||'—'}</span>
+        <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+      </div>
+      <p class="record-body"><strong>${d.tipo||''}</strong></p>
+      ${d.descripcion ? `<p class="record-body">${d.descripcion}</p>` : ''}
+      <div class="record-foot">
+        <span class="badge ${prioMap[d.prioridad]||'b-media'}">${d.prioridad||''}</span>
+        ${vencida ? '<span class="badge b-alta">VENCIDA</span>' : ''}
+        ${hoy_ ? '<span class="badge b-process">HOY</span>' : ''}
+        <button class="btn-del" onclick="completarTarea('${d._id}','${d.estatus}')">${d.estatus==='Completado'?'↩️ Reabrir':'✅ Completar'}</button>
+        <button class="btn-del" onclick="eliminar('dace_agenda','${d._id}','Tarea')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function completarTarea(id, estatusActual) {
+  const nuevoEstatus = estatusActual === 'Completado' ? 'Pendiente' : 'Completado';
+  try {
+    await db.collection('dace_agenda').doc(id).update({ estatus: nuevoEstatus });
+    showToast(nuevoEstatus === 'Completado' ? '✅ Tarea completada' : '↩️ Tarea reabierta', '#166534');
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ DIRECTORIO ═══ */
+let _dirCache = [];
+
+async function guardarDirectorio() {
+  const nombre = v('dir_nombre');
+  if (!nombre) { showToast('⚠️ El nombre es requerido', '#92400e'); return; }
+  try {
+    await db.collection('dace_directorio').add({
+      nombre, placa: v('dir_placa'), rango: v('dir_rango'),
+      unidad: v('dir_unidad'), telefono: v('dir_tel'),
+      extension: v('dir_ext'), email: v('dir_email'),
+      notas: v('dir_notas'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Contacto guardado', '#166534');
+    limpiar(['dir_nombre','dir_placa','dir_tel','dir_ext','dir_email','dir_notas']);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+function buscarDirectorio() {
+  const txt = (document.getElementById('dir_search')?.value || '').toLowerCase();
+  const filtrado = txt ? _dirCache.filter(d => JSON.stringify(d).toLowerCase().includes(txt)) : _dirCache;
+  renderDirectorio(filtrado);
+}
+
+function renderDirectorio(docs) {
+  const el = document.getElementById('lista_dir');
+  if (!docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">👥</span><p>No hay contactos registrados</p></div>';
+    return;
+  }
+  el.innerHTML = docs.map(d => `
+    <div class="record-item" style="border-left-color:#0f766e">
+      <div class="record-head">
+        <span class="record-id">${d.nombre||'—'}</span>
+        <span class="record-ts">${d.placa||''}</span>
+      </div>
+      <p class="record-body"><strong>${d.rango||''}</strong> · ${d.unidad||''}</p>
+      ${d.telefono ? `<p class="record-body">📞 ${d.telefono}${d.extension?' ext.'+d.extension:''}</p>` : ''}
+      ${d.email    ? `<p class="record-body">✉️ ${d.email}</p>` : ''}
+      ${d.notas    ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
+      <div class="record-foot">
+        <button class="btn-del" onclick="eliminar('dace_directorio','${d._id}','Contacto')">🗑 Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══ REPORTES ═══ */
+async function generarReportes() {
+  try {
+    const [s1,s2,s3,s4] = await Promise.all([
+      db.collection('dace_q137_1').get(),
+      db.collection('dace_q137_3').get(),
+      db.collection('dace_casos').get(),
+      db.collection('dace_mantenimiento').get(),
+    ]);
+
+    document.getElementById('rpt_q1').textContent    = s1.size;
+    document.getElementById('rpt_q3').textContent    = s2.size;
+    document.getElementById('rpt_casos').textContent = s3.size;
+    document.getElementById('rpt_mt').textContent    = s4.size;
+
+    // Distribución estatus 137.1
+    const eq1 = {}; s1.docs.forEach(d => { const e=d.data().estatus||'—'; eq1[e]=(eq1[e]||0)+1; });
+    document.getElementById('rpt_q1_estatus').innerHTML = Object.entries(eq1)
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v}</strong></div>`).join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+    // Distribución estatus 137.3
+    const eq3 = {}; s2.docs.forEach(d => { const e=d.data().estatus||'—'; eq3[e]=(eq3[e]||0)+1; });
+    document.getElementById('rpt_q3_estatus').innerHTML = Object.entries(eq3)
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v}</strong></div>`).join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+    // Distribución tipo mantenimiento
+    const emt = {}; s4.docs.forEach(d => { const e=d.data().departamento||'—'; emt[e]=(emt[e]||0)+1; });
+    document.getElementById('rpt_mt_tipo').innerHTML = Object.entries(emt)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v}</strong></div>`).join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+    // Top dependencias mantenimiento
+    const dep = {}; s4.docs.forEach(d => { const e=d.data().lugar||'—'; dep[e]=(dep[e]||0)+1; });
+    document.getElementById('rpt_mt_dep').innerHTML = Object.entries(dep)
+      .sort((a,b)=>b[1]-a[1]).slice(0,5)
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v}</strong></div>`).join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+  } catch(e) { console.error('Reportes:', e); }
+}
+
+/* ═══ ARCHIVO DACE ═══ */
+let _arcCache = [];
+
+async function guardarArchivo() {
+  const nombre = v('arc_nombre');
+  if (!nombre) { showToast('⚠️ El nombre del documento es requerido', '#92400e'); return; }
+  try {
+    await db.collection('dace_archivo').add({
+      nombre, categoria: v('arc_cat'), dependencia: v('arc_dep'),
+      fecha: v('arc_fecha'), anio: v('arc_anio'),
+      descripcion: v('arc_desc'), referencia: v('arc_ref'),
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Documento registrado', '#166534');
+    limpiar(['arc_nombre','arc_desc','arc_ref']);
+    set('arc_fecha', hoy());
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+function buscarArchivo() {
+  const txt = (document.getElementById('arc_search')?.value || '').toLowerCase();
+  const filtrado = txt ? _arcCache.filter(d => JSON.stringify(d).toLowerCase().includes(txt)) : _arcCache;
+  renderArchivo(filtrado);
+}
+
+function renderArchivo(docs) {
+  const el = document.getElementById('lista_arc');
+  if (!docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🗃️</span><p>No hay documentos registrados</p></div>';
+    return;
+  }
+  el.innerHTML = docs.map(d => `
+    <div class="record-item" style="border-left-color:#b45309">
+      <div class="record-head">
+        <span class="record-id">${d.nombre||'—'}</span>
+        <span class="record-ts">${d.anio||''}</span>
+      </div>
+      <p class="record-body"><strong>${d.categoria||''}</strong> · ${d.dependencia||''}</p>
+      ${d.fecha       ? `<p class="record-body">📅 ${d.fecha}</p>` : ''}
+      ${d.referencia  ? `<p class="record-body">Ref: <strong>${d.referencia}</strong></p>` : ''}
+      ${d.descripcion ? `<p class="record-body" style="color:#475569">${d.descripcion}</p>` : ''}
+      <div class="record-foot">
+        <button class="btn-del" onclick="eliminar('dace_archivo','${d._id}','Documento')">🗑 Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══ CERRAR SESIÓN ═══ */
+function cerrarSesion() {
+  sessionStorage.removeItem('dace_auth_ok');
+  location.reload();
 }
 
 /* ═══ EXPORTAR PDF ═══ */
@@ -1760,10 +2213,10 @@ function hoy()  { return new Date().toISOString().split('T')[0]; }
 function ahora(){ return new Date().toTimeString().slice(0, 5); }
 
 function prefill() {
-  ['q1_fecha','q3_fecha','c_fecha','rm_fecha','mt_fecha'].forEach(id => {
+  ['q1_fecha','q3_fecha','c_fecha','rm_fecha','mt_fecha','ag_fecha','arc_fecha'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = hoy();
   });
-  ['q1_hora','q3_hora','rm_hora','mt_hora'].forEach(id => {
+  ['q1_hora','q3_hora','rm_hora','mt_hora','ag_hora'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = ahora();
   });
 }
@@ -1851,6 +2304,36 @@ function initListeners() {
       feedCache.mt = snap.docs.slice(0,2).map(d => feedRow('🔧', d.data().lugar||'Mantenimiento', trunc(d.data().descripcion||'', 55)));
       renderFeed();
     }, e => console.error('mantenimiento:', e));
+
+  /* AGENDA */
+  db.collection('dace_agenda')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('ag_total').textContent = snap.size;
+      const docs = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      renderAgenda(docs);
+    }, e => console.error('agenda:', e));
+
+  /* DIRECTORIO */
+  db.collection('dace_directorio')
+    .orderBy('nombre', 'asc')
+    .onSnapshot(snap => {
+      document.getElementById('dir_total').textContent = snap.size;
+      _dirCache = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      renderDirectorio(_dirCache);
+    }, e => console.error('directorio:', e));
+
+  /* ARCHIVO */
+  db.collection('dace_archivo')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('arc_total').textContent = snap.size;
+      _arcCache = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      renderArchivo(_arcCache);
+    }, e => console.error('archivo:', e));
+
+  // Generar reportes iniciales
+  setTimeout(generarReportes, 2000);
 }
 
 /* ── FEED RECIENTE ── */
