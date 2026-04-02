@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>DACE ARECIBO - SISTEMA OFICIAL</title>
+<title>DACE ARECIBO</title>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
-  :root { --blue: #0a192f; --gold: #c5a059; --bg: #f8fafc; --text: #1d1d1f; }
-  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg); margin: 0; padding: 0; color: var(--text); overflow-x: hidden; }
+  :root { --blue: #0a192f; --gold: #c5a059; --bg: #f8fafc; }
+  * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); margin: 0; padding: 0; color: #1d1d1f; }
   
-  /* CABECERA OFICIAL CON LOGOS */
+  /* CABECERA ORIGINAL */
   .app-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 60px 15px 20px; background: white; border-bottom: 2px solid var(--gold);
@@ -23,36 +23,33 @@
   }
   .header-logo { width: 55px; height: 55px; object-fit: contain; flex-shrink: 0; }
   .header-text { text-align: center; flex: 1; padding: 0 5px; }
-  .header-text h1 { margin: 0; font-size: 17px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
+  .header-text h1 { margin: 0; font-size: 18px; color: var(--blue); font-weight: 900; text-transform: uppercase; }
   .header-text p { margin: 1px 0; font-size: 10px; font-weight: 700; color: #444; }
   .oficial-info { color: var(--gold) !important; font-size: 9px !important; text-transform: uppercase; font-weight: 800; margin-top: 2px !important; }
 
-  /* NAVEGACIÓN ESTILO IPHONE */
+  /* NAVEGACIÓN INFERIOR */
   .nav-bar {
     position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%);
     background: white; display: flex; padding: 12px 0 35px; border-top: 1px solid #ddd; z-index: 1000;
   }
-  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; outline: none; }
+  .nav-btn { flex: 1; border: none; background: none; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; }
   .nav-btn.active { color: var(--blue); }
   .nav-icon { display: block; font-size: 24px; margin-bottom: 4px; }
 
-  /* CONTENIDO PRINCIPAL */
-  .main-content { padding: 20px 15px 120px; }
+  /* CONTENIDO */
+  .main-content { padding: 25px 15px 120px; }
   .tab-page { display: none; }
   .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* TARJETAS Y FORMULARIOS */
-  .card { background: white; padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 6px solid var(--blue); }
-  .card h2 { margin: 0; font-size: 38px; color: var(--blue); font-weight: 900; }
+  .card { background: white; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 15px; border-left: 6px solid var(--blue); }
+  .card h2 { margin: 0; font-size: 42px; color: var(--blue); font-weight: 900; }
   .card p { margin: 5px 0 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
   
-  .input-group { margin-bottom: 15px; }
-  label { display: block; font-size: 11px; font-weight: 800; color: var(--blue); text-transform: uppercase; margin-bottom: 5px; }
-  input, textarea { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 16px; outline: none; background: #fff; }
-  input:focus, textarea:focus { border-color: var(--gold); }
-  .btn-save { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; margin-top: 10px; box-shadow: 0 4px 10px rgba(10,25,47,0.2); cursor: pointer; }
-  .btn-save:active { transform: scale(0.98); }
+  .input-group { margin-bottom: 15px; text-align: left; }
+  label { display: block; font-size: 11px; font-weight: 800; color: var(--blue); margin-bottom: 5px; text-transform: uppercase; }
+  input, textarea { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 16px; outline: none; }
+  .btn-save { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 16px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -70,35 +67,33 @@
 
   <main class="main-content">
     <div id="inicio" class="tab-page active">
-      <div class="card"><h2 id="countQ">0</h2><p>Querellas 137.1 (Sincronizadas)</p></div>
+      <div class="card"><h2 id="countQ">0</h2><p>Querellas 137.1</p></div>
       <div class="card" style="border-left-color: var(--gold);"><h2 id="countI">0</h2><p>Inspecciones 137.3</p></div>
-      <div id="listaRecientes" style="margin-top: 20px;">
-        <p style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Actividad Reciente en la Nube:</p>
-      </div>
+      <div id="listaRegistros"></div>
     </div>
 
     <div id="q137" class="tab-page">
-      <h3 style="color:var(--blue); margin-bottom: 20px;">Nueva Querella PPR-137.1</h3>
+      <h3 style="color:var(--blue); font-weight: 900;">NUEVO REGISTRO 137.1</h3>
       <div class="input-group">
-        <label>Número de Querella / Caso</label>
+        <label>Número de Querella</label>
         <input type="text" id="qNum" placeholder="Ej: Q-2026-001">
       </div>
       <div class="input-group">
-        <label>Observaciones y Detalles</label>
-        <textarea id="qNota" rows="6" placeholder="Escriba aquí los detalles del caso..."></textarea>
+        <label>Detalles del Caso</label>
+        <textarea id="qNota" rows="5" placeholder="Anote aquí los hechos..."></textarea>
       </div>
-      <button class="btn-save" onclick="enviarANube()">GUARDAR Y SINCRONIZAR</button>
+      <button class="btn-save" onclick="guardar()">GUARDAR REGISTRO</button>
     </div>
   </main>
 
   <nav class="nav-bar">
-    <button id="btn-inicio" class="nav-btn active" onclick="goTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
-    <button id="btn-q137" class="nav-btn" onclick="goTab('q137')"><span class="nav-icon">⚖️</span>137.1</button>
+    <button id="btn-inicio" class="nav-btn active" onclick="showTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
+    <button id="btn-q137" class="nav-btn" onclick="showTab('q137')"><span class="nav-icon">⚖️</span>137.1</button>
     <button class="nav-btn" onclick="location.reload()"><span class="nav-icon">🔄</span>REFRESCAR</button>
   </nav>
 
 <script>
-  // CONFIGURACIÓN DE TU FIREBASE (PUENTE A LA NUBE)
+  // Tu Firebase Config
   const firebaseConfig = {
     apiKey: "***REMOVED_API_KEY_1***",
     authDomain: "dace-arecibo-oficial.firebaseapp.com",
@@ -108,12 +103,10 @@
     appId: "1:1061384536706:web:0df609d6159739af58aa9b"
   };
 
-  // Inicializar Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Navegación entre pestañas
-  function goTab(id) {
+  function showTab(id) {
     document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -122,54 +115,40 @@
     window.scrollTo(0,0);
   }
 
-  // Guardar datos en la nube (Sincronización Celular -> PC)
-  async function enviarANube() {
+  async function guardar() {
     const num = document.getElementById('qNum').value;
     const nota = document.getElementById('qNota').value;
-
-    if(!num || !nota) return alert("Por favor, complete los campos obligatorios.");
+    if(!num || !nota) return alert("Complete los datos");
 
     try {
       await db.collection("querellas").add({
         numero: num,
         descripcion: nota,
-        oficial: "31093",
         fecha: new Date().toLocaleString()
       });
-      alert("✅ Registro guardado y sincronizado con éxito.");
       document.getElementById('qNum').value = "";
       document.getElementById('qNota').value = "";
-      goTab('inicio');
-    } catch (error) {
-      console.error("Error:", error);
-      alert("❌ Error de conexión. Verifique las Reglas en su consola Firebase.");
-    }
+      showTab('inicio');
+    } catch(e) { alert("Error al sincronizar"); }
   }
 
-  // Cargar datos desde la nube (PC lee lo que escribió el Celular)
-  function sincronizarEnVivo() {
+  function cargar() {
     db.collection("querellas").orderBy("fecha", "desc").onSnapshot((snapshot) => {
       document.getElementById('countQ').innerText = snapshot.size;
-      const lista = document.getElementById('listaRecientes');
-      lista.innerHTML = '<p style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Actividad Reciente en la Nube:</p>';
-      
+      const lista = document.getElementById('listaRegistros');
+      lista.innerHTML = "";
       snapshot.forEach((doc) => {
         const d = doc.data();
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.borderLeftColor = 'var(--gold)';
-        card.innerHTML = `
-          <small style="color:gray; font-size:10px;">${d.fecha}</small>
-          <div style="font-weight:bold; color:var(--blue); margin: 5px 0;">${d.numero}</div>
-          <div style="font-size:13px; color:#444;">${d.descripcion}</div>
-        `;
-        lista.appendChild(card);
+        lista.innerHTML += `
+          <div class="card" style="border-left-color: var(--gold)">
+            <small style="color:#94a3b8; font-weight:800; font-size:10px">${d.fecha}</small>
+            <div style="font-weight:900; color:var(--blue); margin: 5px 0;">${d.numero}</div>
+            <div style="font-size:14px; line-height:1.4">${d.descripcion}</div>
+          </div>`;
       });
     });
   }
-
-  // Iniciar sincronización automática
-  sincronizarEnVivo();
+  cargar();
 </script>
 </body>
 </html>
