@@ -4,31 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>DACE ARECIBO - SISTEMA OFICIAL</title>
+    <title>DACE ARECIBO - RESTAURACIÓN</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --dark-bg: #0f172a; --card-bg: #1e293b; --blue: #3b82f6; --gold: #f59e0b; --green: #10b981; }
+        :root { --dark-bg: #0f172a; --card-bg: #1e293b; --blue: #3b82f6; --gold: #f59e0b; --green: #10b981; --purple: #8b5cf6; }
         * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--dark-bg); color: white; margin: 0; padding: 0; }
-        .app-header { padding: 60px 15px 20px; text-align: center; border-bottom: 1px solid #334155; }
+        .app-header { padding: 50px 15px 20px; text-align: center; border-bottom: 1px solid #334155; }
         .logos-row { display: flex; justify-content: space-between; align-items: center; }
         .logo-img { width: 50px; height: 50px; }
-        .header-info h1 { font-size: 16px; margin: 0; }
-        .header-info p { font-size: 11px; margin: 2px 0; color: var(--gold); font-weight: bold; }
+        .header-info h1 { font-size: 15px; margin: 0; }
+        .header-info p { font-size: 10px; margin: 2px 0; color: #94a3b8; }
+        .oficial { color: var(--gold) !important; font-weight: 800; font-size: 11px !important; }
+        
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
         .card { background: var(--card-bg); padding: 20px; border-radius: 15px; border-bottom: 4px solid var(--blue); }
-        .card h2 { font-size: 32px; margin: 0; }
-        .card p { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .card h2 { font-size: 32px; margin: 0; font-weight: 900; }
+        .card p { font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-top: 5px; }
+
         .activity-list { padding: 0 15px 120px; }
         .activity-item { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--blue); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1e293b; display: flex; padding: 10px 0 35px; border-top: 1px solid #334155; }
-        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 10px; border: none; background: none; }
+        .activity-item b { display: block; color: var(--blue); margin-bottom: 5px; }
+        .activity-item p { margin: 0; font-size: 14px; color: #cbd5e1; }
+        .activity-item small { color: #64748b; font-size: 10px; }
+
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1e293b; display: flex; padding: 12px 0 35px; border-top: 1px solid #334155; }
+        .nav-item { flex: 1; text-align: center; color: #64748b; font-size: 10px; border: none; background: none; font-weight: 800; }
         .nav-item.active { color: white; }
-        .form-page { display: none; padding: 20px 15px 120px; }
-        .form-page.active { display: block; }
-        input, textarea { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 10px; color: white; margin-bottom: 15px; }
-        .btn-action { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -36,31 +39,27 @@
         <div class="logos-row">
             <img src="Logo.png" class="logo-img">
             <div class="header-info">
-                <h1>DACE ARECIBO</h1>
-                <p>Agte. Jose Aponte 31093</p>
+                <h1>POLICÍA DE PUERTO RICO</h1>
+                <p class="oficial">Agte. Jose Aponte 31093</p>
+                <p>COORDINADOR AUXILIAR DACE ARECIBO</p>
             </div>
             <img src="policia.png" class="logo-img">
         </div>
     </header>
 
-    <div id="tab-inicio" class="form-page active">
-        <div class="dashboard">
-            <div class="card"><i>⚖️</i><h2 id="numQ">0</h2><p>Querellas</p></div>
-            <div class="card" style="border-color: var(--gold)"><i>🏗️</i><h2 id="numI">0</h2><p>Inspecciones</p></div>
-        </div>
-        <div id="listaActividad" class="activity-list"></div>
+    <div class="dashboard">
+        <div class="card" style="border-color: var(--blue)"><i>⚖️</i><h2 id="numQ">0</h2><p>Querellas 137.1</p></div>
+        <div class="card" style="border-color: var(--gold)"><i>🏗️</i><h2 id="numI">0</h2><p>Inspecciones 137.3</p></div>
+        <div class="card" style="border-color: var(--purple)"><i>📁</i><h2 id="numT">0</h2><p>Casos Totales</p></div>
+        <div class="card" style="border-color: var(--green)"><i>✏️</i><h2 id="numA">0</h2><p>Anotaciones</p></div>
     </div>
 
-    <div id="tab-nuevo" class="form-page">
-        <h2>Nueva Anotación</h2>
-        <input type="text" id="tTitulo" placeholder="Número de Caso o Título">
-        <textarea id="tNota" rows="6" placeholder="Escriba los detalles aquí..."></textarea>
-        <button class="btn-action" onclick="guardar()">GUARDAR EN LA NUBE</button>
+    <div class="activity-list" id="listaActividad">
+        <p style="text-align: center; color: #64748b;">Sincronizando datos...</p>
     </div>
 
     <nav class="nav-bar">
-        <button class="nav-item active" onclick="go('inicio')">🏠 Inicio</button>
-        <button class="nav-item" onclick="go('nuevo')">➕ Anotar</button>
+        <button class="nav-item active">🏠 Inicio</button>
         <button class="nav-item" onclick="location.reload()">🔄 Sincro</button>
     </nav>
 
@@ -76,46 +75,45 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function go(tab) {
-        document.querySelectorAll('.form-page').forEach(p => p.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-    }
-
-    async function guardar() {
-        const t = document.getElementById('tTitulo').value;
-        const n = document.getElementById('tNota').value;
-        if(!t || !n) return alert("Complete los campos");
-        await db.collection("registros").add({ titulo: t, nota: n, fecha: new Date().toLocaleString() });
-        document.getElementById('tTitulo').value = "";
-        document.getElementById('tNota').value = "";
-        go('inicio');
-    }
-
-    // ESTO RESCATA SUS DATOS DEL IPHONE AUTOMÁTICAMENTE
-    async function rescatar() {
-        const local = JSON.parse(localStorage.getItem('querellas')) || 
-                      JSON.parse(localStorage.getItem('dace_data')) || [];
-        for(let x of local) {
-            await db.collection("registros").add({
-                titulo: x.numero || x.titulo || "RESCATADO",
-                nota: x.descripcion || x.nota || "Sin detalle",
-                fecha: x.fecha || new Date().toLocaleString()
-            });
+    // ESTA FUNCIÓN ES LA QUE RESCATA SUS TRABAJOS VIEJOS
+    async function rescatarTrabajos() {
+        // Buscamos todas las memorias posibles que su app vieja pudo usar
+        const llaves = ['querellas', 'trabajos', 'anotaciones', 'dace_data', 'items'];
+        
+        for (let llave of llaves) {
+            const datos = JSON.parse(localStorage.getItem(llave)) || [];
+            if (datos.length > 0) {
+                for (let d of datos) {
+                    await db.collection("registros_completos").add({
+                        titulo: d.numero || d.id || d.titulo || "RESCATADO",
+                        detalle: d.nota || d.detalle || d.descripcion || "Sin detalle",
+                        fecha: d.fecha || new Date().toLocaleString(),
+                        tipo: llave.toUpperCase()
+                    });
+                }
+                localStorage.removeItem(llave); // Borramos para no duplicar
+            }
         }
-        if(local.length > 0) localStorage.clear();
     }
 
-    db.collection("registros").orderBy("fecha", "desc").onSnapshot((snap) => {
-        document.getElementById('numQ').innerText = snap.size;
+    // CARGAR DESDE LA NUBE A LA PANTALLA
+    db.collection("registros_completos").orderBy("fecha", "desc").onSnapshot((snap) => {
+        document.getElementById('numT').innerText = snap.size;
+        document.getElementById('numA').innerText = snap.size;
         const lista = document.getElementById('listaActividad');
         lista.innerHTML = "";
         snap.forEach((doc) => {
             const d = doc.data();
-            lista.innerHTML += `<div class="activity-item"><b>${d.titulo}</b><p>${d.nota}</p><small>${d.fecha}</small></div>`;
+            lista.innerHTML += `
+                <div class="activity-item">
+                    <b>${d.titulo}</b>
+                    <p>${d.detalle}</p>
+                    <small>${d.fecha}</small>
+                </div>`;
         });
     });
 
-    rescatar();
+    rescatarTrabajos();
 </script>
 </body>
 </html>
