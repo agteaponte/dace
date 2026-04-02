@@ -4,109 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>DACE - RECUPERACIÓN OFICIAL</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <title>DACE ARECIBO - ORIGINAL</title>
     <style>
         :root { --bg: #0b1120; --card: #1e293b; --blue: #3b82f6; --gold: #f59e0b; --purple: #8b5cf6; --green: #10b981; }
-        * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
-        body { background: var(--bg); color: white; margin: 0; padding: 0; }
-        .header { padding: 50px 15px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
-        .header h1 { font-size: 16px; margin: 0; letter-spacing: 1px; }
-        .header p { font-size: 11px; margin: 5px 0; color: var(--gold); font-weight: 800; }
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: white; margin: 0; padding: 0; overflow-x: hidden; }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .card { background: var(--card); padding: 22px; border-radius: 18px; border-bottom: 4px solid var(--blue); }
-        .card h2 { font-size: 36px; margin: 0; font-weight: 900; }
-        .card p { font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
+        .header { padding: 50px 15px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
+        .logos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .logo-img { width: 55px; height: 55px; object-fit: contain; }
+        .header h1 { font-size: 16px; margin: 0; letter-spacing: 1px; color: white; }
+        .header p { font-size: 11px; margin: 2px 0; color: var(--gold); font-weight: 800; }
 
-        .feed { padding: 0 15px 120px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .card { background: var(--card); padding: 22px; border-radius: 20px; border-bottom: 5px solid transparent; position: relative; }
+        .card i { font-size: 28px; display: block; margin-bottom: 8px; }
+        .card h2 { font-size: 38px; margin: 0; font-weight: 900; }
+        .card p { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; margin-top: 5px; }
+
+        .activity-title { font-size: 11px; font-weight: 800; color: #475569; margin: 20px 15px 10px; text-transform: uppercase; }
+        .list { padding: 0 15px 120px; }
         .item { background: var(--card); border-radius: 15px; padding: 18px; margin-bottom: 12px; border-left: 5px solid var(--blue); }
-        .item b { display: block; color: #fff; margin-bottom: 5px; font-size: 15px; }
+        .item b { display: block; color: white; margin-bottom: 5px; font-size: 15px; }
         .item p { margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.4; }
-        .item small { font-size: 10px; color: #475569; margin-top: 8px; display: block; font-weight: bold; }
+        .item small { font-size: 10px; color: #475569; margin-top: 8px; display: block; }
 
         .nav { position: fixed; bottom: 0; width: 100%; background: #1e293b; display: flex; padding: 12px 0 35px; border-top: 1px solid #334155; }
         .nav-btn { flex: 1; text-align: center; color: white; font-size: 10px; font-weight: 800; background: none; border: none; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>POLICÍA DE PUERTO RICO</h1>
-        <p>Agte. Jose Aponte 31093 - AREA ARECIBO</p>
-        <div style="font-size: 9px; color: #3b82f6;">✓ MODO DE RECUPERACIÓN ACTIVO</div>
+    <header class="header">
+        <div class="logos">
+            <img src="Logo.png" class="logo-img">
+            <div style="flex:1">
+                <h1>POLICÍA DE PUERTO RICO</h1>
+                <p>Agte. Jose Aponte 31093</p>
+                <p style="color:#3b82f6">AREA DE ARECIBO</p>
+            </div>
+            <img src="policia.png" class="logo-img">
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="card" style="border-color: var(--blue)"><i>⚖️</i><h2 id="qCount">0</h2><p>Querellas activas</p></div>
+        <div class="card" style="border-color: var(--gold)"><i>🏗️</i><h2 id="iCount">0</h2><p>Inspecciones pend.</p></div>
+        <div class="card" style="border-color: var(--purple)"><i>📁</i><h2 id="tCount">0</h2><p>Casos abiertos</p></div>
+        <div class="card" style="border-color: var(--green)"><i>✏️</i><h2 id="nCount">0</h2><p>Notas guardadas</p></div>
     </div>
 
-    <div class="grid">
-        <div class="card" style="border-color: var(--blue)"><i>⚖️</i><h2 id="q">0</h2><p>Querellas activas</p></div>
-        <div class="card" style="border-color: var(--gold)"><i>🏗️</i><h2 id="i">0</h2><p>Inspecciones pend.</p></div>
-        <div class="card" style="border-color: var(--purple)"><i>📁</i><h2 id="t">0</h2><p>Casos abiertos</p></div>
-        <div class="card" style="border-color: var(--green)"><i>✏️</i><h2 id="n">0</h2><p>Notas guardadas</p></div>
-    </div>
-
-    <div style="font-size: 11px; font-weight: 800; color: #475569; margin: 15px; text-transform: uppercase;">Actividad Detectada en iPhone:</div>
-    <div class="feed" id="feed"></div>
+    <div class="activity-title">Actividad Reciente en iPhone:</div>
+    <div id="feed" class="list"></div>
 
     <nav class="nav">
-        <button class="nav-btn" onclick="location.reload()">🔄 REFRESCAR Y BUSCAR DATA</button>
+        <button class="nav-btn" onclick="location.reload()">🔄 REFRESCAR</button>
     </nav>
 
 <script>
-    // Conexión a su Nube
-    const firebaseConfig = {
-        apiKey: "***REMOVED_API_KEY_1***",
-        authDomain: "dace-arecibo-oficial.firebaseapp.com",
-        projectId: "dace-arecibo-oficial",
-        storageBucket: "dace-arecibo-oficial.firebasestorage.app",
-        messagingSenderId: "1061384536706",
-        appId: "1:1061384536706:web:0df609d6159739af58aa9b"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // ESTA ES LA CLAVE: BUSCAR EN LAS "GAVETAS" ORIGINALES
+    function restaurarOriginal() {
+        // En su app vieja, los datos estaban en una de estas dos gavetas:
+        const dataV1 = JSON.parse(localStorage.getItem('querellas')) || [];
+        const dataV2 = JSON.parse(localStorage.getItem('dace_data')) || [];
+        const dataV3 = JSON.parse(localStorage.getItem('anotaciones')) || [];
+        
+        // Unimos todo para mostrarlo como estaba antes
+        const totalData = [...dataV1, ...dataV2, ...dataV3];
+        
+        document.getElementById('qCount').innerText = dataV1.length;
+        document.getElementById('iCount').innerText = "0"; 
+        document.getElementById('tCount').innerText = dataV2.length || totalData.length;
+        document.getElementById('nCount').innerText = dataV3.length || totalData.length;
 
-    async function escanearYMostrar() {
         const feed = document.getElementById('feed');
-        let totalEncontrado = 0;
         feed.innerHTML = "";
 
-        // ESCÁNER AGRESIVO: Revisa todas las gavetas de memoria del iPhone
-        for (let i = 0; i < localStorage.length; i++) {
-            let llave = localStorage.key(i);
-            try {
-                let datos = JSON.parse(localStorage.getItem(llave));
-                if (Array.isArray(datos)) {
-                    datos.forEach(dato => {
-                        totalEncontrado++;
-                        // Mostrar en pantalla inmediatamente
-                        feed.innerHTML += `
-                            <div class="item">
-                                <b>${dato.numero || dato.titulo || "REGISTRO"}</b>
-                                <p>${dato.descripcion || dato.nota || dato.detalle || "Sin descripción"}</p>
-                                <small>${dato.fecha || "Fecha no grabada"} • UBICACIÓN: ${llave.toUpperCase()}</small>
-                            </div>`;
-                        
-                        // SUBIR A FIREBASE PARA QUE SE VEA EN LA PC
-                        db.collection("recuperacion_total").add({
-                            titulo: dato.numero || dato.titulo || "REGISTRO",
-                            detalle: dato.descripcion || dato.nota || "Sin descripción",
-                            fecha: dato.fecha || new Date().toLocaleString(),
-                            original_llave: llave
-                        });
-                    });
-                }
-            } catch(e) { console.log("Saltando llave no válida"); }
+        if(totalData.length === 0) {
+            feed.innerHTML = "<p style='text-align:center; color:gray;'>No hay datos locales guardados.</p>";
         }
 
-        document.getElementById('q').innerText = totalEncontrado;
-        document.getElementById('t').innerText = totalEncontrado;
-        document.getElementById('n').innerText = totalEncontrado;
-
-        if(totalEncontrado === 0) {
-            feed.innerHTML = "<p style='text-align:center; color:red;'>⚠️ NO SE DETECTÓ DATA EN ESTA MEMORIA. ABRA EL ENLACE DESDE EL IPHONE DONDE ESCRIBIÓ LAS NOTAS.</p>";
-        }
+        totalData.reverse().forEach(item => {
+            feed.innerHTML += `
+                <div class="item">
+                    <b>${item.numero || item.titulo || "REGISTRO"}</b>
+                    <p>${item.descripcion || item.nota || item.detalle || ""}</p>
+                    <small>${item.fecha || ""}</small>
+                </div>`;
+        });
     }
 
-    escanearYMostrar();
+    window.onload = restaurarOriginal;
 </script>
 </body>
 </html>
