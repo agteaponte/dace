@@ -11,6 +11,8 @@
 <!-- Firebase SDK (Compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 :root {
@@ -343,6 +345,22 @@ select {
 .empty-icon  { font-size: 44px; display: block; margin-bottom: 10px; }
 .empty-state p { font-size: 13px; font-weight: 600; }
 .loading-state { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; font-weight: 600; }
+.btn-pdf {
+  width: 100%; padding: 15px;
+  background: #dc2626; color: white;
+  border: none; border-radius: 14px;
+  font-weight: 800; font-size: 13px;
+  cursor: pointer; margin-top: 8px;
+  letter-spacing: 0.5px;
+  display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-pdf:active { opacity: 0.82; transform: scale(0.99); }
+.btn-pdf.gold-pdf { background: #92700a; }
+.btn-pdf.green-pdf { background: #166534; }
+.btn-pdf.blue-pdf { background: var(--blue); }
+
 .sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 </style>
 </head>
@@ -410,6 +428,8 @@ select {
     </div>
     <div class="feed-title">Actividad Reciente</div>
     <div id="feedArea"><div class="loading-state">⏳ Cargando actividad...</div></div>
+    <hr class="sep">
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()">📄 EXPORTAR REPORTE GENERAL PDF</button>
   </div>
 
   <!-- PPR-137.1 -->
@@ -454,6 +474,7 @@ select {
     </div>
     <hr class="sep">
     <div class="list-header">Registro (<span id="q1_total">0</span> querellas)</div>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR QUERELLAS 137.1 A PDF</button>
     <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -506,6 +527,7 @@ select {
     </div>
     <hr class="sep">
     <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES 137.3 A PDF</button>
     <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -554,6 +576,7 @@ select {
     </div>
     <hr class="sep">
     <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
+    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')">📄 EXPORTAR CASOS ACTIVOS A PDF</button>
     <div id="lista_casos"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -593,6 +616,7 @@ select {
     </div>
     <hr class="sep">
     <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
+    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')">📄 EXPORTAR REGISTRO MAESTRO A PDF</button>
     <div id="lista_maestro"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -659,6 +683,427 @@ select {
      JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
      ═══════════════════════════════════════════════════════════ -->
 <script>
+
+/* ═══ EXPORTAR PDF ═══ */
+function pdfHeader(doc, titulo) {
+  const azul  = [10, 25, 47];
+  const gold  = [197, 160, 89];
+  const W     = doc.internal.pageSize.getWidth();
+
+  // Fondo encabezado
+  doc.setFillColor(...azul);
+  doc.rect(0, 0, W, 38, 'F');
+
+  // Título principal
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DACE ARECIBO', W / 2, 13, { align: 'center' });
+
+  // Subtítulo
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Negociado de la Policía de Puerto Rico', W / 2, 20, { align: 'center' });
+
+  // Línea dorada
+  doc.setDrawColor(...gold);
+  doc.setLineWidth(0.8);
+  doc.line(10, 25, W - 10, 25);
+
+  // Título del reporte
+  doc.setTextColor(...gold);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(titulo.toUpperCase(), W / 2, 33, { align: 'center' });
+
+  // Fecha generación
+  doc.setTextColor(180, 180, 180);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  const ts = new Date().toLocaleString('es-PR');
+  doc.text(`Generado: ${ts}  |  Agte. Aponte Cancel · Placa 31093`, W / 2, 37, { align: 'center' });
+
+  return 45; // y de inicio del contenido
+}
+
+function pdfLinea(doc, y, W) {
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(10, y, W - 10, y);
+  return y + 4;
+}
+
+function checkPage(doc, y, needed = 20) {
+  const H = doc.internal.pageSize.getHeight();
+  if (y + needed > H - 15) {
+    doc.addPage();
+    return 15;
+  }
+  return y;
+}
+
+async function exportarPDF(modulo) {
+  showToast('⏳ Generando PDF...', '#0a192f');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W   = doc.internal.pageSize.getWidth();
+  const azul  = [10, 25, 47];
+  const gold  = [197, 160, 89];
+
+  let titulo, snap, y;
+
+  try {
+    if (modulo === 'q137_1') {
+      titulo = 'Registro de Querellas PPR-137.1';
+      snap   = await db.collection('dace_q137_1').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay querellas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          // Número y fecha
+          doc.setFillColor(240, 244, 248);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          // Campos
+          const campos = [
+            ['Querellante', d.querellante],
+            ['Agencia/Unidad', d.agencia],
+            ['Descripción', d.descripcion],
+            ['Estatus', d.estatus],
+            ['Observaciones', d.observaciones],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'q137_3') {
+      titulo = 'Registro de Inspecciones PPR-137.3';
+      snap   = await db.collection('dace_q137_3').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay inspecciones registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          doc.setFillColor(255, 249, 235);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(92, 70, 10);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          const campos = [
+            ['Lugar', d.lugar],
+            ['Tipo', d.tipo],
+            ['Hallazgos', d.hallazgos],
+            ['Recomendaciones', d.recomendaciones],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(92, 70, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'casos') {
+      titulo = 'Registro de Casos Activos';
+      snap   = await db.collection('dace_casos').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay casos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...prioColor);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'—'}  [${d.prioridad||''}]`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Responsable', d.responsable],
+            ['Próxima Acción', d.accion],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'maestro') {
+      titulo = 'Registro Maestro de Actividades';
+      snap   = await db.collection('dace_maestro').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay entradas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 30);
+
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.tipo||'—'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          if (d.descripcion) {
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(60,60,60);
+            doc.setFontSize(8);
+            doc.setFont('helvetica','normal');
+            const lines = doc.splitTextToSize(d.descripcion, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+          if (d.notas) {
+            y = checkPage(doc, y, 8);
+            doc.setTextColor(130,130,130);
+            doc.setFontSize(7);
+            const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+
+          y = pdfLinea(doc, y+1, W);
+        });
+      }
+    }
+
+    // Pie de página en todas las páginas
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPags; p++) {
+      doc.setPage(p);
+      doc.setFillColor(...azul);
+      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+      doc.setTextColor(150,150,150);
+      doc.setFontSize(7);
+      doc.setFont('helvetica','normal');
+      doc.text(`DACE Arecibo — NPPR — Documento oficial  |  Página ${p} de ${totalPags}`,
+        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
+    }
+
+    // Nombre del archivo
+    const nombres = {
+      q137_1: 'PPR-137.1_Querellas',
+      q137_3: 'PPR-137.3_Inspecciones',
+      casos:  'Casos_Activos',
+      maestro:'Registro_Maestro'
+    };
+    const fecha = new Date().toISOString().split('T')[0];
+    doc.save(`DACE_Arecibo_${nombres[modulo]}_${fecha}.pdf`);
+    showToast('✅ PDF generado correctamente', '#166534');
+
+  } catch(e) {
+    showToast('❌ Error al generar PDF: ' + e.message, '#dc2626');
+    console.error(e);
+  }
+}
+
+/* ═══ EXPORTAR REPORTE GENERAL (PANEL) ═══ */
+async function exportarPanelPDF() {
+  showToast('⏳ Generando reporte general...', '#0a192f');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W   = doc.internal.pageSize.getWidth();
+  const azul = [10, 25, 47];
+  const gold  = [197, 160, 89];
+
+  try {
+    let y = pdfHeader(doc, 'Reporte General del Sistema');
+
+    // Contadores
+    const [s1, s2, s3, s4] = await Promise.all([
+      db.collection('dace_q137_1').get(),
+      db.collection('dace_q137_3').get(),
+      db.collection('dace_casos').get(),
+      db.collection('dace_maestro').get(),
+    ]);
+
+    y += 5;
+    doc.setTextColor(...azul);
+    doc.setFontSize(11);
+    doc.setFont('helvetica','bold');
+    doc.text('RESUMEN ESTADÍSTICO', W/2, y, {align:'center'});
+    y += 8;
+
+    const stats = [
+      ['Querellas PPR-137.1', s1.size, [10,25,47]],
+      ['Inspecciones PPR-137.3', s2.size, [92,112,10]],
+      ['Casos Activos', s3.size, [22,163,74]],
+      ['Registro Maestro', s4.size, [220,38,38]],
+    ];
+
+    stats.forEach(([label, count, color]) => {
+      doc.setFillColor(...color);
+      doc.rect(10, y, W-20, 12, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text(label, 16, y+8);
+      doc.setFontSize(14);
+      doc.text(String(count), W-16, y+9, {align:'right'});
+      y += 15;
+    });
+
+    y += 5;
+    doc.setTextColor(...azul);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('ACTIVIDAD RECIENTE — QUERELLAS 137.1', 10, y);
+    y += 5;
+
+    s1.docs.slice(0,5).forEach((docSnap, i) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(245,248,252);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(...azul);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      const desc = (d.descripcion||'').substring(0,60) + ((d.descripcion||'').length>60?'…':'');
+      doc.text(desc, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
+
+    y += 3;
+    doc.setTextColor(...azul);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('ACTIVIDAD RECIENTE — INSPECCIONES 137.3', 10, y);
+    y += 5;
+
+    s2.docs.slice(0,5).forEach((docSnap) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(255,251,235);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(92,70,10);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      doc.text(`${d.lugar||''} · ${d.tipo||''}`, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
+
+    // Pie de página
+    doc.setFillColor(...azul);
+    doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+    doc.setTextColor(150,150,150);
+    doc.setFontSize(7);
+    doc.text('DACE Arecibo — NPPR — Documento oficial',
+      W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
+
+    const fecha = new Date().toISOString().split('T')[0];
+    doc.save(`DACE_Arecibo_Reporte_General_${fecha}.pdf`);
+    showToast('✅ Reporte general generado', '#166534');
+
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, '#dc2626');
+    console.error(e);
+  }
+}
 
 /* ── SISTEMA DE PIN ── */
 const PIN_CORRECTO = '5464';
