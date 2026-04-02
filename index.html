@@ -6,8 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DACE ARECIBO">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-  <title>DACE ARECIBO</title>
+<title>DACE ARECIBO</title>
 
 <!-- Firebase SDK (Compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -32,6 +31,63 @@ body {
   font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
   color: var(--text);
   overflow-x: hidden;
+}
+
+/* ── PANTALLA DE ACCESO ── */
+#lockScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--blue);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 30px;
+}
+#lockScreen .lock-logo {
+  width: 80px; height: 80px; object-fit: contain;
+  border-radius: 16px; margin-bottom: 20px;
+}
+#lockScreen .lock-title {
+  color: white; font-size: 22px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 1px;
+  text-align: center; margin-bottom: 4px;
+}
+#lockScreen .lock-sub {
+  color: var(--gold); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: center; margin-bottom: 40px;
+}
+#lockScreen .pin-dots {
+  display: flex; gap: 14px; margin-bottom: 32px;
+}
+#lockScreen .pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: transparent; transition: background 0.2s, border-color 0.2s;
+}
+#lockScreen .pin-dot.filled {
+  background: var(--gold); border-color: var(--gold);
+}
+#lockScreen .pin-dot.error {
+  background: var(--red); border-color: var(--red);
+}
+#lockScreen .pin-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; width: 100%; max-width: 280px;
+}
+#lockScreen .pin-key {
+  background: rgba(255,255,255,0.1); border: none;
+  border-radius: 14px; padding: 18px 10px;
+  color: white; font-size: 22px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+#lockScreen .pin-key:active { background: rgba(255,255,255,0.22); transform: scale(0.95); }
+#lockScreen .pin-key.zero { grid-column: 2; }
+#lockScreen .pin-key.del  { background: rgba(220,38,38,0.25); }
+#lockScreen .pin-key sub  { font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; letter-spacing: 1px; }
+#lockScreen .lock-msg {
+  color: rgba(255,255,255,0.5); font-size: 11px;
+  font-weight: 600; margin-top: 24px; text-align: center;
+  min-height: 18px;
 }
 
 /* ── CABECERA ── */
@@ -291,6 +347,34 @@ select {
 </style>
 </head>
 <body>
+
+<!-- PANTALLA DE ACCESO -->
+<div id="lockScreen">
+  <img src="https://agteaponte.github.io/dace/apple-touch-icon.png" class="lock-logo" alt="DACE"
+       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>🏛️</div>'">
+  <div class="lock-title">DACE Arecibo</div>
+  <div class="lock-sub">Negociado de la Policía de Puerto Rico</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2<sub>ABC</sub></button>
+    <button class="pin-key" onclick="pinPress('3')">3<sub>DEF</sub></button>
+    <button class="pin-key" onclick="pinPress('4')">4<sub>GHI</sub></button>
+    <button class="pin-key" onclick="pinPress('5')">5<sub>JKL</sub></button>
+    <button class="pin-key" onclick="pinPress('6')">6<sub>MNO</sub></button>
+    <button class="pin-key" onclick="pinPress('7')">7<sub>PQRS</sub></button>
+    <button class="pin-key" onclick="pinPress('8')">8<sub>TUV</sub></button>
+    <button class="pin-key" onclick="pinPress('9')">9<sub>WXYZ</sub></button>
+    <button class="pin-key zero" onclick="pinPress('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="lock-msg" id="lockMsg">Introduce tu PIN de acceso</div>
+</div>
 
 <!-- CABECERA -->
 <header class="app-header">
@@ -575,6 +659,58 @@ select {
      JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
      ═══════════════════════════════════════════════════════════ -->
 <script>
+
+/* ── SISTEMA DE PIN ── */
+const PIN_CORRECTO = '5464';
+const SESSION_KEY  = 'dace_auth_ok';
+let pinActual = '';
+
+// Si ya autenticó en esta sesión, ocultar pantalla directamente
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('lockScreen').style.display = 'none';
+}
+
+function pinPress(n) {
+  if (pinActual.length >= 4) return;
+  pinActual += n;
+  actualizarDots();
+  if (pinActual.length === 4) {
+    setTimeout(verificarPin, 120);
+  }
+}
+
+function pinDel() {
+  pinActual = pinActual.slice(0, -1);
+  actualizarDots();
+  document.getElementById('lockMsg').textContent = 'Introduce tu PIN de acceso';
+}
+
+function actualizarDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.classList.toggle('filled', i < pinActual.length);
+    dot.classList.remove('error');
+  }
+}
+
+function verificarPin() {
+  if (pinActual === PIN_CORRECTO) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    const ls = document.getElementById('lockScreen');
+    ls.style.transition = 'opacity 0.4s';
+    ls.style.opacity = '0';
+    setTimeout(() => ls.style.display = 'none', 400);
+  } else {
+    // PIN incorrecto — animar en rojo
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.add('error');
+      document.getElementById('d' + i).classList.remove('filled');
+    }
+    document.getElementById('lockMsg').textContent = '❌ PIN incorrecto. Intenta de nuevo.';
+    pinActual = '';
+    setTimeout(actualizarDots, 800);
+  }
+}
 
 /* ── FIREBASE CONFIG — DACE-ARECIBO-OFICIAL ── */
 const firebaseConfig = {
