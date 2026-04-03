@@ -10,6 +10,7 @@
 
 <!-- Firebase SDK (Compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <!-- jsPDF para exportar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -424,7 +425,37 @@ select {
 </head>
 <body>
 
-<!-- PANTALLA DE ACCESO -->
+<!-- PANTALLA DE LOGIN FIREBASE -->
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--blue); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png"
+       style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px"
+       alt="DACE" onerror="this.style.display='none'">
+  <div style="color:white;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:4px">DACE ARECIBO</div>
+  <div style="color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;text-align:center;margin-bottom:36px">Sistema de Coordinación — NPPR</div>
+
+  <div style="width:100%;max-width:320px">
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Correo Electrónico</label>
+      <input type="email" id="login_email" value="agteaponte@gmail.com"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="correo@gmail.com">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Contraseña</label>
+      <input type="password" id="login_pass"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') loginFirebase()">
+    </div>
+    <button onclick="loginFirebase()"
+            style="width:100%;padding:17px;background:var(--gold);color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
+      🔐 ACCEDER
+    </button>
+    <div id="login_error" style="color:#fca5a5;font-size:12px;font-weight:700;text-align:center;margin-top:14px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- PANTALLA DE ACCESO PIN -->
 <div id="lockScreen">
   <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
        onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>🏛️</div>'">
@@ -1614,7 +1645,9 @@ function renderArchivo(docs) {
 /* ═══ CERRAR SESIÓN ═══ */
 function cerrarSesion() {
   sessionStorage.removeItem('dace_auth_ok');
-  location.reload();
+  firebase.auth().signOut().then(() => {
+    location.reload();
+  }).catch(() => location.reload());
 }
 
 /* ═══ EXPORTAR PDF ═══ */
@@ -2089,6 +2122,44 @@ async function exportarPanelPDF() {
   }
 }
 
+/* ── AUTENTICACIÓN FIREBASE ── */
+let authReady = false;
+
+function loginFirebase() {
+  const email = document.getElementById('login_email')?.value?.trim();
+  const pass  = document.getElementById('login_pass')?.value;
+  const errEl = document.getElementById('login_error');
+  errEl.textContent = '';
+
+  if (!email || !pass) { errEl.textContent = '⚠️ Completa correo y contraseña.'; return; }
+
+  const btn = document.querySelector('#loginScreen button');
+  btn.textContent = '⏳ Verificando...';
+  btn.disabled = true;
+
+  firebase.auth().signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      // Auth exitoso — ocultar login, mostrar PIN
+      document.getElementById('loginScreen').style.display = 'none';
+      // Si ya tiene PIN en sesión, ir directo a la app
+      if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        document.getElementById('lockScreen').style.display = 'none';
+      }
+    })
+    .catch(err => {
+      btn.textContent = '🔐 ACCEDER';
+      btn.disabled = false;
+      const msgs = {
+        'auth/wrong-password':    '❌ Contraseña incorrecta.',
+        'auth/user-not-found':    '❌ Usuario no encontrado.',
+        'auth/invalid-email':     '❌ Correo inválido.',
+        'auth/too-many-requests': '⛔ Demasiados intentos. Espera unos minutos.',
+        'auth/invalid-credential':'❌ Credenciales incorrectas.',
+      };
+      errEl.textContent = msgs[err.code] || '❌ Error: ' + err.message;
+    });
+}
+
 /* ── SISTEMA DE PIN ── */
 const PIN_CORRECTO = '5464';
 const SESSION_KEY  = 'dace_auth_ok';
@@ -2157,19 +2228,32 @@ try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
 
-  // Persistencia offline: si pierdes internet, guarda local y sincroniza al reconectarte
   db.enablePersistence({ synchronizeTabs: true })
     .catch(err => {
       if (err.code === 'failed-precondition') {
-        // Múltiples tabs abiertas — persistencia solo funciona en una
         console.warn('Persistencia: múltiples tabs detectadas');
       } else if (err.code === 'unimplemented') {
         console.warn('Persistencia offline no soportada en este navegador');
       }
     });
 
-  setFbStatus('online', '✅ Firebase conectado · dace-arecibo-oficial · Sincronización activa');
-  initListeners();
+  // Observar estado de autenticación
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      // Autenticado — ocultar login, mostrar PIN o app
+      document.getElementById('loginScreen').style.display = 'none';
+      setFbStatus('online', '✅ Firebase conectado · dace-arecibo-oficial · Sincronización activa');
+      if (!authReady) {
+        authReady = true;
+        initListeners();
+      }
+    } else {
+      // No autenticado — mostrar login, ocultar todo lo demás
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('lockScreen').style.display  = 'none';
+      setFbStatus('error', '🔒 Sesión no iniciada — Inicia sesión para continuar');
+    }
+  });
 
 } catch(e) {
   setFbStatus('error', '❌ Error de conexión: ' + e.message);
