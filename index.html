@@ -3472,9 +3472,13 @@ const PIN_CORRECTO = '5464';
 const SESSION_KEY  = 'dace_auth_ok';
 let pinActual = '';
 
-// Si ya autenticó en esta sesión, ocultar pantalla directamente
-if (sessionStorage.getItem(SESSION_KEY) === '1') {
-  document.getElementById('lockScreen').style.display = 'none';
+function mostrarPinSiNecesario() {
+  // Solo mostrar PIN si Firebase Auth ya validó al usuario
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.getElementById('lockScreen').style.display = 'none';
+  } else {
+    document.getElementById('lockScreen').style.display = 'flex';
+  }
 }
 
 function pinPress(n) {
@@ -3495,6 +3499,7 @@ function pinDel() {
 function actualizarDots() {
   for (let i = 0; i < 4; i++) {
     const dot = document.getElementById('d' + i);
+    if (!dot) return;
     dot.classList.toggle('filled', i < pinActual.length);
     dot.classList.remove('error');
   }
@@ -3508,10 +3513,9 @@ function verificarPin() {
     ls.style.opacity = '0';
     setTimeout(() => ls.style.display = 'none', 400);
   } else {
-    // PIN incorrecto — animar en rojo
     for (let i = 0; i < 4; i++) {
-      document.getElementById('d' + i).classList.add('error');
-      document.getElementById('d' + i).classList.remove('filled');
+      const dot = document.getElementById('d' + i);
+      if (dot) { dot.classList.add('error'); dot.classList.remove('filled'); }
     }
     document.getElementById('lockMsg').textContent = '❌ PIN incorrecto. Intenta de nuevo.';
     pinActual = '';
@@ -3550,6 +3554,8 @@ try {
       // Autenticado — ocultar login, mostrar PIN o app
       document.getElementById('loginScreen').style.display = 'none';
       setFbStatus('online', '✅ Firebase conectado · dace-arecibo-oficial · Sincronización activa');
+      // Mostrar PIN si no ha sido validado en esta sesión
+      mostrarPinSiNecesario();
       if (!authReady) {
         authReady = true;
         initListeners();
