@@ -2673,17 +2673,9 @@ async function generarHallazgoIA() {
     }
   });
 
-  const prompt = `Eres el Coordinador Auxiliar DACE del Negociado de la Policía de Puerto Rico, Área Arecibo.
-Realizaste una Inspección Preventiva (PPR-137.3) en: ${lugar}.
-Observaciones del inspector: "${obs}"
-Hallazgos encontrados: ${hallazgosRaw || 'Ver imagen adjunta'}
+  const promptTexto = `Eres el Coordinador Auxiliar DACE de la Policía de Puerto Rico, Área Arecibo. Realizaste una Inspección Preventiva PPR-137.3 en: ${lugar || 'dependencia policial'}. Observaciones: "${obs || 'inspección general'}". Hallazgos: ${hallazgosRaw || 'condiciones generales del edificio'}. Genera DOS textos en JSON con este formato exacto: {"hallazgo": "descripción técnica 4-6 oraciones español formal terminología OSHA AEP construcción", "orden": "texto PPR-137.1 solicitud orden trabajo 3-4 oraciones español formal"}. Responde SOLO con el JSON sin backticks.`;
 
-Genera DOS textos en JSON con este formato exacto:
-{
-  "hallazgo": "Descripción técnica profesional de los hallazgos para el PPR-137.3, usando terminología OSHA/AEP/construcción, 4-6 oraciones en español formal",
-  "orden": "Texto para PPR-137.1 Solicitud de Orden de Trabajo describiendo los trabajos requeridos, materiales sugeridos y prioridad, 3-4 oraciones en español formal"
-}
-Responde SOLO con el JSON, sin explicaciones ni backticks.`;
+  const prompt = promptTexto;
 
   try {
     let texto = await llamarGemini(prompt, _fotoData.q3);
