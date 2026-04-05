@@ -2592,9 +2592,19 @@ async function subirFoto(form, docId) {
 
 /* ═══ GEMINI AI — VÍA CLOUD FUNCTION SEGURA ═══ */
 async function llamarGemini(prompt, fotoBase64 = null) {
-  const llamarGeminiFunction = firebase.functions().httpsCallable('llamarGemini');
-  const result = await llamarGeminiFunction({ prompt, fotoBase64: fotoBase64 || null });
-  return result.data.texto || '';
+  try {
+    const functions = firebase.functions();
+    // Especificar región us-central1 donde se desplegó la función
+    const llamarGeminiFunction = functions.httpsCallable('llamarGemini');
+    const result = await llamarGeminiFunction({
+      prompt,
+      fotoBase64: fotoBase64 || null
+    });
+    return result.data.texto || '';
+  } catch(e) {
+    console.error('Error llamarGemini:', e.code, e.message);
+    throw e;
+  }
 }
 
 /* ── IA para PPR-137.1 ── */
@@ -3839,60 +3849,6 @@ function item_Maestro(doc) {
       <button class="btn-del" onclick="eliminar('dace_maestro','${doc.id}','Entrada')">🗑 Eliminar</button>
     </div>
   </div>`;
-}
-
-/* ═══ GUARDAR: 137.1 ═══ */
-async function guardarQ1() {
-  const num  = v('q1_num'), desc = v('q1_desc');
-  if (!num || !desc) { showToast('⚠️ Número y descripción son requeridos', '#92400e'); return; }
-  try {
-    await db.collection('dace_q137_1').add({
-      numero: num, fecha: v('q1_fecha'), hora: v('q1_hora'),
-      solicitante: v('q1_solicitante'), agencia: v('q1_agencia'),
-      descripcion: desc, estatus: v('q1_estatus'), observaciones: v('q1_obs'),
-      usuario: 'Agte. Aponte Cancel · 31093',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Incidente guardada y sincronizada', '#166534');
-    limpiar(['q1_num','q1_solicitante','q1_agencia','q1_desc','q1_obs']);
-    set('q1_estatus','Pendiente'); set('q1_fecha', hoy()); set('q1_hora', ahora());
-  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
-}
-
-/* ═══ GUARDAR: 137.3 ═══ */
-async function guardarQ3() {
-  const hall = v('q3_hallazgos');
-  if (!hall) { showToast('⚠️ Los hallazgos son requeridos', '#92400e'); return; }
-  try {
-    // Generar número consecutivo automático
-    const snap = await db.collection('dace_q137_3').get();
-    const total = snap.size + 1;
-    const anio  = new Date().getFullYear();
-    const numAuto = `INS-137.3-${anio}-${String(total).padStart(3,'0')}`;
-
-    await db.collection('dace_q137_3').add({
-      numero: numAuto, fecha: v('q3_fecha'), hora: v('q3_hora'),
-      lugar: v('q3_lugar'), tipo: v('q3_tipo'),
-      hallazgos: hall, recomendaciones: v('q3_rec'), estatus: v('q3_estatus'),
-      usuario: 'Agte. Aponte Cancel · 31093',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast(`✅ Inspección ${numAuto} guardada y sincronizada`, '#166534');
-    limpiar(['q3_lugar','q3_hallazgos','q3_rec']);
-    set('q3_estatus','Pendiente'); set('q3_fecha', hoy()); set('q3_hora', ahora());
-    // Actualizar el campo visual con el próximo número
-    actualizarProximoNumInsp();
-  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
-}
-
-async function actualizarProximoNumInsp() {
-  try {
-    const snap = await db.collection('dace_q137_3').get();
-    const total = snap.size + 1;
-    const anio  = new Date().getFullYear();
-    const el = document.getElementById('q3_num');
-    if (el) el.placeholder = `INS-137.3-${anio}-${String(total).padStart(3,'0')}`;
-  } catch(e) {}
 }
 
 /* ═══ GUARDAR: CASOS ═══ */
