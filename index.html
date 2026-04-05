@@ -3473,7 +3473,8 @@ const SESSION_KEY  = 'dace_auth_ok';
 let pinActual = '';
 
 function mostrarPinSiNecesario() {
-  // Solo mostrar PIN si Firebase Auth ya validó al usuario
+  // Ocultar login completamente para que no bloquee toques
+  document.getElementById('loginScreen').style.display = 'none';
   if (sessionStorage.getItem(SESSION_KEY) === '1') {
     document.getElementById('lockScreen').style.display = 'none';
   } else {
