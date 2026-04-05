@@ -3473,13 +3473,9 @@ const SESSION_KEY  = 'dace_auth_ok';
 let pinActual = '';
 
 function mostrarPinSiNecesario() {
-  // Ocultar login completamente para que no bloquee toques
+  // PIN desactivado — Firebase Auth es suficiente
+  document.getElementById('lockScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'none';
-  if (sessionStorage.getItem(SESSION_KEY) === '1') {
-    document.getElementById('lockScreen').style.display = 'none';
-  } else {
-    document.getElementById('lockScreen').style.display = 'flex';
-  }
 }
 
 function pinPress(n) {
