@@ -2918,11 +2918,11 @@ async function exportarPDF(modulo) {
         doc.setFontSize(10);
         doc.text('No hay órdenes registradas.', W/2, y+10, {align:'center'});
       } else {
-        snap.docs.forEach((docSnap, i) => {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
           const d = docSnap.data();
           y = checkPage(doc, y, 40);
 
-          // Número y fecha
           doc.setFillColor(240, 244, 248);
           doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(...azul);
@@ -2935,7 +2935,6 @@ async function exportarPDF(modulo) {
           doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
           y += 10;
 
-          // Campos
           const campos = [
             ['Solicitante', d.solicitante],
             ['Unidad', d.unidad],
@@ -2959,7 +2958,6 @@ async function exportarPDF(modulo) {
             y += (lines.length * 4) + 2;
           });
 
-          // FOTO si existe
           if (d.fotoUrl) {
             try {
               y = checkPage(doc, y, 65);
@@ -2968,7 +2966,6 @@ async function exportarPDF(modulo) {
               doc.setFont('helvetica','bold');
               doc.text('Evidencia Fotográfica:', 13, y);
               y += 4;
-              // Cargar imagen desde URL
               const imgData = await cargarImagenComoBase64(d.fotoUrl);
               if (imgData) {
                 doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
@@ -2978,7 +2975,7 @@ async function exportarPDF(modulo) {
           }
 
           y = pdfLinea(doc, y+2, W);
-        });
+        }
       }
     }
 
@@ -2992,7 +2989,8 @@ async function exportarPDF(modulo) {
         doc.setFontSize(10);
         doc.text('No hay inspecciones registradas.', W/2, y+10, {align:'center'});
       } else {
-        snap.docs.forEach((docSnap, i) => {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
           const d = docSnap.data();
           y = checkPage(doc, y, 40);
 
@@ -3031,7 +3029,6 @@ async function exportarPDF(modulo) {
             y += (lines.length * 4) + 2;
           });
 
-          // Hallazgos por sección
           if (d.inspeccion) {
             const secNombres = {
               ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
@@ -3061,7 +3058,6 @@ async function exportarPDF(modulo) {
             });
           }
 
-          // FOTO si existe
           if (d.fotoUrl) {
             try {
               y = checkPage(doc, y, 65);
@@ -3078,7 +3074,7 @@ async function exportarPDF(modulo) {
           }
 
           y = pdfLinea(doc, y+2, W);
-        });
+        }
       }
     }
 
