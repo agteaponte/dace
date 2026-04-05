@@ -2590,108 +2590,119 @@ async function subirFoto(form, docId) {
   }
 }
 
-/* ═══ GEMINI AI — VÍA CLOUD FUNCTION SEGURA ═══ */
-async function llamarGemini(promptTexto, fotoBase64 = null) {
+/* ═══ GEMINI AI — VÍA CLOUD FUNCTION v2 ═══ */
+async function llamarGemini(textoPrompt, fotoBase64 = null) {
+  const texto = String(textoPrompt || '').trim();
+  if (!texto) throw new Error('Prompt vacío.');
+  const fn = firebase.functions().httpsCallable('llamarGemini');
+  console.log('[IA] enviando prompt, length:', texto.length);
+  const result = await fn({ prompt: texto, fotoBase64: fotoBase64 || null });
+  return result.data.texto || '';
+}
+
+/* ═══ MÓDULO DE INTELIGENCIA ARTIFICIAL ═══ */
+
+// 1. Generar Descripción para PPR-137.1
+async function generarDescripcionIA(prefix) {
+  const btn       = document.getElementById(prefix + '_ai_btn');
+  const resultDiv = document.getElementById(prefix + '_ai_result');
+  const textEl    = document.getElementById(prefix + '_ai_texto');
+  const desc      = document.getElementById(prefix + '_desc')?.value || 'trabajo de mantenimiento';
+  const textoOriginal = btn.innerHTML;
+  btn.innerHTML = '⏳ GENERANDO...';
+  btn.disabled  = true;
   try {
-    const fn = firebase.functions().httpsCallable('llamarGemini');
-    const payload = { prompt: String(promptTexto), fotoBase64: fotoBase64 || null };
-    console.log('Enviando a Cloud Function, prompt length:', payload.prompt.length);
-    const result = await fn(payload);
-    return result.data.texto || '';
-  } catch(e) {
-    console.error('Error llamarGemini:', e.code, e.message, e.details);
-    throw e;
+    const textoPrompt =
+      'Eres Coordinador Auxiliar DACE Policia de Puerto Rico Area Arecibo. ' +
+      'Genera descripcion tecnica profesional para Solicitud Orden de Trabajo PPR-137.1 NPPR. ' +
+      'Basado en: ' + desc + '. ' +
+      'Usa terminologia tecnica construccion y mantenimiento. ' +
+      'Menciona tipo de trabajo, urgencia e impacto operacional. ' +
+      'Redacta en espanol formal institucional entre 3 y 5 oraciones. ' +
+      'Responde SOLO con el texto sin titulos ni explicaciones.';
+    const respuesta = await llamarGemini(textoPrompt, _fotoData[prefix] || null);
+    textEl.innerText = respuesta;
+    resultDiv.classList.add('visible');
+    showToast('✅ Descripción generada por IA', '#166534');
+  } catch (error) {
+    console.error('[IA 137.1]', error);
+    showToast('❌ Error IA: ' + error.message, '#dc2626');
+  } finally {
+    btn.innerHTML = textoOriginal;
+    btn.disabled  = false;
   }
 }
 
-/* ── IA para PPR-137.1 ── */
-async function generarDescripcionIA(form) {
-  const desc = v('q1_desc');
-  const btn  = document.getElementById('q1_ai_btn');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Generando...';
-
-  const prompt = `Eres el Coordinador Auxiliar DACE del Negociado de la Policía de Puerto Rico, Área Arecibo.
-Basado en esta descripción breve: "${desc || 'Ver imagen adjunta'}", genera una descripción técnica profesional 
-para una Solicitud de Orden de Trabajo (PPR-137.1) de la NPPR.
-La descripción debe:
-- Usar terminología técnica de construcción y mantenimiento
-- Mencionar el tipo de trabajo, la urgencia y el impacto operacional
-- Estar redactada en español formal institucional
-- Tener entre 3 y 5 oraciones
-Responde SOLO con el texto de la descripción, sin títulos ni explicaciones.`;
-
-  try {
-    const texto = await llamarGemini(prompt, _fotoData[form]);
-    document.getElementById('q1_ai_texto').textContent = texto;
-    document.getElementById('q1_ai_result').classList.add('visible');
-  } catch(e) {
-    showToast('❌ Error IA: ' + e.message, '#dc2626');
+function usarTextoIA(prefix) {
+  const textEl  = document.getElementById(prefix + '_ai_texto');
+  const inputEl = document.getElementById(prefix + '_desc');
+  if (textEl && inputEl) {
+    inputEl.value = textEl.innerText;
+    document.getElementById(prefix + '_ai_result').classList.remove('visible');
+    showToast('✅ Texto copiado al campo de descripción', '#16a34a');
   }
-  btn.disabled = false;
-  btn.innerHTML = '✨ GENERAR DESCRIPCIÓN CON IA';
 }
 
-function usarTextoIA(form) {
-  const texto = document.getElementById('q1_ai_texto').textContent;
-  document.getElementById('q1_desc').value = texto;
-  document.getElementById('q1_ai_result').classList.remove('visible');
-}
-
-/* ── IA para PPR-137.3 ── */
+// 2. Generar Hallazgos para PPR-137.3
 async function generarHallazgoIA() {
-  const obs  = v('q3_obs_gen');
-  const lugar = v('q3_lugar') || document.getElementById('q3_lugar')?.value || '';
-  const btn  = document.getElementById('q3_ai_btn');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Analizando inspección...';
-
-  // Recopilar hallazgos de todas las secciones
-  const secciones = ['ext','int','com','adm','bib','aca','ban','tec','can','seg','ele','dor'];
-  const nombresSeccion = {
-    ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
-    bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
-    can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
-  };
-  let hallazgosRaw = '';
-  secciones.forEach(sec => {
-    const radios = document.querySelectorAll(`[name^="${sec}_"]`);
-    const items  = new Set();
-    radios.forEach(r => {
+  const btn           = document.getElementById('q3_ai_btn');
+  const resultDiv     = document.getElementById('q3_ai_result');
+  const hallazgoEl    = document.getElementById('q3_ai_hallazgo');
+  const ordenEl       = document.getElementById('q3_ai_orden');
+  const textoOriginal = btn.innerHTML;
+  btn.innerHTML = '⏳ GENERANDO...';
+  btn.disabled  = true;
+  const lugar = document.getElementById('q3_lugar')?.value || 'dependencia policial';
+  const obs   = document.getElementById('q3_obs_gen')?.value || 'inspeccion general';
+  const nomSec = { ext:'Exterior',int:'Interior',com:'Comedor',adm:'Administracion',
+    bib:'Biblioteca',aca:'Academico',ban:'Banos',tec:'Techos',
+    can:'Cancha',seg:'Seguridad',ele:'Electricidad',dor:'Dormitorios' };
+  let hallazgos = '';
+  ['ext','int','com','adm','bib','aca','ban','tec','can','seg','ele','dor'].forEach(sec => {
+    const items = [];
+    document.querySelectorAll('[name^="' + sec + '_"]').forEach(r => {
       if (r.checked && (r.value === 'R' || r.value === 'P')) {
-        const idx = r.name.split('_')[1];
-        const obs_el = document.getElementById(`obs_${sec}_${idx}`);
-        const tipo = r.value === 'R' ? 'Reemplazo' : 'Reparación';
-        items.add(`[${tipo}] ${obs_el?.placeholder?.replace('Observaciones...','') || r.name}`);
+        const tipo = r.value === 'R' ? 'Reemplazo' : 'Reparacion';
+        const idx  = r.name.split('_')[1];
+        const ob2  = document.getElementById('obs_' + sec + '_' + idx)?.value || '';
+        items.push(tipo + (ob2 ? ': ' + ob2 : ''));
       }
     });
-    if (items.size > 0) {
-      hallazgosRaw += `\n${nombresSeccion[sec]}: ${[...items].join(', ')}`;
-    }
+    if (items.length) hallazgos += nomSec[sec] + ': ' + items.join(', ') + '. ';
   });
-
-  const promptTexto = `Eres el Coordinador Auxiliar DACE de la Policía de Puerto Rico, Área Arecibo. Realizaste una Inspección Preventiva PPR-137.3 en: ${lugar || 'dependencia policial'}. Observaciones: "${obs || 'inspección general'}". Hallazgos: ${hallazgosRaw || 'condiciones generales del edificio'}. Genera DOS textos en JSON con este formato exacto: {"hallazgo": "descripción técnica 4-6 oraciones español formal terminología OSHA AEP construcción", "orden": "texto PPR-137.1 solicitud orden trabajo 3-4 oraciones español formal"}. Responde SOLO con el JSON sin backticks.`;
-
-  const prompt = promptTexto;
-
   try {
-    let texto = await llamarGemini(prompt, _fotoData.q3);
-    texto = texto.replace(/```json|```/g, '').trim();
-    const data = JSON.parse(texto);
-    document.getElementById('q3_ai_hallazgo').textContent = data.hallazgo || '';
-    document.getElementById('q3_ai_orden').textContent    = data.orden || '';
-    document.getElementById('q3_ai_result').classList.add('visible');
-  } catch(e) {
-    showToast('❌ Error IA: ' + e.message, '#dc2626');
-    console.error(e);
+    const textoPrompt =
+      'Eres Coordinador Auxiliar DACE Policia de Puerto Rico Area Arecibo. ' +
+      'Realizaste Inspeccion Preventiva PPR-137.3 en: ' + lugar + '. ' +
+      'Observaciones: ' + obs + '. ' +
+      'Hallazgos: ' + (hallazgos || 'condiciones generales del edificio') + '. ' +
+      'Genera DOS textos en JSON sin markdown: ' +
+      '{"hallazgo":"descripcion tecnica 4-6 oraciones terminologia OSHA AEP construccion espanol formal",' +
+      '"orden":"solicitud PPR-137.1 materiales prioridad 3-4 oraciones espanol formal"}';
+    let respuesta = await llamarGemini(textoPrompt, _fotoData.q3 || null);
+    respuesta = respuesta.replace(/```json|```/g, '').trim();
+    const resultado = JSON.parse(respuesta);
+    hallazgoEl.innerText = resultado.hallazgo || '';
+    ordenEl.innerText    = resultado.orden    || '';
+    resultDiv.classList.add('visible');
+    showToast('✅ Análisis completado por IA', '#166534');
+  } catch (error) {
+    console.error('[IA 137.3]', error);
+    showToast('❌ Error IA: ' + error.message, '#dc2626');
+  } finally {
+    btn.innerHTML = textoOriginal;
+    btn.disabled  = false;
   }
-  btn.disabled = false;
-  btn.innerHTML = '✨ GENERAR HALLAZGO TÉCNICO CON IA';
 }
 
 function usarHallazgoIA() {
-  document.getElementById('q3_hallazgos').value = document.getElementById('q3_ai_hallazgo').textContent;
-  document.getElementById('q3_ai_result').classList.remove('visible');
+  const hallazgoEl = document.getElementById('q3_ai_hallazgo');
+  const inputEl    = document.getElementById('q3_hallazgos');
+  if (hallazgoEl && inputEl) {
+    inputEl.value = hallazgoEl.innerText;
+    document.getElementById('q3_ai_result').classList.remove('visible');
+    showToast('✅ Hallazgos copiados exitosamente', '#16a34a');
+  }
 }
 
 /* ═══ GUARDAR: 137.1 (actualizado con foto y campos oficiales) ═══ */
