@@ -12,6 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <!-- jsPDF para exportar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -421,6 +422,140 @@ select {
 .btn-pdf.blue-pdf { background: var(--blue); }
 
 .sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* ── FORMULARIOS OFICIALES PPR ── */
+.ppr-header {
+  background: var(--blue); color: white;
+  padding: 14px 16px; border-radius: 14px 14px 0 0;
+  margin-bottom: 0; text-align: center;
+}
+.ppr-header h2 { font-size: 14px; font-weight: 900; letter-spacing: 1px; }
+.ppr-header p  { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+
+.ppr-section {
+  background: white; border-radius: 0;
+  padding: 0; margin-bottom: 0;
+  border: 1px solid var(--border); border-top: none;
+}
+.ppr-section:last-child { border-radius: 0 0 14px 14px; margin-bottom: 16px; }
+
+.ppr-section-title {
+  background: var(--gold); color: #1a0e00;
+  font-size: 11px; font-weight: 900;
+  padding: 8px 14px; text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insp-table { width: 100%; border-collapse: collapse; }
+.insp-table th {
+  background: #f8fafc; font-size: 9px; font-weight: 800;
+  color: var(--muted); text-transform: uppercase;
+  padding: 7px 8px; border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.insp-table th:first-child { text-align: left; }
+.insp-table td {
+  padding: 8px; border-bottom: 1px solid #f0f4f8;
+  font-size: 11px; color: var(--text); vertical-align: middle;
+}
+.insp-table td:first-child { font-weight: 600; padding-left: 12px; }
+.insp-table tr:last-child td { border-bottom: none; }
+.insp-table tr:nth-child(even) td { background: #fafbfc; }
+
+.insp-radio-group {
+  display: flex; gap: 6px; justify-content: center;
+}
+.insp-radio-group label {
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 8px; font-weight: 700; color: var(--muted);
+  gap: 3px; cursor: pointer; text-transform: uppercase;
+}
+.insp-radio-group input[type=radio] {
+  width: 16px; height: 16px; cursor: pointer;
+  accent-color: var(--blue);
+}
+.insp-obs {
+  width: 100%; border: none; background: transparent;
+  font-size: 11px; color: var(--text); padding: 4px;
+  resize: none; outline: none; min-height: 28px;
+}
+.insp-cant {
+  width: 50px; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 6px;
+  font-size: 11px; text-align: center;
+}
+
+/* ── FOTO CAPTURE ── */
+.foto-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 20px; text-align: center; cursor: pointer;
+  background: #f8fafc; transition: all 0.2s; margin: 12px 0;
+}
+.foto-zone:active { border-color: var(--blue); background: #eff6ff; }
+.foto-zone .foto-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+.foto-zone p { font-size: 12px; color: var(--muted); font-weight: 600; }
+.foto-preview {
+  width: 100%; border-radius: 12px; margin-top: 10px;
+  display: none; object-fit: cover; max-height: 200px;
+}
+.foto-preview.visible { display: block; }
+.btn-foto-clear {
+  background: none; border: none; color: var(--red);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  margin-top: 6px; display: none;
+}
+.btn-foto-clear.visible { display: block; }
+
+/* ── AI BADGE ── */
+.ai-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white; padding: 4px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; margin-bottom: 8px;
+}
+.ai-result {
+  background: linear-gradient(135deg, #f0f4ff, #faf5ff);
+  border: 1.5px solid #c4b5fd; border-radius: 12px;
+  padding: 14px; margin: 10px 0; display: none;
+}
+.ai-result.visible { display: block; }
+.ai-result .ai-title {
+  font-size: 10px; font-weight: 800; color: #6366f1;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.ai-result p { font-size: 12px; color: #374151; line-height: 1.6; }
+.btn-ai {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white; border: none; border-radius: 14px;
+  font-weight: 800; font-size: 13px; cursor: pointer;
+  margin-top: 8px; letter-spacing: 0.5px;
+  transition: opacity 0.2s; display: flex;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.btn-ai:active { opacity: 0.82; }
+.btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── TABS INTERNOS PPR ── */
+.inner-tabs {
+  display: flex; overflow-x: auto; gap: 6px;
+  padding: 12px 14px; background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+}
+.inner-tabs::-webkit-scrollbar { display: none; }
+.inner-tab {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; cursor: pointer;
+  border: 1.5px solid var(--border); background: white;
+  color: var(--muted); transition: all 0.15s;
+  text-transform: uppercase; white-space: nowrap;
+}
+.inner-tab.active {
+  background: var(--blue); color: white; border-color: var(--blue);
+}
+.inner-section { display: none; padding: 14px; }
+.inner-section.active { display: block; }
 </style>
 </head>
 <body>
@@ -510,7 +645,7 @@ select {
   <div id="inicio" class="tab-page active">
     <div class="page-title">📊 Panel General</div>
     <div class="stats-grid">
-      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label">Querellas 137.1</div></div>
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
       <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
       <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label">Casos Activos</div></div>
       <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label">Registro Maestro</div></div>
@@ -521,56 +656,180 @@ select {
     <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()">📄 EXPORTAR REPORTE GENERAL PDF</button>
   </div>
 
-  <!-- PPR-137.1 -->
+  <!-- PPR-137.1 SOLICITUD ORDEN DE TRABAJO -->
   <div id="q137_1" class="tab-page">
-    <div class="page-title">⚖️ Querellas 137.1</div>
-    <div class="form-card">
-      <div class="form-section-label">Nueva Querella</div>
-      <div class="input-group">
-        <label>Número de Querella *</label>
-        <input type="text" id="q1_num" placeholder="Ej: Q-137.1-2026-001" autocomplete="off">
-      </div>
-      <div class="row-2">
-        <div class="input-group"><label>Fecha *</label><input type="date" id="q1_fecha"></div>
-        <div class="input-group"><label>Hora *</label><input type="time" id="q1_hora"></div>
-      </div>
-      <div class="input-group">
-        <label>Nombre del Querellante</label>
-        <input type="text" id="q1_querellante" placeholder="Nombre completo" autocomplete="off">
-      </div>
-      <div class="input-group">
-        <label>Agencia / Unidad Involucrada</label>
-        <input type="text" id="q1_agencia" placeholder="Ej: DACE, PPR, DSP..." autocomplete="off">
-      </div>
-      <div class="input-group">
-        <label>Descripción del Asunto *</label>
-        <textarea id="q1_desc" placeholder="Describa los hechos de manera clara y concisa..."></textarea>
-      </div>
-      <div class="input-group">
-        <label>Estatus</label>
-        <select id="q1_estatus">
-          <option value="Pendiente">Pendiente</option>
-          <option value="En Proceso">En Proceso</option>
-          <option value="Completado">Completado</option>
-          <option value="Archivado">Archivado</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Observaciones / Seguimiento</label>
-        <textarea id="q1_obs" rows="3" placeholder="Notas adicionales, referencias, documentos..."></textarea>
-      </div>
-      <button class="btn-save" onclick="guardarQ1()">💾 GUARDAR QUERELLA</button>
-    </div>
-    <hr class="sep">
-    <div class="list-header">Registro (<span id="q1_total">0</span> querellas)</div>
-    <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR QUERELLAS 137.1 A PDF</button>
+    <div class="page-title">⚖️ PPR-137.1 Orden de Trabajo</div>
 
-    <!-- FILTROS 137.1 -->
+    <!-- FORMULARIO OFICIAL -->
+    <div class="ppr-header">
+      <h2>PPR-137.1 — SOLICITUD ORDEN DE TRABAJO</h2>
+      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
+    </div>
+    <div class="ppr-section">
+      <!-- Identificación -->
+      <div class="ppr-section-title">📋 Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Número de Solicitud</label>
+            <input type="text" id="q1_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q1_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Unidad Solicitante *</label>
+          <select id="q1_unidad">
+            <option value="">— Seleccionar —</option>
+            <option>DACE Arecibo</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area" value="Arecibo" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Director/Supervisor</label>
+            <input type="text" id="q1_director" placeholder="Nombre" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Nombre del Solicitante</label>
+          <input type="text" id="q1_solicitante" placeholder="Nombre completo del solicitante" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Teléfono de Contacto</label>
+          <input type="text" id="q1_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Trabajo Solicitado -->
+      <div class="ppr-section-title">🔧 Trabajo Solicitado</div>
+      <div style="padding:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_carp" style="width:16px;height:16px;accent-color:var(--blue)"> Carpintería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_elec" style="width:16px;height:16px;accent-color:var(--blue)"> Electricidad
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_pint" style="width:16px;height:16px;accent-color:var(--blue)"> Pintura
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_refr" style="width:16px;height:16px;accent-color:var(--blue)"> Refrigeración
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_eban" style="width:16px;height:16px;accent-color:var(--blue)"> Ebanistería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_limp" style="width:16px;height:16px;accent-color:var(--blue)"> Limpieza
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_plom" style="width:16px;height:16px;accent-color:var(--blue)"> Plomería
+          </label>
+        </div>
+        <div class="input-group">
+          <label>Descripción del Servicio Solicitado *</label>
+          <textarea id="q1_desc" rows="5" placeholder="Describa detalladamente el servicio o trabajo requerido..."></textarea>
+        </div>
+
+        <!-- Foto -->
+        <div class="foto-zone" onclick="document.getElementById('q1_foto_input').click()">
+          <span class="foto-icon">📷</span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del problema</p>
+        </div>
+        <input type="file" id="q1_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q1')">
+        <img id="q1_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q1_foto_clear" onclick="clearFoto('q1')">✕ Eliminar foto</button>
+
+        <!-- IA -->
+        <button class="btn-ai" onclick="generarDescripcionIA('q1')" id="q1_ai_btn">
+          ✨ GENERAR DESCRIPCIÓN CON IA
+        </button>
+        <div class="ai-result" id="q1_ai_result">
+          <div class="ai-title">✨ Descripción generada por IA</div>
+          <p id="q1_ai_texto"></p>
+          <button onclick="usarTextoIA('q1')" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar este texto</button>
+        </div>
+      </div>
+
+      <!-- Localización -->
+      <div class="ppr-section-title">📍 Localización Avería o Propiedad</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Sección</label>
+            <input type="text" id="q1_seccion" placeholder="Sección" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>División</label>
+            <input type="text" id="q1_division" placeholder="División" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Distrito/Precinto</label>
+            <input type="text" id="q1_distrito" placeholder="Distrito/Precinto" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area2" value="Arecibo" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Negociado</label>
+            <input type="text" id="q1_negociado" value="NPPR" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Superintendencia Auxiliar</label>
+            <input type="text" id="q1_super" placeholder="Superintendencia" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatus -->
+      <div class="ppr-section-title">📌 Estatus</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Estatus de la Solicitud</label>
+          <select id="q1_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+            <option value="Archivado">Archivado</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Observaciones / Seguimiento</label>
+          <textarea id="q1_obs" rows="3" placeholder="Notas de seguimiento..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="guardarQ1()">💾 GUARDAR ORDEN DE TRABAJO</button>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q1_total">0</span> órdenes)</div>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR ÓRDENES DE TRABAJO A PDF</button>
     <div class="filter-box" style="margin-top:12px">
       <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('q1')">✕ Limpiar</button>
       </div>
-      <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, nombre, descripción..." oninput="aplicarFiltros('q1')">
+      <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, solicitante, descripción..." oninput="aplicarFiltros('q1')">
       <div class="filter-chips" id="q1_chips">
         <span class="chip active" onclick="toggleChip(this,'q1','estatus','')" data-val="">Todos</span>
         <span class="chip" onclick="toggleChip(this,'q1','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
@@ -579,67 +838,236 @@ select {
         <span class="chip" onclick="toggleChip(this,'q1','estatus','Archivado')" data-val="Archivado">Archivado</span>
       </div>
       <div class="filter-dates">
-        <input type="date" id="q1_desde" onchange="aplicarFiltros('q1')" placeholder="Desde">
-        <input type="date" id="q1_hasta" onchange="aplicarFiltros('q1')" placeholder="Hasta">
+        <input type="date" id="q1_desde" onchange="aplicarFiltros('q1')">
+        <input type="date" id="q1_hasta" onchange="aplicarFiltros('q1')">
       </div>
       <div class="filter-count" id="q1_count"></div>
     </div>
-
     <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
-  <!-- PPR-137.3 -->
+  <!-- PPR-137.3 INSPECCIÓN PREVENTIVA -->
   <div id="q137_3" class="tab-page">
-    <div class="page-title">🏗️ Inspecciones 137.3</div>
-    <div class="form-card">
-      <div class="form-section-label">Nueva Inspección</div>
-      <div class="input-group">
-        <label>Número de Inspección *</label>
-        <input type="text" id="q3_num" placeholder="Ej: INS-137.3-2026-001" autocomplete="off">
-      </div>
-      <div class="row-2">
-        <div class="input-group"><label>Fecha *</label><input type="date" id="q3_fecha"></div>
-        <div class="input-group"><label>Hora</label><input type="time" id="q3_hora"></div>
-      </div>
-      <div class="input-group">
-        <label>Lugar / Cuartel Inspeccionado *</label>
-        <input type="text" id="q3_lugar" placeholder="Nombre del lugar o cuartel" autocomplete="off">
-      </div>
-      <div class="input-group">
-        <label>Tipo de Inspección</label>
-        <select id="q3_tipo">
-          <option value="Estructural">Estructural</option>
-          <option value="Celda / Calabozo">Celda / Calabozo</option>
-          <option value="Seguridad General">Seguridad General</option>
-          <option value="Equipos y Material">Equipos y Material</option>
-          <option value="Rutinaria">Rutinaria</option>
-          <option value="Especial">Especial</option>
-          <option value="Otra">Otra</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Hallazgos *</label>
-        <textarea id="q3_hallazgos" placeholder="Describa los hallazgos observados..."></textarea>
-      </div>
-      <div class="input-group">
-        <label>Recomendaciones</label>
-        <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
-      </div>
-      <div class="input-group">
-        <label>Estatus</label>
-        <select id="q3_estatus">
-          <option value="Pendiente">Pendiente</option>
-          <option value="En Proceso">En Proceso</option>
-          <option value="Completado">Completado</option>
-        </select>
-      </div>
-      <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
+    <div class="page-title">🏗️ PPR-137.3 Inspección Preventiva</div>
+
+    <div class="ppr-header">
+      <h2>PPR-137.3 — INSPECCIÓN PREVENTIVA</h2>
+      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
     </div>
+
+    <div class="ppr-section">
+      <!-- Encabezado -->
+      <div class="ppr-section-title">📋 Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Núm. Inspección / Proyecto AEP</label>
+            <input type="text" id="q3_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q3_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Precinto / Distrito / Unidad *</label>
+          <select id="q3_lugar">
+            <option value="">— Seleccionar —</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Nombre Director</label>
+            <input type="text" id="q3_director" placeholder="Director de la unidad" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="text" id="q3_tel" placeholder="787-000-0000" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Dirección</label>
+          <input type="text" id="q3_dir" placeholder="Dirección física del cuartel" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Área</label>
+          <input type="text" id="q3_area" value="Arecibo" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Foto General -->
+      <div class="ppr-section-title">📷 Evidencia Fotográfica</div>
+      <div style="padding:14px">
+        <div class="foto-zone" onclick="document.getElementById('q3_foto_input').click()">
+          <span class="foto-icon">📷</span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Foto general del área inspeccionada</p>
+        </div>
+        <input type="file" id="q3_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q3')">
+        <img id="q3_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q3_foto_clear" onclick="clearFoto('q3')">✕ Eliminar foto</button>
+      </div>
+
+      <!-- TABS DE SECCIONES -->
+      <div class="inner-tabs" id="q3_tabs">
+        <div class="inner-tab active" onclick="switchInnerTab('q3','ext')">Exterior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','int')">Interior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','com')">Comedor</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','adm')">Administ.</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','bib')">Biblioteca</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','aca')">Académico</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ban')">Baños</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','tec')">Techos</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','can')">Cancha</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','seg')">Seguridad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ele')">Electricidad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','dor')">Dormitorios</div>
+      </div>
+
+      <!-- SECCIÓN: EXTERIOR -->
+      <div class="inner-section active" id="q3_sec_ext">
+        <table class="insp-table">
+          <tr><th>Exterior del Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ext',['Portón de entrada','Verja periferal','Estacionamiento (asfalto, líneas, wheel stop, aceras, encintados, Ley ADA)','Parrillas Pluviales','Estación de Basura','Luminarias y Postes','Hidrante','Mangueras','Áreas Verdes','Astas de Banderas','Pintura Exterior','Iluminación Perímetro','Rotulación'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: INTERIOR -->
+      <div class="inner-section" id="q3_sec_int">
+        <table class="insp-table">
+          <tr><th>Interior Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('int',['Portones','Pasamanos','Rejas','Pintura (lobby, pasillos, rampa, parapetos, plafones)','Áreas verdes - poda y jardinería','Gazebo','Paredes (grietas, empañetado)','Pisos (nivelación, grietas)','Aceras','Rampas','Iluminación','Desagües pluviales','Barandas','Juntas de Expansión'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: COMEDOR -->
+      <div class="inner-section" id="q3_sec_com">
+        <table class="insp-table">
+          <tr><th>Comedor</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('com',['Enchapado de paredes y piso','Campana de Extracción (extractores, sistema supresión)','Plomería (drenajes, llaves desagüe, lavamano)','Trampa de grasa','Walk-in Cooler and Freezer (refrigeración, drenajes)','Calentador de agua','Sistema de Distribución de Gas (tubería, válvula, tanques)','Ventanas (operador, escrín, expanded metal)','Puertas (escrines, herrajes)','Baños (inodoros, lavamanos, urinales, mezcladoras, duchas)','Luminarias'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ADMINISTRACIÓN -->
+      <div class="inner-section" id="q3_sec_adm">
+        <table class="insp-table">
+          <tr><th>Administración</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('adm',['Acondicionador de Aire','Condición de Paredes','Condición de Piso','Condición de baños (extractor, equipo sanitario)','Pintura','Enfriador de Agua','Cumplimiento ADA','Iluminación','Ventanas','Plafón Acústico','Intercom','Sistema de Timbre'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BIBLIOTECA -->
+      <div class="inner-section" id="q3_sec_bib">
+        <table class="insp-table">
+          <tr><th>Biblioteca</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('bib',['Aire Acondicionado','Condición de Paredes','Condición de Pisos','Oficina Bibliotecario - mostrador','Ventanas','Pinturas','Puertas','Luminaria'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ACADÉMICO -->
+      <div class="inner-section" id="q3_sec_aca">
+        <table class="insp-table">
+          <tr><th>Sistemas Académicos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('aca',['Cantidad de Salones','Pizarras','Iluminación','Receptáculos e Interruptores','Puertas','Gabinetes','Abanicos de techos','Ventanas','Condición de Pintura'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BAÑOS -->
+      <div class="inner-section" id="q3_sec_ban">
+        <table class="insp-table">
+          <tr><th>Baños</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ban',['Enchapado','Particiones','Ventanas','Drenajes','Inodoros','Lavamanos','Urinales','Llaves de Agua','Extractores','Pintura','Cumplimiento Ley ADA (dimensiones, grab bars)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: TECHOS -->
+      <div class="inner-section" id="q3_sec_tec">
+        <table class="insp-table">
+          <tr><th>Techos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('tec',['Acceso','Escotillas','Drenajes','Limpieza','Empozamientos','Filtraciones','Tratamiento'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: CANCHA -->
+      <div class="inner-section" id="q3_sec_can">
+        <table class="insp-table">
+          <tr><th>Cancha</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('can',['Canastos (tableros, operación)','Portones','Rejas y Barandas','Estructura','Gradas','Iluminación','Condiciones y Pintura Piso','Control de Palomas','Extractores','Baños','Fuentes de Agua','Abanicos','Filtraciones','Drenajes'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: SEGURIDAD -->
+      <div class="inner-section" id="q3_sec_seg">
+        <table class="insp-table">
+          <tr><th>Seguridad</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('seg',['Sistema de Intercomunicador (panel, bocinas)','Sistema de Alarma contra incendios (panel, pull station, detectores, strobes)','Gabinetes de Mangueras Contra Incendios','Extintores','Luces de Salida','Luces de Emergencia','Sistema de Seguridad (panel, sensores, cámaras)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ELECTRICIDAD -->
+      <div class="inner-section" id="q3_sec_ele">
+        <table class="insp-table">
+          <tr><th>Electricidad General</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ele',['Subestación (pintura, rotulación, candados, desyerbo)','Paneles Eléctricos (tapas, cerraduras, identificación)','Distribución Eléctrica (sobrecarga, conductos)','Sistema de Bombeo de Agua Potable','Sistema de Bombeo Sanitario','Planta de Tratamiento','Tanques de Retención de Aguas Usadas','Leaching Field','Sistemas de Energía Renovable','Generador de Emergencia (transfer switch, tanque diesel)','Fuentes de Agua','Cisterna Agua de Lluvia','Aire Acondicionado','Elevadores','Montasillas'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: DORMITORIOS -->
+      <div class="inner-section" id="q3_sec_dor">
+        <table class="insp-table">
+          <tr><th>Dormitorios</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('dor',['Pintura','Ventanas','Puertas','Linternas','Pisos','Duchas','Aire','Lavamanos'])}
+        </table>
+      </div>
+
+      <!-- OBSERVACIONES GENERALES E IA -->
+      <div class="ppr-section-title">📝 Observaciones Generales e Inteligencia Artificial</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Observaciones Generales</label>
+          <textarea id="q3_obs_gen" rows="4" placeholder="Observaciones generales de la inspección..."></textarea>
+        </div>
+        <button class="btn-ai" onclick="generarHallazgoIA()" id="q3_ai_btn">
+          ✨ GENERAR HALLAZGO TÉCNICO CON IA
+        </button>
+        <div class="ai-result" id="q3_ai_result">
+          <div class="ai-title">✨ Hallazgo Técnico — Generado por IA</div>
+          <p id="q3_ai_hallazgo" style="margin-bottom:10px"></p>
+          <div class="ai-title" style="margin-top:10px">📋 Orden de Trabajo 137.1 Sugerida</div>
+          <p id="q3_ai_orden"></p>
+          <button onclick="usarHallazgoIA()" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar estos textos</button>
+        </div>
+        <div class="input-group" style="margin-top:12px">
+          <label>Hallazgos Finales *</label>
+          <textarea id="q3_hallazgos" rows="4" placeholder="Hallazgos de la inspección (puedes usar el texto generado por IA)..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Recomendaciones</label>
+          <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Estatus</label>
+          <select id="q3_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
     <hr class="sep">
     <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
-    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES 137.3 A PDF</button>
-
-    <!-- FILTROS 137.3 -->
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES A PDF</button>
     <div class="filter-box" style="margin-top:12px; border-left-color: var(--gold)">
       <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('q3')">✕ Limpiar</button>
@@ -651,20 +1079,12 @@ select {
         <span class="chip gold" onclick="toggleChip(this,'q3','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
         <span class="chip green" onclick="toggleChip(this,'q3','estatus','Completado')" data-val="Completado">Completado</span>
       </div>
-      <div class="filter-chips">
-        <span class="chip active" onclick="toggleChip(this,'q3','tipo','')" data-val="">Tipo: Todos</span>
-        <span class="chip" onclick="toggleChip(this,'q3','tipo','Estructural')" data-val="Estructural">Estructural</span>
-        <span class="chip" onclick="toggleChip(this,'q3','tipo','Celda / Calabozo')" data-val="Celda / Calabozo">Celda</span>
-        <span class="chip" onclick="toggleChip(this,'q3','tipo','Rutinaria')" data-val="Rutinaria">Rutinaria</span>
-        <span class="chip" onclick="toggleChip(this,'q3','tipo','Especial')" data-val="Especial">Especial</span>
-      </div>
       <div class="filter-dates">
         <input type="date" id="q3_desde" onchange="aplicarFiltros('q3')">
         <input type="date" id="q3_hasta" onchange="aplicarFiltros('q3')">
       </div>
       <div class="filter-count" id="q3_count"></div>
     </div>
-
     <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
@@ -752,7 +1172,7 @@ select {
       <div class="input-group">
         <label>Tipo de Actividad</label>
         <select id="rm_tipo">
-          <option value="Querella 137.1">Querella 137.1</option>
+          <option value="Orden de Trabajo 137.1">Orden de Trabajo 137.1</option>
           <option value="Inspección 137.3">Inspección 137.3</option>
           <option value="Caso Activo">Caso Activo</option>
           <option value="Coordinación Interagencial">Coordinación Interagencial</option>
@@ -790,7 +1210,7 @@ select {
       <input type="text" class="filter-search" id="rm_search" placeholder="Buscar por tipo, descripción, notas..." oninput="aplicarFiltros('rm')">
       <div class="filter-chips">
         <span class="chip active" onclick="toggleChip(this,'rm','tipo','')" data-val="">Todos</span>
-        <span class="chip" onclick="toggleChip(this,'rm','tipo','Querella 137.1')" data-val="Querella 137.1">137.1</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Orden de Trabajo 137.1')" data-val="Orden de Trabajo 137.1">137.1</span>
         <span class="chip" onclick="toggleChip(this,'rm','tipo','Inspección 137.3')" data-val="Inspección 137.3">137.3</span>
         <span class="chip" onclick="toggleChip(this,'rm','tipo','Gestión Administrativa')" data-val="Gestión Administrativa">Administrativa</span>
         <span class="chip" onclick="toggleChip(this,'rm','tipo','Reunión Oficial')" data-val="Reunión Oficial">Reunión</span>
@@ -1076,14 +1496,14 @@ select {
     <div class="page-title">📊 Reportes</div>
 
     <div class="stats-grid" style="margin-bottom:16px">
-      <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Querellas 137.1</div></div>
+      <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
       <div class="stat-card gold"><div class="stat-num" id="rpt_q3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
       <div class="stat-card green"><div class="stat-num" id="rpt_casos">—</div><div class="stat-label">Casos Activos</div></div>
       <div class="stat-card red"><div class="stat-num" id="rpt_mt">—</div><div class="stat-label">Mantenimientos</div></div>
     </div>
 
     <div class="form-card">
-      <div class="form-section-label">Distribución por Estatus — Querellas 137.1</div>
+      <div class="form-section-label">Distribución por Estatus — Órdenes de Trabajo 137.1</div>
       <div id="rpt_q1_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
     </div>
 
@@ -1118,7 +1538,7 @@ select {
       <div class="input-group">
         <label>Categoría</label>
         <select id="arc_cat">
-          <option value="PPR-137.1">PPR-137.1 Querella</option>
+          <option value="PPR-137.1">PPR-137.1 Orden de Trabajo</option>
           <option value="PPR-137.3">PPR-137.3 Inspección</option>
           <option value="Correspondencia">Correspondencia Oficial</option>
           <option value="Memorando">Memorando</option>
@@ -1193,7 +1613,7 @@ select {
     <div class="info-card" style="margin-top:12px">
       <div class="info-title">Módulos Activos</div>
       <p>✅ Panel General</p>
-      <p>✅ Querellas PPR-137.1</p>
+      <p>✅ Órdenes de Trabajo PPR-137.1</p>
       <p>✅ Inspecciones PPR-137.3</p>
       <p>✅ Casos Activos</p>
       <p>✅ Mantenimiento</p>
@@ -1387,13 +1807,13 @@ function item_Q1_data(d) {
       <span class="record-id">${d.numero||'—'}</span>
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
-    ${d.querellante ? `<p class="record-body"><strong>Querellante:</strong> ${d.querellante}</p>` : ''}
+    ${d.solicitante ? `<p class="record-body"><strong>Solicitante:</strong> ${d.solicitante}</p>` : ''}
     ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
     <p class="record-body">${d.descripcion||''}</p>
     ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Querella')">🗑 Eliminar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Incidente')">🗑 Eliminar</button>
     </div>
   </div>`;
 }
@@ -1650,6 +2070,322 @@ function cerrarSesion() {
   }).catch(() => location.reload());
 }
 
+/* ═══ HELPER: GENERAR FILAS DE INSPECCIÓN ═══ */
+function makeInspRows(sec, items) {
+  return items.map((item, i) => `
+    <tr>
+      <td>${item}</td>
+      <td><div class="insp-radio-group">
+        <label><input type="radio" name="${sec}_${i}" value="R"> Sí</label>
+      </div></td>
+      <td><div class="insp-radio-group">
+        <label><input type="radio" name="${sec}_${i}" value="P"> Sí</label>
+      </div></td>
+      <td><div class="insp-radio-group">
+        <label><input type="radio" name="${sec}_${i}" value="B"> Sí</label>
+      </div></td>
+      <td><input type="number" class="insp-cant" min="0" id="cant_${sec}_${i}"></td>
+      <td><textarea class="insp-obs" id="obs_${sec}_${i}" placeholder="Observaciones..."></textarea></td>
+    </tr>`).join('');
+}
+
+/* ═══ TABS INTERNOS PPR-137.3 ═══ */
+function switchInnerTab(form, sec) {
+  const tabs = document.querySelectorAll(`#${form}_tabs .inner-tab`);
+  const secs = document.querySelectorAll(`[id^="${form}_sec_"]`);
+  tabs.forEach(t => t.classList.remove('active'));
+  secs.forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`${form}_sec_${sec}`).classList.add('active');
+}
+
+/* ═══ FOTO ═══ */
+let _fotoData = { q1: null, q3: null };
+
+function previewFoto(form) {
+  const input   = document.getElementById(`${form}_foto_input`);
+  const preview = document.getElementById(`${form}_foto_preview`);
+  const clear   = document.getElementById(`${form}_foto_clear`);
+  const file    = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    _fotoData[form] = e.target.result; // base64
+    preview.src = e.target.result;
+    preview.classList.add('visible');
+    clear.classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearFoto(form) {
+  _fotoData[form] = null;
+  document.getElementById(`${form}_foto_input`).value = '';
+  const preview = document.getElementById(`${form}_foto_preview`);
+  const clear   = document.getElementById(`${form}_foto_clear`);
+  preview.src = '';
+  preview.classList.remove('visible');
+  clear.classList.remove('visible');
+}
+
+async function subirFoto(form, docId) {
+  if (!_fotoData[form]) return null;
+  try {
+    const storage = firebase.storage();
+    const ref     = storage.ref(`dace_fotos/${form}/${docId}_${Date.now()}.jpg`);
+    await ref.putString(_fotoData[form], 'data_url');
+    return await ref.getDownloadURL();
+  } catch(e) {
+    console.error('Error subiendo foto:', e);
+    return null;
+  }
+}
+
+/* ═══ GEMINI AI ═══ */
+const GEMINI_KEY = 'AIzaSyBdDcHgPVlpgrDF8h_CEXOqnWRqDZXngvU:';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+
+async function llamarGemini(prompt, fotoBase64 = null) {
+  const parts = [{ text: prompt }];
+  if (fotoBase64) {
+    const base64 = fotoBase64.split(',')[1];
+    parts.unshift({ inline_data: { mime_type: 'image/jpeg', data: base64 } });
+  }
+  const resp = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts }] })
+  });
+  const data = await resp.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+/* ── IA para PPR-137.1 ── */
+async function generarDescripcionIA(form) {
+  const desc = v('q1_desc');
+  const btn  = document.getElementById('q1_ai_btn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Generando...';
+
+  const prompt = `Eres el Coordinador Auxiliar DACE del Negociado de la Policía de Puerto Rico, Área Arecibo.
+Basado en esta descripción breve: "${desc || 'Ver imagen adjunta'}", genera una descripción técnica profesional 
+para una Solicitud de Orden de Trabajo (PPR-137.1) de la NPPR.
+La descripción debe:
+- Usar terminología técnica de construcción y mantenimiento
+- Mencionar el tipo de trabajo, la urgencia y el impacto operacional
+- Estar redactada en español formal institucional
+- Tener entre 3 y 5 oraciones
+Responde SOLO con el texto de la descripción, sin títulos ni explicaciones.`;
+
+  try {
+    const texto = await llamarGemini(prompt, _fotoData[form]);
+    document.getElementById('q1_ai_texto').textContent = texto;
+    document.getElementById('q1_ai_result').classList.add('visible');
+  } catch(e) {
+    showToast('❌ Error IA: ' + e.message, '#dc2626');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '✨ GENERAR DESCRIPCIÓN CON IA';
+}
+
+function usarTextoIA(form) {
+  const texto = document.getElementById('q1_ai_texto').textContent;
+  document.getElementById('q1_desc').value = texto;
+  document.getElementById('q1_ai_result').classList.remove('visible');
+}
+
+/* ── IA para PPR-137.3 ── */
+async function generarHallazgoIA() {
+  const obs  = v('q3_obs_gen');
+  const lugar = v('q3_lugar') || document.getElementById('q3_lugar')?.value || '';
+  const btn  = document.getElementById('q3_ai_btn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Analizando inspección...';
+
+  // Recopilar hallazgos de todas las secciones
+  const secciones = ['ext','int','com','adm','bib','aca','ban','tec','can','seg','ele','dor'];
+  const nombresSeccion = {
+    ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
+    bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
+    can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
+  };
+  let hallazgosRaw = '';
+  secciones.forEach(sec => {
+    const radios = document.querySelectorAll(`[name^="${sec}_"]`);
+    const items  = new Set();
+    radios.forEach(r => {
+      if (r.checked && (r.value === 'R' || r.value === 'P')) {
+        const idx = r.name.split('_')[1];
+        const obs_el = document.getElementById(`obs_${sec}_${idx}`);
+        const tipo = r.value === 'R' ? 'Reemplazo' : 'Reparación';
+        items.add(`[${tipo}] ${obs_el?.placeholder?.replace('Observaciones...','') || r.name}`);
+      }
+    });
+    if (items.size > 0) {
+      hallazgosRaw += `\n${nombresSeccion[sec]}: ${[...items].join(', ')}`;
+    }
+  });
+
+  const prompt = `Eres el Coordinador Auxiliar DACE del Negociado de la Policía de Puerto Rico, Área Arecibo.
+Realizaste una Inspección Preventiva (PPR-137.3) en: ${lugar}.
+Observaciones del inspector: "${obs}"
+Hallazgos encontrados: ${hallazgosRaw || 'Ver imagen adjunta'}
+
+Genera DOS textos en JSON con este formato exacto:
+{
+  "hallazgo": "Descripción técnica profesional de los hallazgos para el PPR-137.3, usando terminología OSHA/AEP/construcción, 4-6 oraciones en español formal",
+  "orden": "Texto para PPR-137.1 Solicitud de Orden de Trabajo describiendo los trabajos requeridos, materiales sugeridos y prioridad, 3-4 oraciones en español formal"
+}
+Responde SOLO con el JSON, sin explicaciones ni backticks.`;
+
+  try {
+    let texto = await llamarGemini(prompt, _fotoData.q3);
+    texto = texto.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(texto);
+    document.getElementById('q3_ai_hallazgo').textContent = data.hallazgo || '';
+    document.getElementById('q3_ai_orden').textContent    = data.orden || '';
+    document.getElementById('q3_ai_result').classList.add('visible');
+  } catch(e) {
+    showToast('❌ Error IA: Configura tu Gemini API Key', '#dc2626');
+    console.error(e);
+  }
+  btn.disabled = false;
+  btn.innerHTML = '✨ GENERAR HALLAZGO TÉCNICO CON IA';
+}
+
+function usarHallazgoIA() {
+  document.getElementById('q3_hallazgos').value = document.getElementById('q3_ai_hallazgo').textContent;
+  document.getElementById('q3_ai_result').classList.remove('visible');
+}
+
+/* ═══ GUARDAR: 137.1 (actualizado con foto y campos oficiales) ═══ */
+async function guardarQ1() {
+  const unidad = document.getElementById('q1_unidad')?.value;
+  const desc   = v('q1_desc');
+  if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
+
+  showToast('⏳ Guardando...', '#0a192f');
+  try {
+    // Número automático
+    const snap  = await db.collection('dace_q137_1').get();
+    const total = snap.size + 1;
+    const anio  = new Date().getFullYear();
+    const numAuto = `SOL-137.1-${anio}-${String(total).padStart(3,'0')}`;
+
+    // Tipos de trabajo seleccionados
+    const trabajos = [];
+    if (document.getElementById('q1_carp')?.checked) trabajos.push('Carpintería');
+    if (document.getElementById('q1_elec')?.checked) trabajos.push('Electricidad');
+    if (document.getElementById('q1_pint')?.checked) trabajos.push('Pintura');
+    if (document.getElementById('q1_refr')?.checked) trabajos.push('Refrigeración');
+    if (document.getElementById('q1_eban')?.checked) trabajos.push('Ebanistería');
+    if (document.getElementById('q1_limp')?.checked) trabajos.push('Limpieza');
+    if (document.getElementById('q1_plom')?.checked) trabajos.push('Plomería');
+
+    // Subir foto si hay
+    const docRef  = db.collection('dace_q137_1').doc();
+    const fotoUrl = await subirFoto('q1', docRef.id);
+
+    await docRef.set({
+      numero: numAuto, fecha: v('q1_fecha'),
+      unidad, area: v('q1_area'), director: v('q1_director'),
+      solicitante: v('q1_solicitante'), telefono: v('q1_tel'),
+      trabajos, descripcion: desc,
+      seccion: v('q1_seccion'), division: v('q1_division'),
+      distrito: v('q1_distrito'), negociado: v('q1_negociado'),
+      estatus: v('q1_estatus'), observaciones: v('q1_obs'),
+      fotoUrl: fotoUrl || null,
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast(`✅ Orden ${numAuto} guardada y sincronizada`, '#166534');
+    // Limpiar formulario
+    ['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito'].forEach(id => set(id,''));
+    ['q1_carp','q1_elec','q1_pint','q1_refr','q1_eban','q1_limp','q1_plom'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.checked = false;
+    });
+    clearFoto('q1');
+    document.getElementById('q1_ai_result').classList.remove('visible');
+    set('q1_fecha', hoy());
+    document.getElementById('q1_num').placeholder = `SOL-137.1-${anio}-${String(total+1).padStart(3,'0')}`;
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+}
+
+/* ═══ RECOPILAR DATOS INSPECCIÓN 137.3 ═══ */
+function recopilarInspeccion() {
+  const secciones = {
+    ext: ['Portón de entrada','Verja periferal','Estacionamiento','Parrillas Pluviales','Estación de Basura','Luminarias y Postes','Hidrante','Mangueras','Áreas Verdes','Astas de Banderas','Pintura Exterior','Iluminación Perímetro','Rotulación'],
+    int: ['Portones','Pasamanos','Rejas','Pintura','Áreas verdes','Gazebo','Paredes','Pisos','Aceras','Rampas','Iluminación','Desagües pluviales','Barandas','Juntas de Expansión'],
+    com: ['Enchapado','Campana de Extracción','Plomería','Trampa de grasa','Walk-in Cooler','Calentador de agua','Sistema de Gas','Ventanas','Puertas','Baños','Luminarias'],
+    adm: ['A/C','Paredes','Piso','Baños','Pintura','Enfriador de Agua','ADA','Iluminación','Ventanas','Plafón','Intercom','Timbre'],
+    bib: ['A/C','Paredes','Pisos','Oficina Bibliotecario','Ventanas','Pinturas','Puertas','Luminaria'],
+    aca: ['Salones','Pizarras','Iluminación','Receptáculos','Puertas','Gabinetes','Abanicos','Ventanas','Pintura'],
+    ban: ['Enchapado','Particiones','Ventanas','Drenajes','Inodoros','Lavamanos','Urinales','Llaves','Extractores','Pintura','ADA'],
+    tec: ['Acceso','Escotillas','Drenajes','Limpieza','Empozamientos','Filtraciones','Tratamiento'],
+    can: ['Canastos','Portones','Rejas y Barandas','Estructura','Gradas','Iluminación','Piso','Control Palomas','Extractores','Baños','Fuentes','Abanicos','Filtraciones','Drenajes'],
+    seg: ['Intercomunicador','Alarma incendios','Gabinetes Mangueras','Extintores','Luces Salida','Luces Emergencia','Sistema Seguridad'],
+    ele: ['Subestación','Paneles Eléctricos','Distribución','Bombeo Agua','Bombeo Sanitario','Planta Tratamiento','Tanques','Leaching Field','Energía Renovable','Generador','Fuentes Agua','Cisterna','A/C','Elevadores','Montasillas'],
+    dor: ['Pintura','Ventanas','Puertas','Linternas','Pisos','Duchas','Aire','Lavamanos']
+  };
+
+  const resultado = {};
+  Object.keys(secciones).forEach(sec => {
+    resultado[sec] = secciones[sec].map((item, i) => {
+      const radios = document.querySelectorAll(`[name="${sec}_${i}"]`);
+      let estado = '';
+      radios.forEach(r => { if(r.checked) estado = r.value; });
+      return {
+        item,
+        estado,
+        cantidad: document.getElementById(`cant_${sec}_${i}`)?.value || '',
+        observaciones: document.getElementById(`obs_${sec}_${i}`)?.value || ''
+      };
+    });
+  });
+  return resultado;
+}
+
+/* ═══ GUARDAR: 137.3 (actualizado) ═══ */
+async function guardarQ3() {
+  const lugar = document.getElementById('q3_lugar')?.value;
+  const hall  = v('q3_hallazgos');
+  if (!lugar || !hall) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
+
+  showToast('⏳ Guardando inspección...', '#0a192f');
+  try {
+    const snap  = await db.collection('dace_q137_3').get();
+    const total = snap.size + 1;
+    const anio  = new Date().getFullYear();
+    const numAuto = `INS-137.3-${anio}-${String(total).padStart(3,'0')}`;
+
+    const docRef  = db.collection('dace_q137_3').doc();
+    const fotoUrl = await subirFoto('q3', docRef.id);
+    const inspeccionData = recopilarInspeccion();
+
+    await docRef.set({
+      numero: numAuto, fecha: v('q3_fecha'),
+      lugar, area: v('q3_area'), director: v('q3_director'),
+      telefono: v('q3_tel'), direccion: v('q3_dir'),
+      inspeccion: inspeccionData,
+      observacionesGenerales: v('q3_obs_gen'),
+      hallazgos: hall, recomendaciones: v('q3_rec'),
+      estatus: v('q3_estatus'),
+      fotoUrl: fotoUrl || null,
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast(`✅ Inspección ${numAuto} guardada y sincronizada`, '#166534');
+    limpiar(['q3_director','q3_tel','q3_dir','q3_obs_gen','q3_hallazgos','q3_rec']);
+    set('q3_lugar',''); set('q3_estatus','Pendiente'); set('q3_fecha', hoy());
+    clearFoto('q3');
+    document.getElementById('q3_ai_result').classList.remove('visible');
+    document.getElementById('q3_num').placeholder = `INS-137.3-${anio}-${String(total+1).padStart(3,'0')}`;
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+}
+
 /* ═══ EXPORTAR PDF ═══ */
 function pdfHeader(doc, titulo) {
   const azul  = [10, 25, 47];
@@ -1720,14 +2456,14 @@ async function exportarPDF(modulo) {
 
   try {
     if (modulo === 'q137_1') {
-      titulo = 'Registro de Querellas PPR-137.1';
+      titulo = 'Registro de Órdenes de Trabajo PPR-137.1';
       snap   = await db.collection('dace_q137_1').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
       if (snap.empty) {
         doc.setTextColor(150,150,150);
         doc.setFontSize(10);
-        doc.text('No hay querellas registradas.', W/2, y+10, {align:'center'});
+        doc.text('No hay órdenes registradas.', W/2, y+10, {align:'center'});
       } else {
         snap.docs.forEach((docSnap, i) => {
           const d = docSnap.data();
@@ -1748,7 +2484,7 @@ async function exportarPDF(modulo) {
 
           // Campos
           const campos = [
-            ['Querellante', d.querellante],
+            ['Solicitante', d.solicitante],
             ['Agencia/Unidad', d.agencia],
             ['Descripción', d.descripcion],
             ['Estatus', d.estatus],
@@ -1992,7 +2728,7 @@ async function exportarPDF(modulo) {
 
     // Nombre del archivo
     const nombres = {
-      q137_1: 'PPR-137.1_Querellas',
+      q137_1: 'PPR-137.1_Incidentes',
       q137_3: 'PPR-137.3_Inspecciones',
       casos:  'Casos_Activos',
       maestro:'Registro_Maestro'
@@ -2035,7 +2771,7 @@ async function exportarPanelPDF() {
     y += 8;
 
     const stats = [
-      ['Querellas PPR-137.1', s1.size, [10,25,47]],
+      ['Órdenes de Trabajo PPR-137.1', s1.size, [10,25,47]],
       ['Inspecciones PPR-137.3', s2.size, [92,112,10]],
       ['Casos Activos', s3.size, [22,163,74]],
       ['Registro Maestro', s4.size, [220,38,38]],
@@ -2057,7 +2793,7 @@ async function exportarPanelPDF() {
     doc.setTextColor(...azul);
     doc.setFontSize(9);
     doc.setFont('helvetica','bold');
-    doc.text('ACTIVIDAD RECIENTE — QUERELLAS 137.1', 10, y);
+    doc.text('ACTIVIDAD RECIENTE — INCIDENTES 137.1', 10, y);
     y += 5;
 
     s1.docs.slice(0,5).forEach((docSnap, i) => {
@@ -2338,7 +3074,7 @@ function initListeners() {
       document.getElementById('q1_total').textContent = snap.size;
       _cache.q1 = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('q1');
-      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('⚖️', d.data().numero||'Querella', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`));
+      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('⚖️', d.data().numero||'Incidente', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`));
       renderFeed();
     }, e => console.error('137.1:', e));
 
@@ -2418,6 +3154,8 @@ function initListeners() {
 
   // Generar reportes iniciales
   setTimeout(generarReportes, 2000);
+  // Mostrar próximo número de inspección
+  setTimeout(actualizarProximoNumInsp, 1500);
 }
 
 /* ── FEED RECIENTE ── */
@@ -2459,13 +3197,13 @@ function item_Q1(doc) {
       <span class="record-id">${d.numero||'—'}</span>
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
-    ${d.querellante ? `<p class="record-body"><strong>Querellante:</strong> ${d.querellante}</p>` : ''}
+    ${d.solicitante ? `<p class="record-body"><strong>Solicitante:</strong> ${d.solicitante}</p>` : ''}
     ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
     <p class="record-body">${d.descripcion||''}</p>
     ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_1','${doc.id}','Querella')">🗑 Eliminar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${doc.id}','Incidente')">🗑 Eliminar</button>
     </div>
   </div>`;
 }
@@ -2531,33 +3269,51 @@ async function guardarQ1() {
   try {
     await db.collection('dace_q137_1').add({
       numero: num, fecha: v('q1_fecha'), hora: v('q1_hora'),
-      querellante: v('q1_querellante'), agencia: v('q1_agencia'),
+      solicitante: v('q1_solicitante'), agencia: v('q1_agencia'),
       descripcion: desc, estatus: v('q1_estatus'), observaciones: v('q1_obs'),
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    showToast('✅ Querella guardada y sincronizada', '#166534');
-    limpiar(['q1_num','q1_querellante','q1_agencia','q1_desc','q1_obs']);
+    showToast('✅ Incidente guardada y sincronizada', '#166534');
+    limpiar(['q1_num','q1_solicitante','q1_agencia','q1_desc','q1_obs']);
     set('q1_estatus','Pendiente'); set('q1_fecha', hoy()); set('q1_hora', ahora());
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ GUARDAR: 137.3 ═══ */
 async function guardarQ3() {
-  const num = v('q3_num'), hall = v('q3_hallazgos');
-  if (!num || !hall) { showToast('⚠️ Número y hallazgos son requeridos', '#92400e'); return; }
+  const hall = v('q3_hallazgos');
+  if (!hall) { showToast('⚠️ Los hallazgos son requeridos', '#92400e'); return; }
   try {
+    // Generar número consecutivo automático
+    const snap = await db.collection('dace_q137_3').get();
+    const total = snap.size + 1;
+    const anio  = new Date().getFullYear();
+    const numAuto = `INS-137.3-${anio}-${String(total).padStart(3,'0')}`;
+
     await db.collection('dace_q137_3').add({
-      numero: num, fecha: v('q3_fecha'), hora: v('q3_hora'),
+      numero: numAuto, fecha: v('q3_fecha'), hora: v('q3_hora'),
       lugar: v('q3_lugar'), tipo: v('q3_tipo'),
       hallazgos: hall, recomendaciones: v('q3_rec'), estatus: v('q3_estatus'),
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    showToast('✅ Inspección guardada y sincronizada', '#166534');
-    limpiar(['q3_num','q3_lugar','q3_hallazgos','q3_rec']);
+    showToast(`✅ Inspección ${numAuto} guardada y sincronizada`, '#166534');
+    limpiar(['q3_lugar','q3_hallazgos','q3_rec']);
     set('q3_estatus','Pendiente'); set('q3_fecha', hoy()); set('q3_hora', ahora());
+    // Actualizar el campo visual con el próximo número
+    actualizarProximoNumInsp();
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+async function actualizarProximoNumInsp() {
+  try {
+    const snap = await db.collection('dace_q137_3').get();
+    const total = snap.size + 1;
+    const anio  = new Date().getFullYear();
+    const el = document.getElementById('q3_num');
+    if (el) el.placeholder = `INS-137.3-${anio}-${String(total).padStart(3,'0')}`;
+  } catch(e) {}
 }
 
 /* ═══ GUARDAR: CASOS ═══ */
