@@ -2591,18 +2591,15 @@ async function subirFoto(form, docId) {
 }
 
 /* ═══ GEMINI AI — VÍA CLOUD FUNCTION SEGURA ═══ */
-async function llamarGemini(prompt, fotoBase64 = null) {
+async function llamarGemini(promptTexto, fotoBase64 = null) {
   try {
-    const functions = firebase.functions();
-    // Especificar región us-central1 donde se desplegó la función
-    const llamarGeminiFunction = functions.httpsCallable('llamarGemini');
-    const result = await llamarGeminiFunction({
-      prompt,
-      fotoBase64: fotoBase64 || null
-    });
+    const fn = firebase.functions().httpsCallable('llamarGemini');
+    const payload = { prompt: String(promptTexto), fotoBase64: fotoBase64 || null };
+    console.log('Enviando a Cloud Function, prompt length:', payload.prompt.length);
+    const result = await fn(payload);
     return result.data.texto || '';
   } catch(e) {
-    console.error('Error llamarGemini:', e.code, e.message);
+    console.error('Error llamarGemini:', e.code, e.message, e.details);
     throw e;
   }
 }
