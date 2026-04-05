@@ -1332,6 +1332,204 @@ select {
     <div id="lista_mt"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
+  <!-- ══════════ GENERADORES ══════════ -->
+  <div id="generadores" class="tab-page">
+    <div class="page-title">🔋 Bitácora de Generadores</div>
+
+    <!-- TABS INTERNOS -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-save" id="gen_tab_btn1" onclick="switchGenTab('registro')"
+        style="padding:10px;font-size:11px;background:var(--blue)">📝 Registrar</button>
+      <button class="btn-save" id="gen_tab_btn2" onclick="switchGenTab('historial')"
+        style="padding:10px;font-size:11px;background:#94a3b8">📋 Historial</button>
+      <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('resumen')"
+        style="padding:10px;font-size:11px;background:#94a3b8">📊 Resumen</button>
+    </div>
+
+    <!-- TAB: REGISTRO -->
+    <div id="gen_sec_registro">
+      <div class="ppr-header">
+        <h2>🔋 BITÁCORA DE GENERADOR ELÉCTRICO</h2>
+        <p>DACE Arecibo — Negociado de la Policía de Puerto Rico</p>
+      </div>
+      <div class="ppr-section">
+        <div class="ppr-section-title">⚡ Identificación del Generador</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Dependencia / Cuartel *</label>
+            <select id="gen_lugar">
+              <option value="">— Seleccionar —</option>
+              <option>Comandancia Administracion</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Marca / Modelo</label>
+              <input type="text" id="gen_marca" placeholder="Ej: Generac, Kohler..." autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Capacidad Tanque (gal)</label>
+              <input type="number" id="gen_capacidad" placeholder="Ej: 500" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">📋 Datos de la Entrada</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group"><label>Fecha *</label><input type="date" id="gen_fecha"></div>
+            <div class="input-group"><label>Hora *</label><input type="time" id="gen_hora"></div>
+          </div>
+          <div class="input-group">
+            <label>Tipo de Actividad *</label>
+            <select id="gen_tipo">
+              <option value="Inspección Rutinaria">Inspección Rutinaria</option>
+              <option value="Suplido de Combustible">Suplido de Combustible</option>
+              <option value="Arranque de Prueba">Arranque de Prueba</option>
+              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+              <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
+              <option value="Falla / Avería">Falla / Avería</option>
+              <option value="Operación de Emergencia">Operación de Emergencia</option>
+              <option value="Cambio de Aceite">Cambio de Aceite</option>
+              <option value="Cambio de Filtros">Cambio de Filtros</option>
+              <option value="Prueba de Carga">Prueba de Carga</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">⛽ Niveles de Combustible</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group">
+              <label>Nivel Antes (%)</label>
+              <input type="number" id="gen_nivel_antes" placeholder="0-100" min="0" max="100">
+            </div>
+            <div class="input-group">
+              <label>Nivel Después (%)</label>
+              <input type="number" id="gen_nivel_despues" placeholder="0-100" min="0" max="100">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Galones Suministrados</label>
+              <input type="number" id="gen_galones" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Litros Suministrados</label>
+              <input type="number" id="gen_litros" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Costo ($)</label>
+              <input type="number" id="gen_costo" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Horas de Operación</label>
+              <input type="number" id="gen_horas" placeholder="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">🔍 Condición y Observaciones</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Condición General</label>
+            <select id="gen_condicion">
+              <option value="Óptimo">✅ Óptimo</option>
+              <option value="Regular">⚠️ Regular</option>
+              <option value="Deficiente">❌ Deficiente</option>
+              <option value="Fuera de Servicio">🚫 Fuera de Servicio</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Descripción / Observaciones *</label>
+            <textarea id="gen_obs" rows="4" placeholder="Describa detalladamente las actividades realizadas, condiciones encontradas, lecturas del panel, etc..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Proveedor / Técnico (si aplica)</label>
+            <input type="text" id="gen_proveedor" placeholder="Nombre del proveedor o técnico" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Número de Boleto / Factura</label>
+            <input type="text" id="gen_boleto" placeholder="Ej: BOL-2026-001" autocomplete="off">
+          </div>
+
+          <!-- Foto -->
+          <div class="foto-zone" onclick="document.getElementById('gen_foto_input').click()">
+            <span class="foto-icon">📷</span>
+            <p>Toca para fotografiar el panel o medidor</p>
+            <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del generador</p>
+          </div>
+          <input type="file" id="gen_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoGen()">
+          <img id="gen_foto_preview" class="foto-preview" alt="Vista previa">
+          <button class="btn-foto-clear" id="gen_foto_clear" onclick="clearFotoGen()">✕ Eliminar foto</button>
+        </div>
+      </div>
+
+      <button class="btn-save" style="background:#15803d" onclick="guardarGenerador()">💾 REGISTRAR EN BITÁCORA</button>
+      <button class="btn-pdf" style="background:#15803d;margin-top:8px" onclick="exportarGeneradoresPDF()">📄 EXPORTAR BITÁCORA PDF</button>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div id="gen_sec_historial" style="display:none">
+      <div class="input-group" style="margin-bottom:10px">
+        <input type="text" class="filter-search" id="gen_search"
+          placeholder="🔍 Buscar por lugar, tipo, observaciones..."
+          oninput="buscarGeneradores()" style="margin-bottom:0">
+      </div>
+      <div class="filter-chips" style="margin-bottom:12px">
+        <span class="chip active" onclick="filtrarGenTipo(this,'')" data-val="">Todos</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Suplido de Combustible')" data-val="Suplido de Combustible">Combustible</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Inspección Rutinaria')" data-val="Inspección Rutinaria">Inspección</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Mantenimiento Preventivo')" data-val="Mantenimiento Preventivo">Mantenimiento</span>
+        <span class="chip red" onclick="filtrarGenTipo(this,'Falla / Avería')" data-val="Falla / Avería">Falla</span>
+      </div>
+      <div class="list-header">Registros (<span id="gen_total">0</span>)</div>
+      <div id="lista_gen"><div class="loading-state">⏳ Cargando...</div></div>
+    </div>
+
+    <!-- TAB: RESUMEN -->
+    <div id="gen_sec_resumen" style="display:none">
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green">
+          <div class="stat-num" id="gen_rpt_total">—</div>
+          <div class="stat-label">Total Registros</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-num" id="gen_rpt_gal">—</div>
+          <div class="stat-label">Total Galones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="gen_rpt_costo">—</div>
+          <div class="stat-label">Costo Total $</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-num" id="gen_rpt_fallas">—</div>
+          <div class="stat-label">Fallas Registradas</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Consumo por Dependencia</div>
+        <div id="gen_rpt_dep" style="font-size:13px;color:#475569;line-height:2">
+          <div class="loading-state">⏳ Calculando...</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Distribución por Tipo de Actividad</div>
+        <div id="gen_rpt_tipo" style="font-size:13px;color:#475569;line-height:2"></div>
+      </div>
+      <button class="btn-save" style="background:#15803d" onclick="calcularResumenGen()">🔄 ACTUALIZAR RESUMEN</button>
+    </div>
+  </div>
+
   <!-- MÁS -->
   <div id="mas" class="tab-page">
     <div class="page-title">⋯ Más Opciones</div>
@@ -1345,6 +1543,11 @@ select {
         <span class="more-icon">📁</span>
         <div class="more-title">Registro Maestro</div>
         <div class="more-sub">Log de actividades</div>
+      </div>
+      <div class="more-card" onclick="changeTab('generadores')">
+        <span class="more-icon">🔋</span>
+        <div class="more-title">Generadores</div>
+        <div class="more-sub">Bitácora oficial</div>
       </div>
       <div class="more-card" onclick="changeTab('agenda')">
         <span class="more-icon">📅</span>
@@ -1866,6 +2069,248 @@ function item_Maestro_data(d) {
   </div>`;
 }
 
+/* ═══ GENERADORES ═══ */
+let _genCache = [];
+let _genFotoData = null;
+let _genFiltroTipo = '';
+
+function switchGenTab(tab) {
+  ['registro','historial','resumen'].forEach(t => {
+    document.getElementById(`gen_sec_${t}`).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById(`gen_tab_btn${['registro','historial','resumen'].indexOf(t)+1}`);
+    if(btn) btn.style.background = t === tab ? 'var(--blue)' : '#94a3b8';
+  });
+  if (tab === 'resumen') calcularResumenGen();
+}
+
+function previewFotoGen() {
+  const input   = document.getElementById('gen_foto_input');
+  const preview = document.getElementById('gen_foto_preview');
+  const clear   = document.getElementById('gen_foto_clear');
+  const file    = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _genFotoData = e.target.result;
+    preview.src = e.target.result;
+    preview.classList.add('visible');
+    clear.classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearFotoGen() {
+  _genFotoData = null;
+  document.getElementById('gen_foto_input').value = '';
+  document.getElementById('gen_foto_preview').src = '';
+  document.getElementById('gen_foto_preview').classList.remove('visible');
+  document.getElementById('gen_foto_clear').classList.remove('visible');
+}
+
+async function guardarGenerador() {
+  const lugar = document.getElementById('gen_lugar')?.value;
+  const obs   = v('gen_obs');
+  if (!lugar || !obs) { showToast('⚠️ Dependencia y observaciones son requeridas', '#92400e'); return; }
+
+  showToast('⏳ Registrando en bitácora...', '#0a192f');
+  try {
+    const docRef  = db.collection('dace_generadores').doc();
+    let fotoUrl = null;
+    if (_genFotoData) {
+      try {
+        const storage = firebase.storage();
+        const ref = storage.ref(`dace_fotos/generadores/${docRef.id}_${Date.now()}.jpg`);
+        await ref.putString(_genFotoData, 'data_url');
+        fotoUrl = await ref.getDownloadURL();
+      } catch(e) { console.warn('Foto no subida:', e); }
+    }
+
+    await docRef.set({
+      lugar, marca: v('gen_marca'),
+      capacidad: v('gen_capacidad'),
+      fecha: v('gen_fecha'), hora: v('gen_hora'),
+      tipo: v('gen_tipo'),
+      nivelAntes:   parseFloat(v('gen_nivel_antes'))  || null,
+      nivelDespues: parseFloat(v('gen_nivel_despues')) || null,
+      galones:      parseFloat(v('gen_galones'))       || null,
+      litros:       parseFloat(v('gen_litros'))        || null,
+      costo:        parseFloat(v('gen_costo'))         || null,
+      horas:        parseFloat(v('gen_horas'))         || null,
+      condicion:    v('gen_condicion'),
+      observaciones: obs,
+      proveedor:    v('gen_proveedor'),
+      boleto:       v('gen_boleto'),
+      fotoUrl,
+      usuario: 'Agte. Aponte Cancel · 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast('✅ Entrada registrada en bitácora', '#166534');
+    ['gen_marca','gen_obs','gen_proveedor','gen_boleto',
+     'gen_galones','gen_litros','gen_costo','gen_horas',
+     'gen_nivel_antes','gen_nivel_despues','gen_capacidad'].forEach(id => set(id,''));
+    set('gen_lugar',''); set('gen_condicion','Óptimo');
+    set('gen_fecha', hoy()); set('gen_hora', ahora());
+    clearFotoGen();
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+}
+
+function buscarGeneradores() {
+  const txt = (document.getElementById('gen_search')?.value || '').toLowerCase();
+  let datos = _genCache;
+  if (txt)           datos = datos.filter(d => JSON.stringify(d).toLowerCase().includes(txt));
+  if (_genFiltroTipo) datos = datos.filter(d => d.tipo === _genFiltroTipo);
+  renderGeneradores(datos);
+}
+
+function filtrarGenTipo(el, tipo) {
+  document.querySelectorAll('#generadores .filter-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  _genFiltroTipo = tipo;
+  buscarGeneradores();
+}
+
+function renderGeneradores(docs) {
+  const el = document.getElementById('lista_gen');
+  if (!docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🔋</span><p>No hay registros en la bitácora</p></div>';
+    return;
+  }
+  const condIcon = { 'Óptimo':'✅', 'Regular':'⚠️', 'Deficiente':'❌', 'Fuera de Servicio':'🚫' };
+  const tipoColor = {
+    'Suplido de Combustible':'#15803d',
+    'Falla / Avería':'#dc2626',
+    'Operación de Emergencia':'#dc2626',
+    'Mantenimiento Correctivo':'#92400e',
+    'Inspección Rutinaria':'#0a192f',
+    'Arranque de Prueba':'#0369a1'
+  };
+  el.innerHTML = docs.map(d => `
+    <div class="record-item" style="border-left-color:${tipoColor[d.tipo]||'#15803d'}">
+      <div class="record-head">
+        <span class="record-id">${d.lugar||'—'}</span>
+        <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+      </div>
+      <p class="record-body"><strong>${d.tipo||''}</strong> ${condIcon[d.condicion]||''}</p>
+      ${d.nivelAntes!=null ? `<p class="record-body">⛽ Nivel: <strong>${d.nivelAntes}%</strong> → <strong>${d.nivelDespues||'—'}%</strong>${d.galones ? ` · ${d.galones} gal` : ''}${d.costo ? ` · $${d.costo}` : ''}</p>` : ''}
+      ${d.horas ? `<p class="record-body">⏱ Horas operación: ${d.horas}</p>` : ''}
+      <p class="record-body">${d.observaciones||''}</p>
+      ${d.proveedor ? `<p class="record-body"><strong>Proveedor:</strong> ${d.proveedor}${d.boleto?' · '+d.boleto:''}</p>` : ''}
+      ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:150px;object-fit:cover">` : ''}
+      <div class="record-foot">
+        <button class="btn-del" onclick="eliminar('dace_generadores','${d._id}','Registro')">🗑 Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+async function calcularResumenGen() {
+  try {
+    const snap = await db.collection('dace_generadores').get();
+    const docs = snap.docs.map(d => d.data());
+
+    document.getElementById('gen_rpt_total').textContent  = docs.length;
+    document.getElementById('gen_rpt_gal').textContent    = docs.reduce((s,d) => s+(d.galones||0), 0).toFixed(1);
+    document.getElementById('gen_rpt_costo').textContent  = '$' + docs.reduce((s,d) => s+(d.costo||0), 0).toFixed(2);
+    document.getElementById('gen_rpt_fallas').textContent = docs.filter(d => d.tipo === 'Falla / Avería').length;
+
+    // Por dependencia
+    const dep = {};
+    docs.forEach(d => { dep[d.lugar||'—'] = (dep[d.lugar||'—']||0) + (d.galones||0); });
+    document.getElementById('gen_rpt_dep').innerHTML = Object.entries(dep)
+      .sort((a,b) => b[1]-a[1])
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v.toFixed(1)} gal</strong></div>`)
+      .join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+    // Por tipo
+    const tipo = {};
+    docs.forEach(d => { tipo[d.tipo||'—'] = (tipo[d.tipo||'—']||0) + 1; });
+    document.getElementById('gen_rpt_tipo').innerHTML = Object.entries(tipo)
+      .sort((a,b) => b[1]-a[1])
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #f0f4f8;padding:4px 0"><span>${k}</span><strong>${v}</strong></div>`)
+      .join('') || '<p style="color:#94a3b8">Sin datos</p>';
+
+  } catch(e) { console.error('Resumen generadores:', e); }
+}
+
+async function exportarGeneradoresPDF() {
+  showToast('⏳ Generando bitácora PDF...', '#0a192f');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W   = doc.internal.pageSize.getWidth();
+
+  try {
+    const snap = await db.collection('dace_generadores').orderBy('createdAt','desc').get();
+    let y = pdfHeader(doc, 'Bitácora de Generadores Eléctricos');
+
+    if (snap.empty) {
+      doc.setTextColor(150,150,150);
+      doc.text('No hay registros en la bitácora.', W/2, y+10, {align:'center'});
+    } else {
+      snap.docs.forEach((docSnap, i) => {
+        const d = docSnap.data();
+        y = checkPage(doc, y, 45);
+
+        doc.setFillColor(240, 253, 244);
+        doc.rect(10, y, W-20, 7, 'F');
+        doc.setTextColor(21, 128, 61);
+        doc.setFontSize(9); doc.setFont('helvetica','bold');
+        doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.tipo||''}`, 13, y+5);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(100,100,100); doc.setFontSize(7);
+        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+        y += 10;
+
+        const campos = [
+          ['Condición', d.condicion],
+          ['Nivel combustible', d.nivelAntes!=null ? `${d.nivelAntes}% → ${d.nivelDespues||'—'}%` : null],
+          ['Galones suministrados', d.galones ? `${d.galones} gal · ${d.litros||'—'} litros · $${d.costo||'—'}` : null],
+          ['Horas operación', d.horas ? `${d.horas} hrs` : null],
+          ['Observaciones', d.observaciones],
+          ['Proveedor', d.proveedor ? `${d.proveedor} · ${d.boleto||''}` : null],
+        ];
+        campos.forEach(([label, val]) => {
+          if (!val) return;
+          y = checkPage(doc, y, 8);
+          doc.setTextColor(21, 128, 61); doc.setFontSize(7); doc.setFont('helvetica','bold');
+          doc.text(label + ':', 13, y);
+          doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+          const lines = doc.splitTextToSize(String(val), W-55);
+          doc.text(lines, 55, y);
+          y += (lines.length * 4) + 2;
+        });
+        y = pdfLinea(doc, y+2, W);
+      });
+    }
+
+    // Totales
+    y = checkPage(doc, y, 30);
+    const docs2 = snap.docs.map(d => d.data());
+    doc.setFillColor(21, 128, 61);
+    doc.rect(10, y, W-20, 20, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('RESUMEN TOTAL', 15, y+7);
+    doc.text(`Total registros: ${snap.size}`, 15, y+13);
+    doc.text(`Total galones: ${docs2.reduce((s,d)=>s+(d.galones||0),0).toFixed(1)} gal`, 15, y+18);
+    doc.text(`Costo total: $${docs2.reduce((s,d)=>s+(d.costo||0),0).toFixed(2)}`, W/2, y+13);
+    doc.text(`Fallas: ${docs2.filter(d=>d.tipo==='Falla / Avería').length}`, W/2, y+18);
+
+    // Pie
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPags; p++) {
+      doc.setPage(p);
+      doc.setFillColor(10,25,47);
+      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+      doc.setTextColor(150,150,150); doc.setFontSize(7);
+      doc.text(`DACE Arecibo — NPPR — Bitácora Generadores | Página ${p} de ${totalPags}`,
+        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
+    }
+
+    const fecha = new Date().toISOString().split('T')[0];
+    doc.save(`DACE_Arecibo_Bitacora_Generadores_${fecha}.pdf`);
+    showToast('✅ Bitácora PDF generada', '#166534');
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+}
+
 /* ═══ AGENDA ═══ */
 let _agendaCache = [];
 
@@ -2143,7 +2588,7 @@ async function subirFoto(form, docId) {
 }
 
 /* ═══ GEMINI AI ═══ */
-const GEMINI_KEY = '***REMOVED_API_KEY_3***:';
+const GEMINI_KEY = 'PEGA_TU_GEMINI_API_KEY_AQUI';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
 async function llamarGemini(prompt, fotoBase64 = null) {
@@ -3033,10 +3478,10 @@ function hoy()  { return new Date().toISOString().split('T')[0]; }
 function ahora(){ return new Date().toTimeString().slice(0, 5); }
 
 function prefill() {
-  ['q1_fecha','q3_fecha','c_fecha','rm_fecha','mt_fecha','ag_fecha','arc_fecha'].forEach(id => {
+  ['q1_fecha','q3_fecha','c_fecha','rm_fecha','mt_fecha','ag_fecha','arc_fecha','gen_fecha'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = hoy();
   });
-  ['q1_hora','q3_hora','rm_hora','mt_hora','ag_hora'].forEach(id => {
+  ['q1_hora','q3_hora','rm_hora','mt_hora','ag_hora','gen_hora'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = ahora();
   });
 }
@@ -3151,6 +3596,15 @@ function initListeners() {
       _arcCache = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       renderArchivo(_arcCache);
     }, e => console.error('archivo:', e));
+
+  /* GENERADORES */
+  db.collection('dace_generadores')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('gen_total').textContent = snap.size;
+      _genCache = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      renderGeneradores(_genCache);
+    }, e => console.error('generadores:', e));
 
   // Generar reportes iniciales
   setTimeout(generarReportes, 2000);
