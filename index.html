@@ -2683,7 +2683,7 @@ Responde SOLO con el JSON, sin explicaciones ni backticks.`;
     document.getElementById('q3_ai_orden').textContent    = data.orden || '';
     document.getElementById('q3_ai_result').classList.add('visible');
   } catch(e) {
-    showToast('❌ Error IA: Configura tu Gemini API Key', '#dc2626');
+    showToast('❌ Error IA: ' + e.message, '#dc2626');
     console.error(e);
   }
   btn.disabled = false;
