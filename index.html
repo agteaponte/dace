@@ -13,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <!-- jsPDF para exportar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -2589,23 +2590,11 @@ async function subirFoto(form, docId) {
   }
 }
 
-/* ═══ GEMINI AI ═══ */
-const GEMINI_KEY = 'PEGA_TU_GEMINI_API_KEY_AQUI';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
-
+/* ═══ GEMINI AI — VÍA CLOUD FUNCTION SEGURA ═══ */
 async function llamarGemini(prompt, fotoBase64 = null) {
-  const parts = [{ text: prompt }];
-  if (fotoBase64) {
-    const base64 = fotoBase64.split(',')[1];
-    parts.unshift({ inline_data: { mime_type: 'image/jpeg', data: base64 } });
-  }
-  const resp = await fetch(GEMINI_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] })
-  });
-  const data = await resp.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const llamarGeminiFunction = firebase.functions().httpsCallable('llamarGemini');
+  const result = await llamarGeminiFunction({ prompt, fotoBase64: fotoBase64 || null });
+  return result.data.texto || '';
 }
 
 /* ── IA para PPR-137.1 ── */
@@ -2833,6 +2822,23 @@ async function guardarQ3() {
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
+/* ═══ HELPER: CARGAR IMAGEN DESDE URL PARA PDF ═══ */
+async function cargarImagenComoBase64(url) {
+  try {
+    const response = await fetch(url);
+    const blob     = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) {
+    console.warn('Error cargando imagen:', e);
+    return null;
+  }
+}
+
 /* ═══ EXPORTAR PDF ═══ */
 function pdfHeader(doc, titulo) {
   const azul  = [10, 25, 47];
@@ -2932,8 +2938,10 @@ async function exportarPDF(modulo) {
           // Campos
           const campos = [
             ['Solicitante', d.solicitante],
-            ['Agencia/Unidad', d.agencia],
+            ['Unidad', d.unidad],
+            ['Tipos de Trabajo', d.trabajos?.join(', ')],
             ['Descripción', d.descripcion],
+            ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
             ['Estatus', d.estatus],
             ['Observaciones', d.observaciones],
           ];
@@ -2950,6 +2958,24 @@ async function exportarPDF(modulo) {
             doc.text(lines, 45, y);
             y += (lines.length * 4) + 2;
           });
+
+          // FOTO si existe
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(...azul);
+              doc.setFontSize(7);
+              doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              // Cargar imagen desde URL
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
 
           y = pdfLinea(doc, y+2, W);
         });
@@ -2983,8 +3009,10 @@ async function exportarPDF(modulo) {
           y += 10;
 
           const campos = [
-            ['Lugar', d.lugar],
-            ['Tipo', d.tipo],
+            ['Lugar/Unidad', d.lugar],
+            ['Director', d.director],
+            ['Dirección', d.direccion],
+            ['Obs. Generales', d.observacionesGenerales],
             ['Hallazgos', d.hallazgos],
             ['Recomendaciones', d.recomendaciones],
             ['Estatus', d.estatus],
@@ -3002,6 +3030,52 @@ async function exportarPDF(modulo) {
             doc.text(lines, 45, y);
             y += (lines.length * 4) + 2;
           });
+
+          // Hallazgos por sección
+          if (d.inspeccion) {
+            const secNombres = {
+              ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
+              bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
+              can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
+            };
+            Object.keys(d.inspeccion).forEach(sec => {
+              const items = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
+              if (items.length === 0) return;
+              y = checkPage(doc, y, 12);
+              doc.setFillColor(255,245,220);
+              doc.rect(13, y-2, W-26, 6, 'F');
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
+              y += 8;
+              items.forEach(it => {
+                y = checkPage(doc, y, 7);
+                doc.setFont('helvetica','normal');
+                doc.setTextColor(60,60,60);
+                const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
+                const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
+                const lines = doc.splitTextToSize(txt, W-30);
+                doc.text(lines, 16, y);
+                y += (lines.length * 4) + 1;
+              });
+            });
+          }
+
+          // FOTO si existe
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
 
           y = pdfLinea(doc, y+2, W);
         });
