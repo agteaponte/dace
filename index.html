@@ -2005,9 +2005,11 @@ function item_Mt_data(d) {
     ${d.notificadoA ? `<p class="record-body"><strong>Notificado:</strong> ${d.notificadoA} · ${d.metodo||''}</p>` : ''}
     <div class="record-foot">
       <span class="badge ${estatusColor[d.estatus]||'b-pending'}">${d.estatus||'—'}</span>
-      <button class="btn-del" onclick="eliminar('dace_mantenimiento','${d._id}','Mantenimiento')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarMantenimiento('${d._id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_mantenimiento','${d._id}','Mantenimiento')">🗑</button>
     </div>
   </div>`;
+}
 }
 
 /* ── Versiones de render que reciben data plain (no Firestore doc) ── */
@@ -3985,6 +3987,29 @@ async function editarQ3(id) {
       _editando = { col: 'dace_q137_3', id };
       const btn = document.querySelector('#q137_3 .btn-save.gold-btn');
       if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR INSPECCIÓN'; }
+    }, 300);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ── EDITAR: MANTENIMIENTO ── */
+async function editarMantenimiento(id) {
+  try {
+    const doc = await db.collection('dace_mantenimiento').doc(id).get();
+    const d   = doc.data();
+    changeTab('mantenimiento');
+    setTimeout(() => {
+      set('mt_lugar',   d.lugar||'');
+      set('mt_dept',    d.departamento||'');
+      set('mt_fecha',   d.fecha||'');
+      set('mt_hora',    d.hora||'');
+      set('mt_desc',    d.descripcion||'');
+      set('mt_notifico',d.notificadoA||'');
+      set('mt_metodo',  d.metodo||'Personal');
+      set('mt_estatus', d.estatus||'Pendiente');
+      _editando = { col: 'dace_mantenimiento', id };
+      const btn = document.querySelector('#mantenimiento .btn-save');
+      if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR MANTENIMIENTO'; }
+      showToast('✏️ Modo edición — modifica y toca ACTUALIZAR', '#b45309');
     }, 300);
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
 }
