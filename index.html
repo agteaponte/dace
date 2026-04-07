@@ -2020,12 +2020,14 @@ function item_Q1_data(d) {
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
     ${d.solicitante ? `<p class="record-body"><strong>Solicitante:</strong> ${d.solicitante}</p>` : ''}
-    ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
+    ${d.unidad      ? `<p class="record-body"><strong>Unidad:</strong> ${d.unidad}</p>` : ''}
     <p class="record-body">${d.descripcion||''}</p>
     ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
+    ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Incidente')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarQ1('${d._id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Orden')">🗑</button>
     </div>
   </div>`;
 }
@@ -2037,12 +2039,13 @@ function item_Q3_data(d) {
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
     ${d.lugar ? `<p class="record-body"><strong>Lugar:</strong> ${d.lugar}</p>` : ''}
-    ${d.tipo  ? `<p class="record-body"><strong>Tipo:</strong> ${d.tipo}</p>` : ''}
     <p class="record-body">${d.hallazgos||''}</p>
     ${d.recomendaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic"><strong>Rec:</strong> ${d.recomendaciones}</p>` : ''}
+    ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_3','${d._id}','Inspección')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarQ3('${d._id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_3','${d._id}','Inspección')">🗑</button>
     </div>
   </div>`;
 }
@@ -2059,7 +2062,8 @@ function item_Caso_data(d) {
     ${d.accion      ? `<p class="record-body"><strong>Próxima acción:</strong> ${d.accion}</p>` : ''}
     <div class="record-foot">
       ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_casos','${d._id}','Caso')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarCaso('${d._id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_casos','${d._id}','Caso')">🗑</button>
     </div>
   </div>`;
 }
@@ -2073,7 +2077,8 @@ function item_Maestro_data(d) {
     <p class="record-body">${d.descripcion||''}</p>
     ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
     <div class="record-foot">
-      <button class="btn-del" onclick="eliminar('dace_maestro','${d._id}','Entrada')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarMaestro('${d._id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_maestro','${d._id}','Entrada')">🗑</button>
     </div>
   </div>`;
 }
