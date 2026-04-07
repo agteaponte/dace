@@ -365,6 +365,12 @@ select {
   margin-left: auto; padding: 4px 8px; border-radius: 6px;
 }
 .btn-del:active { background: #fee2e2; }
+.btn-edit {
+  background: none; border: none; color: #2563eb;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+}
+.btn-edit:active { background: #dbeafe; }
 
 /* ── MÁS ── */
 .more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -2705,61 +2711,102 @@ function usarHallazgoIA() {
   }
 }
 
-/* ═══ GUARDAR: 137.1 (actualizado con foto y campos oficiales) ═══ */
+/* ═══ GUARDAR: 137.1 (con soporte edición) ═══ */
 async function guardarQ1() {
   const unidad = document.getElementById('q1_unidad')?.value;
   const desc   = v('q1_desc');
   if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
 
+  const trabajos = [];
+  if (document.getElementById('q1_carp')?.checked) trabajos.push('Carpintería');
+  if (document.getElementById('q1_elec')?.checked) trabajos.push('Electricidad');
+  if (document.getElementById('q1_pint')?.checked) trabajos.push('Pintura');
+  if (document.getElementById('q1_refr')?.checked) trabajos.push('Refrigeración');
+  if (document.getElementById('q1_eban')?.checked) trabajos.push('Ebanistería');
+  if (document.getElementById('q1_limp')?.checked) trabajos.push('Limpieza');
+  if (document.getElementById('q1_plom')?.checked) trabajos.push('Plomería');
+
+  const datos = {
+    fecha: v('q1_fecha'), unidad, area: v('q1_area'),
+    director: v('q1_director'), solicitante: v('q1_solicitante'),
+    telefono: v('q1_tel'), trabajos, descripcion: desc,
+    seccion: v('q1_seccion'), division: v('q1_division'),
+    distrito: v('q1_distrito'), negociado: v('q1_negociado'),
+    estatus: v('q1_estatus'), observaciones: v('q1_obs'),
+    usuario: 'Agte. Aponte Cancel · 31093'
+  };
+
   showToast('⏳ Guardando...', '#0a192f');
   try {
-    // Número automático
-    const snap  = await db.collection('dace_q137_1').get();
-    const total = snap.size + 1;
-    const anio  = new Date().getFullYear();
-    const numAuto = `SOL-137.1-${anio}-${String(total).padStart(3,'0')}`;
-
-    // Tipos de trabajo seleccionados
-    const trabajos = [];
-    if (document.getElementById('q1_carp')?.checked) trabajos.push('Carpintería');
-    if (document.getElementById('q1_elec')?.checked) trabajos.push('Electricidad');
-    if (document.getElementById('q1_pint')?.checked) trabajos.push('Pintura');
-    if (document.getElementById('q1_refr')?.checked) trabajos.push('Refrigeración');
-    if (document.getElementById('q1_eban')?.checked) trabajos.push('Ebanistería');
-    if (document.getElementById('q1_limp')?.checked) trabajos.push('Limpieza');
-    if (document.getElementById('q1_plom')?.checked) trabajos.push('Plomería');
-
-    // Subir foto si hay
-    const docRef  = db.collection('dace_q137_1').doc();
-    const fotoUrl = await subirFoto('q1', docRef.id);
-
-    await docRef.set({
-      numero: numAuto, fecha: v('q1_fecha'),
-      unidad, area: v('q1_area'), director: v('q1_director'),
-      solicitante: v('q1_solicitante'), telefono: v('q1_tel'),
-      trabajos, descripcion: desc,
-      seccion: v('q1_seccion'), division: v('q1_division'),
-      distrito: v('q1_distrito'), negociado: v('q1_negociado'),
-      estatus: v('q1_estatus'), observaciones: v('q1_obs'),
-      fotoUrl: fotoUrl || null,
-      usuario: 'Agte. Aponte Cancel · 31093',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    showToast(`✅ Orden ${numAuto} guardada y sincronizada`, '#166534');
-    // Limpiar formulario
-    ['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito'].forEach(id => set(id,''));
+    if (_editando.col === 'dace_q137_1' && _editando.id) {
+      await db.collection('dace_q137_1').doc(_editando.id).update(datos);
+      showToast('✅ Orden actualizada correctamente', '#166534');
+      _editando = { col: null, id: null };
+      const btn = document.querySelector('#q137_1 .btn-save');
+      if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR ORDEN DE TRABAJO'; }
+    } else {
+      const snap    = await db.collection('dace_q137_1').get();
+      const total   = snap.size + 1;
+      const anio    = new Date().getFullYear();
+      datos.numero  = 'SOL-137.1-' + anio + '-' + String(total).padStart(3,'0');
+      datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      const docRef  = db.collection('dace_q137_1').doc();
+      const fotoUrl = await subirFoto('q1', docRef.id);
+      datos.fotoUrl = fotoUrl || null;
+      await docRef.set(datos);
+      showToast('✅ Orden ' + datos.numero + ' guardada', '#166534');
+    }
+    limpiar(['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito']);
     ['q1_carp','q1_elec','q1_pint','q1_refr','q1_eban','q1_limp','q1_plom'].forEach(id => {
       const el = document.getElementById(id); if(el) el.checked = false;
     });
     clearFoto('q1');
     document.getElementById('q1_ai_result').classList.remove('visible');
     set('q1_fecha', hoy());
-    document.getElementById('q1_num').placeholder = `SOL-137.1-${anio}-${String(total+1).padStart(3,'0')}`;
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
-/* ═══ RECOPILAR DATOS INSPECCIÓN 137.3 ═══ */
+/* ═══ GUARDAR: 137.3 (con soporte edición) ═══ */
+async function guardarQ3() {
+  const lugar = document.getElementById('q3_lugar')?.value;
+  const hall  = v('q3_hallazgos');
+  if (!lugar || !hall) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
+
+  const datos = {
+    fecha: v('q3_fecha'), lugar, area: v('q3_area'),
+    director: v('q3_director'), telefono: v('q3_tel'),
+    direccion: v('q3_dir'), observacionesGenerales: v('q3_obs_gen'),
+    hallazgos: hall, recomendaciones: v('q3_rec'),
+    estatus: v('q3_estatus'), inspeccion: recopilarInspeccion(),
+    usuario: 'Agte. Aponte Cancel · 31093'
+  };
+
+  showToast('⏳ Guardando inspección...', '#0a192f');
+  try {
+    if (_editando.col === 'dace_q137_3' && _editando.id) {
+      await db.collection('dace_q137_3').doc(_editando.id).update(datos);
+      showToast('✅ Inspección actualizada correctamente', '#166534');
+      _editando = { col: null, id: null };
+      const btn = document.querySelector('#q137_3 .btn-save');
+      if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR INSPECCIÓN'; }
+    } else {
+      const snap    = await db.collection('dace_q137_3').get();
+      const total   = snap.size + 1;
+      const anio    = new Date().getFullYear();
+      datos.numero  = 'INS-137.3-' + anio + '-' + String(total).padStart(3,'0');
+      datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      const docRef  = db.collection('dace_q137_3').doc();
+      const fotoUrl = await subirFoto('q3', docRef.id);
+      datos.fotoUrl = fotoUrl || null;
+      await docRef.set(datos);
+      showToast('✅ Inspección ' + datos.numero + ' guardada', '#166534');
+    }
+    limpiar(['q3_director','q3_tel','q3_dir','q3_obs_gen','q3_hallazgos','q3_rec']);
+    set('q3_estatus','Pendiente'); set('q3_fecha', hoy());
+    clearFoto('q3');
+    document.getElementById('q3_ai_result').classList.remove('visible');
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+}
 function recopilarInspeccion() {
   const secciones = {
     ext: ['Portón de entrada','Verja periferal','Estacionamiento','Parrillas Pluviales','Estación de Basura','Luminarias y Postes','Hidrante','Mangueras','Áreas Verdes','Astas de Banderas','Pintura Exterior','Iluminación Perímetro','Rotulación'],
@@ -3780,45 +3827,51 @@ function renderLista(cid, docs, fn) {
 
 /* ── RENDER: 137.1 ── */
 function item_Q1(doc) {
-  const d = doc.data();
+  const d = doc.data ? doc.data() : doc;
+  const id = doc.id || doc._id;
   return `<div class="record-item">
     <div class="record-head">
       <span class="record-id">${d.numero||'—'}</span>
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
     ${d.solicitante ? `<p class="record-body"><strong>Solicitante:</strong> ${d.solicitante}</p>` : ''}
-    ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
+    ${d.unidad      ? `<p class="record-body"><strong>Unidad:</strong> ${d.unidad}</p>` : ''}
     <p class="record-body">${d.descripcion||''}</p>
     ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
+    ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_1','${doc.id}','Incidente')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarQ1('${id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${id}','Orden')">🗑</button>
     </div>
   </div>`;
 }
 
 /* ── RENDER: 137.3 ── */
 function item_Q3(doc) {
-  const d = doc.data();
+  const d = doc.data ? doc.data() : doc;
+  const id = doc.id || doc._id;
   return `<div class="record-item gold">
     <div class="record-head">
       <span class="record-id">${d.numero||'—'}</span>
       <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
     </div>
     ${d.lugar ? `<p class="record-body"><strong>Lugar:</strong> ${d.lugar}</p>` : ''}
-    ${d.tipo  ? `<p class="record-body"><strong>Tipo:</strong> ${d.tipo}</p>` : ''}
     <p class="record-body">${d.hallazgos||''}</p>
     ${d.recomendaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic"><strong>Rec:</strong> ${d.recomendaciones}</p>` : ''}
+    ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_q137_3','${doc.id}','Inspección')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarQ3('${id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_q137_3','${id}','Inspección')">🗑</button>
     </div>
   </div>`;
 }
 
 /* ── RENDER: CASOS ── */
 function item_Caso(doc) {
-  const d   = doc.data();
+  const d   = doc.data ? doc.data() : doc;
+  const id  = doc.id || doc._id;
   const cls = { Alta:'red', Media:'gold', Baja:'green' }[d.prioridad] || '';
   return `<div class="record-item ${cls}">
     <div class="record-head">
@@ -3830,14 +3883,16 @@ function item_Caso(doc) {
     ${d.accion      ? `<p class="record-body"><strong>Próxima acción:</strong> ${d.accion}</p>` : ''}
     <div class="record-foot">
       ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
-      <button class="btn-del" onclick="eliminar('dace_casos','${doc.id}','Caso')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarCaso('${id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_casos','${id}','Caso')">🗑</button>
     </div>
   </div>`;
 }
 
 /* ── RENDER: MAESTRO ── */
 function item_Maestro(doc) {
-  const d = doc.data();
+  const d  = doc.data ? doc.data() : doc;
+  const id = doc.id || doc._id;
   return `<div class="record-item gray">
     <div class="record-head">
       <span class="record-id">${d.tipo||'—'}</span>
@@ -3846,65 +3901,209 @@ function item_Maestro(doc) {
     <p class="record-body">${d.descripcion||''}</p>
     ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
     <div class="record-foot">
-      <button class="btn-del" onclick="eliminar('dace_maestro','${doc.id}','Entrada')">🗑 Eliminar</button>
+      <button class="btn-edit" onclick="editarMaestro('${id}')">✏️ Editar</button>
+      <button class="btn-del" onclick="eliminar('dace_maestro','${id}','Entrada')">🗑</button>
     </div>
   </div>`;
 }
 
-/* ═══ GUARDAR: CASOS ═══ */
+/* ═══ EDICIÓN — ESTADO GLOBAL ═══ */
+let _editando = { col: null, id: null };
+
+function modoEdicion(col, id, labelBtn) {
+  _editando = { col, id };
+  // Cambiar botón guardar a "ACTUALIZAR"
+  const btns = document.querySelectorAll('.btn-save');
+  btns.forEach(b => {
+    if (b.textContent.includes('GUARDAR') || b.textContent.includes('ACTUALIZAR')) {
+      b.style.background = '#b45309';
+      b.innerHTML = '💾 ACTUALIZAR ' + labelBtn;
+    }
+  });
+  showToast('✏️ Modo edición activo — modifica y toca ACTUALIZAR', '#b45309');
+  window.scrollTo(0, 0);
+}
+
+function cancelarEdicion(label) {
+  _editando = { col: null, id: null };
+}
+
+/* ── EDITAR: 137.1 ── */
+async function editarQ1(id) {
+  try {
+    const doc = await db.collection('dace_q137_1').doc(id).get();
+    const d   = doc.data();
+    changeTab('q137_1');
+    setTimeout(() => {
+      set('q1_fecha', d.fecha||'');
+      set('q1_solicitante', d.solicitante||'');
+      set('q1_tel', d.telefono||'');
+      set('q1_director', d.director||'');
+      set('q1_desc', d.descripcion||'');
+      set('q1_obs', d.observaciones||'');
+      set('q1_seccion', d.seccion||'');
+      set('q1_division', d.division||'');
+      set('q1_distrito', d.distrito||'');
+      set('q1_estatus', d.estatus||'Pendiente');
+      if (d.unidad) { const el = document.getElementById('q1_unidad'); if(el) el.value = d.unidad; }
+      if (d.trabajos) {
+        ['carp','elec','pint','refr','eban','limp','plom'].forEach(t => {
+          const el = document.getElementById('q1_'+t); if(el) el.checked = false;
+        });
+        d.trabajos.forEach(t => {
+          const map = {'Carpintería':'carp','Electricidad':'elec','Pintura':'pint','Refrigeración':'refr','Ebanistería':'eban','Limpieza':'limp','Plomería':'plom'};
+          const el = document.getElementById('q1_'+(map[t]||''));
+          if(el) el.checked = true;
+        });
+      }
+      document.getElementById('q1_num').placeholder = d.numero || '';
+      _editando = { col: 'dace_q137_1', id };
+      const btn = document.querySelector('#q137_1 .btn-save');
+      if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR ORDEN'; }
+    }, 300);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ── EDITAR: 137.3 ── */
+async function editarQ3(id) {
+  try {
+    const doc = await db.collection('dace_q137_3').doc(id).get();
+    const d   = doc.data();
+    changeTab('q137_3');
+    setTimeout(() => {
+      set('q3_fecha', d.fecha||'');
+      set('q3_director', d.director||'');
+      set('q3_tel', d.telefono||'');
+      set('q3_dir', d.direccion||'');
+      set('q3_area', d.area||'Arecibo');
+      set('q3_obs_gen', d.observacionesGenerales||'');
+      set('q3_hallazgos', d.hallazgos||'');
+      set('q3_rec', d.recomendaciones||'');
+      set('q3_estatus', d.estatus||'Pendiente');
+      if (d.lugar) { const el = document.getElementById('q3_lugar'); if(el) el.value = d.lugar; }
+      document.getElementById('q3_num').placeholder = d.numero || '';
+      _editando = { col: 'dace_q137_3', id };
+      const btn = document.querySelector('#q137_3 .btn-save.gold-btn');
+      if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR INSPECCIÓN'; }
+    }, 300);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ── EDITAR: CASO ── */
+async function editarCaso(id) {
+  try {
+    const doc = await db.collection('dace_casos').doc(id).get();
+    const d   = doc.data();
+    changeTab('casos');
+    setTimeout(() => {
+      set('c_num', d.numero||'');
+      set('c_fecha', d.fecha||'');
+      set('c_desc', d.descripcion||'');
+      set('c_resp', d.responsable||'');
+      set('c_accion', d.accion||'');
+      set('c_estatus', d.estatus||'Activo');
+      set('c_prioridad', d.prioridad||'Media');
+      _editando = { col: 'dace_casos', id };
+      const btn = document.querySelector('#casos .btn-save');
+      if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR CASO'; }
+    }, 300);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ── EDITAR: MAESTRO ── */
+async function editarMaestro(id) {
+  try {
+    const doc = await db.collection('dace_maestro').doc(id).get();
+    const d   = doc.data();
+    changeTab('maestro');
+    setTimeout(() => {
+      set('rm_tipo', d.tipo||'');
+      set('rm_fecha', d.fecha||'');
+      set('rm_hora', d.hora||'');
+      set('rm_desc', d.descripcion||'');
+      set('rm_notas', d.notas||'');
+      _editando = { col: 'dace_maestro', id };
+      const btn = document.querySelector('#maestro .btn-save');
+      if(btn) { btn.style.background='#b45309'; btn.innerHTML='💾 ACTUALIZAR ENTRADA'; }
+    }, 300);
+  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
+}
+
+/* ═══ GUARDAR: CASOS (con soporte edición) ═══ */
 async function guardarCaso() {
   const num = v('c_num'), desc = v('c_desc');
-  if (!num || !desc) { showToast('⚠️ Número y descripción son requeridos', '#92400e'); return; }
+  if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
+  const datos = {
+    numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
+    descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
+    estatus: v('c_estatus'), usuario: 'Agte. Aponte Cancel · 31093'
+  };
   try {
-    await db.collection('dace_casos').add({
-      numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
-      descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
-      estatus: v('c_estatus'),
-      usuario: 'Agte. Aponte Cancel · 31093',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Caso guardado y sincronizado', '#166534');
+    if (_editando.col === 'dace_casos' && _editando.id) {
+      await db.collection('dace_casos').doc(_editando.id).update(datos);
+      showToast('✅ Caso actualizado', '#166534');
+      _editando = { col: null, id: null };
+      const btn = document.querySelector('#casos .btn-save');
+      if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR CASO'; }
+    } else {
+      if (!num) { showToast('⚠️ Número es requerido', '#92400e'); return; }
+      datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('dace_casos').add(datos);
+      showToast('✅ Caso guardado y sincronizado', '#166534');
+    }
     limpiar(['c_num','c_desc','c_resp','c_accion']);
     set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
 }
 
-/* ═══ GUARDAR: MANTENIMIENTO ═══ */
+/* ═══ GUARDAR: MANTENIMIENTO (con soporte edición) ═══ */
 async function guardarMantenimiento() {
   const lugar = v('mt_lugar'), desc = v('mt_desc');
   if (!lugar || !desc) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
+  const datos = {
+    lugar, departamento: v('mt_dept'),
+    fecha: v('mt_fecha'), hora: v('mt_hora'),
+    descripcion: desc, notificadoA: v('mt_notifico'),
+    metodo: v('mt_metodo'), estatus: v('mt_estatus'),
+    usuario: 'Agte. Aponte Cancel · 31093'
+  };
   try {
-    await db.collection('dace_mantenimiento').add({
-      lugar:       lugar,
-      departamento:v('mt_dept'),
-      fecha:       v('mt_fecha'),
-      hora:        v('mt_hora'),
-      descripcion: desc,
-      notificadoA: v('mt_notifico'),
-      metodo:      v('mt_metodo'),
-      estatus:     v('mt_estatus'),
-      usuario:    'Agte. Aponte Cancel · 31093',
-      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Mantenimiento guardado y sincronizado', '#166534');
+    if (_editando.col === 'dace_mantenimiento' && _editando.id) {
+      await db.collection('dace_mantenimiento').doc(_editando.id).update(datos);
+      showToast('✅ Mantenimiento actualizado', '#166534');
+      _editando = { col: null, id: null };
+    } else {
+      datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('dace_mantenimiento').add(datos);
+      showToast('✅ Mantenimiento guardado y sincronizado', '#166534');
+    }
     limpiar(['mt_desc','mt_notifico']);
     set('mt_lugar',''); set('mt_estatus','Pendiente');
     set('mt_fecha', hoy()); set('mt_hora', ahora());
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
 }
 
-/* ═══ GUARDAR: MAESTRO ═══ */
+/* ═══ GUARDAR: MAESTRO (con soporte edición) ═══ */
 async function guardarMaestro() {
   const desc = v('rm_desc');
   if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
+  const datos = {
+    tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
+    descripcion: desc, notas: v('rm_notas'),
+    usuario: 'Agte. Aponte Cancel · 31093'
+  };
   try {
-    await db.collection('dace_maestro').add({
-      tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
-      descripcion: desc, notas: v('rm_notas'),
-      usuario: 'Agte. Aponte Cancel · 31093',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Entrada guardada y sincronizada', '#166534');
+    if (_editando.col === 'dace_maestro' && _editando.id) {
+      await db.collection('dace_maestro').doc(_editando.id).update(datos);
+      showToast('✅ Entrada actualizada', '#166534');
+      _editando = { col: null, id: null };
+      const btn = document.querySelector('#maestro .btn-save');
+      if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR ENTRADA'; }
+    } else {
+      datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('dace_maestro').add(datos);
+      showToast('✅ Entrada guardada y sincronizada', '#166534');
+    }
     limpiar(['rm_desc','rm_notas']);
     set('rm_fecha', hoy()); set('rm_hora', ahora());
   } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); }
@@ -3912,10 +4111,10 @@ async function guardarMaestro() {
 
 /* ═══ ELIMINAR ═══ */
 async function eliminar(col, id, tipo) {
-  if (!confirm(`¿Eliminar este registro de ${tipo}?\n\nEsta acción es permanente.`)) return;
+  if (!confirm('¿Eliminar este registro de ' + tipo + '?\n\nEsta acción es permanente.')) return;
   try {
     await db.collection(col).doc(id).delete();
-    showToast(`🗑 ${tipo} eliminado`, '#475569');
+    showToast('🗑 ' + tipo + ' eliminado', '#475569');
   } catch(e) { showToast('❌ Error al eliminar: ' + e.message, '#dc2626'); }
 }
 
