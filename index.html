@@ -2692,10 +2692,12 @@ async function generarHallazgoIA() {
       '{"hallazgo":"descripcion tecnica 4-6 oraciones terminologia OSHA AEP construccion espanol formal",' +
       '"orden":"solicitud PPR-137.1 materiales prioridad 3-4 oraciones espanol formal"}';
     let respuesta = await llamarGemini(textoPrompt, _fotoData.q3 || null);
-    respuesta = respuesta.replace(/```json|```/g, '').trim();
-    const resultado = JSON.parse(respuesta);
-    hallazgoEl.innerText = resultado.hallazgo || '';
-    ordenEl.innerText    = resultado.orden    || '';
+    // Extraer JSON aunque venga con texto extra
+    const jsonMatch = respuesta.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('La IA no devolvió un JSON válido.');
+    const resultado = JSON.parse(jsonMatch[0]);
+    hallazgoEl.innerText = resultado.hallazgo || resultado.hallazgos || '';
+    ordenEl.innerText    = resultado.orden    || resultado.solicitud  || '';
     resultDiv.classList.add('visible');
     showToast('✅ Análisis completado por IA', '#166534');
   } catch (error) {
