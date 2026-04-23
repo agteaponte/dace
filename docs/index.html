@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DACE ARECIBO">
+<title>DACE ARECIBO</title>
+
+<!-- Firebase SDK (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script type="module" crossorigin src="/dace/assets/index-B4y7vTm0.js"></script>
+  <link rel="stylesheet" crossorigin href="/dace/assets/index-C4TJkkLY.css">
+</head>
+<body>
+
+<!-- PANTALLA DE LOGIN FIREBASE -->
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--blue); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png"
+       style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px"
+       alt="DACE" onerror="this.style.display='none'">
+  <div style="color:white;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:4px">DACE ARECIBO</div>
+  <div style="color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;text-align:center;margin-bottom:36px">Sistema de Coordinación — NPPR</div>
+
+  <div style="width:100%;max-width:320px">
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Correo Electrónico</label>
+      <input type="email" id="login_email" value="agteaponte@gmail.com"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="correo@gmail.com">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Contraseña</label>
+      <input type="password" id="login_pass"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') loginFirebase()">
+    </div>
+    <button onclick="loginFirebase()"
+            style="width:100%;padding:17px;background:var(--gold);color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
+      <i class="ph-fill ph-lock-key"></i> ACCEDER
+    </button>
+    <div id="login_error" style="color:#fca5a5;font-size:12px;font-weight:700;text-align:center;margin-top:14px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- PANTALLA DE ACCESO PIN -->
+<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--blue); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
+       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'><i class=\'ph-fill ph-bank\'></i></div>'">
+  <div class="lock-title">DACE Arecibo</div>
+  <div class="lock-sub">Negociado de la Policía de Puerto Rico</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2<sub>ABC</sub></button>
+    <button class="pin-key" onclick="pinPress('3')">3<sub>DEF</sub></button>
+    <button class="pin-key" onclick="pinPress('4')">4<sub>GHI</sub></button>
+    <button class="pin-key" onclick="pinPress('5')">5<sub>JKL</sub></button>
+    <button class="pin-key" onclick="pinPress('6')">6<sub>MNO</sub></button>
+    <button class="pin-key" onclick="pinPress('7')">7<sub>PQRS</sub></button>
+    <button class="pin-key" onclick="pinPress('8')">8<sub>TUV</sub></button>
+    <button class="pin-key" onclick="pinPress('9')">9<sub>WXYZ</sub></button>
+    <button class="pin-key zero" onclick="pinPress('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="lock-msg" id="lockMsg">Introduce tu PIN de acceso</div>
+</div>
+
+<!-- CABECERA -->
+<header class="app-header">
+  <img src="/dace/assets/logo_optimized-C8Rkfama.png" class="header-logo" alt="DACE"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'><i class=\'ph-fill ph-bank\'></i></div>'">
+  <div class="header-text">
+    <h1>DACE ARECIBO</h1>
+    <div class="sub">Negociado de la Policía de Puerto Rico</div>
+    <div class="oficial">Agte. Jose Aponte Cancel · Placa 31093</div>
+    <div class="oficial">Coordinador Auxiliar DACE Arecibo</div>
+  </div>
+  <img src="/dace/assets/policia-Bdp364YM.png" class="header-logo" alt="PPR"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'><i class=\'ph-fill ph-scales\'></i></div>'">
+</header>
+
+<!-- BARRA ESTADO FIREBASE -->
+<div class="firebase-bar">
+  <div class="fb-dot" id="fbDot"></div>
+  <span id="fbText">Conectando con Firebase...</span>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+
+  <!-- PANEL -->
+  <div id="inicio" class="tab-page active">
+    <div class="page-title"><i class="ph-fill ph-chart-bar"></i> Panel General</div>
+    <div class="stats-grid">
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label"><i class="ph-fill ph-scales"></i> Órdenes 137.1</div></div>
+      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label"><i class="ph-fill ph-buildings"></i> Inspecciones</div></div>
+      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label"><i class="ph-fill ph-folder-open"></i> Casos Activos</div></div>
+      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label"><i class="ph-fill ph-folder"></i> Reg. Maestro</div></div>
+    </div>
+    <div class="feed-title">Actividad Reciente</div>
+    <div id="feedArea"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando actividad...</div></div>
+    <button class="btn-save" style="background:#16a34a; margin-top:8px;" onclick="changeTab('trabajos_realizados'); cargarTrabajosRealizados()"><i class="ph-bold ph-check"></i> VER TRABAJOS REALIZADOS</button>
+    <hr class="sep">
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- PPR-137.1 SOLICITUD ORDEN DE TRABAJO -->
+  <div id="q137_1" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-scales"></i> PPR-137.1 Orden de Trabajo</div>
+
+    <!-- FORMULARIO OFICIAL -->
+    <div class="ppr-header">
+      <h2>PPR-137.1 — SOLICITUD ORDEN DE TRABAJO</h2>
+      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
+    </div>
+    <div class="ppr-section">
+      <!-- Identificación -->
+      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Número de Solicitud</label>
+            <input type="text" id="q1_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q1_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Unidad Solicitante *</label>
+          <select id="q1_unidad">
+            <option value="">— Seleccionar —</option>
+            <option>DACE Arecibo</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area" value="Arecibo" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Director/Supervisor</label>
+            <input type="text" id="q1_director" placeholder="Nombre" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Nombre del Solicitante</label>
+          <input type="text" id="q1_solicitante" placeholder="Nombre completo del solicitante" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Teléfono de Contacto</label>
+          <input type="text" id="q1_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Trabajo Solicitado -->
+      <div class="ppr-section-title"><i class="ph-fill ph-wrench"></i> Trabajo Solicitado</div>
+      <div style="padding:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_carp" style="width:16px;height:16px;accent-color:var(--blue)"> Carpintería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_elec" style="width:16px;height:16px;accent-color:var(--blue)"> Electricidad
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_pint" style="width:16px;height:16px;accent-color:var(--blue)"> Pintura
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_refr" style="width:16px;height:16px;accent-color:var(--blue)"> Refrigeración
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_eban" style="width:16px;height:16px;accent-color:var(--blue)"> Ebanistería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_limp" style="width:16px;height:16px;accent-color:var(--blue)"> Limpieza
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_plom" style="width:16px;height:16px;accent-color:var(--blue)"> Plomería
+          </label>
+        </div>
+        <div class="input-group">
+          <label>Descripción del Servicio Solicitado *</label>
+          <textarea id="q1_desc" rows="5" placeholder="Describa detalladamente el servicio o trabajo requerido..."></textarea>
+        </div>
+
+        <!-- Foto -->
+        <div class="foto-zone" onclick="document.getElementById('q1_foto_input').click()">
+          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del problema</p>
+        </div>
+        <input type="file" id="q1_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q1')">
+        <img id="q1_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q1_foto_clear" onclick="clearFoto('q1')">✕ Eliminar foto</button>
+
+        <!-- IA -->
+        <button class="btn-ai" onclick="generarDescripcionIA('q1')" id="q1_ai_btn">
+          <i class="ph-fill ph-sparkle"></i> GENERAR DESCRIPCIÓN CON IA
+        </button>
+        <div class="ai-result" id="q1_ai_result">
+          <div class="ai-title"><i class="ph-fill ph-sparkle"></i> Descripción generada por IA</div>
+          <p id="q1_ai_texto"></p>
+          <button onclick="usarTextoIA('q1')" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar este texto</button>
+        </div>
+      </div>
+
+      <!-- Localización -->
+      <div class="ppr-section-title"><i class="ph-fill ph-map-pin"></i> Localización Avería o Propiedad</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Sección</label>
+            <input type="text" id="q1_seccion" placeholder="Sección" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>División</label>
+            <input type="text" id="q1_division" placeholder="División" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Distrito/Precinto</label>
+            <input type="text" id="q1_distrito" placeholder="Distrito/Precinto" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area2" value="Arecibo" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Negociado</label>
+            <input type="text" id="q1_negociado" value="NPPR" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Superintendencia Auxiliar</label>
+            <input type="text" id="q1_super" placeholder="Superintendencia" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatus -->
+      <div class="ppr-section-title"><i class="ph-fill ph-push-pin"></i> Estatus</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Estatus de la Solicitud</label>
+          <select id="q1_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+            <option value="Archivado">Archivado</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Observaciones / Seguimiento</label>
+          <textarea id="q1_obs" rows="3" placeholder="Notas de seguimiento..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="guardarQ1()">💾 GUARDAR ORDEN DE TRABAJO</button>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q1_total">0</span> órdenes)</div>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR ÓRDENES DE TRABAJO A PDF</button>
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q1')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, solicitante, descripción..." oninput="aplicarFiltros('q1')">
+      <div class="filter-chips" id="q1_chips">
+        <span class="chip active" onclick="toggleChip(this,'q1','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q1','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q1','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Archivado')" data-val="Archivado">Archivado</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q1_desde" onchange="aplicarFiltros('q1')">
+        <input type="date" id="q1_hasta" onchange="aplicarFiltros('q1')">
+      </div>
+      <div class="filter-count" id="q1_count"></div>
+    </div>
+    <div id="lista_q1"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- PPR-137.3 INSPECCIÓN PREVENTIVA -->
+  <div id="q137_3" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-buildings"></i> PPR-137.3 Inspección Preventiva</div>
+
+    <div class="ppr-header">
+      <h2>PPR-137.3 — INSPECCIÓN PREVENTIVA</h2>
+      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
+    </div>
+
+    <div class="ppr-section">
+      <!-- Encabezado -->
+      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Núm. Inspección / Proyecto AEP</label>
+            <input type="text" id="q3_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q3_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Precinto / Distrito / Unidad *</label>
+          <select id="q3_lugar">
+            <option value="">— Seleccionar —</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Nombre Director</label>
+            <input type="text" id="q3_director" placeholder="Director de la unidad" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="text" id="q3_tel" placeholder="787-000-0000" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Dirección</label>
+          <input type="text" id="q3_dir" placeholder="Dirección física del cuartel" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Área</label>
+          <input type="text" id="q3_area" value="Arecibo" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Foto General -->
+      <div class="ppr-section-title"><i class="ph-fill ph-camera"></i> Evidencia Fotográfica</div>
+      <div style="padding:14px">
+        <div class="foto-zone" onclick="document.getElementById('q3_foto_input').click()">
+          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Foto general del área inspeccionada</p>
+        </div>
+        <input type="file" id="q3_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q3')">
+        <img id="q3_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q3_foto_clear" onclick="clearFoto('q3')">✕ Eliminar foto</button>
+      </div>
+
+      <!-- TABS DE SECCIONES -->
+      <div class="inner-tabs" id="q3_tabs">
+        <div class="inner-tab active" onclick="switchInnerTab('q3','ext')">Exterior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','int')">Interior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','com')">Comedor</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','adm')">Administ.</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','bib')">Biblioteca</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','aca')">Académico</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ban')">Baños</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','tec')">Techos</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','can')">Cancha</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','seg')">Seguridad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ele')">Electricidad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','dor')">Dormitorios</div>
+      </div>
+
+      <!-- SECCIÓN: EXTERIOR -->
+      <div class="inner-section active" id="q3_sec_ext">
+        <table class="insp-table">
+          <tr><th>Exterior del Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ext',['Portón de entrada','Verja periferal','Estacionamiento (asfalto, líneas, wheel stop, aceras, encintados, Ley ADA)','Parrillas Pluviales','Estación de Basura','Luminarias y Postes','Hidrante','Mangueras','Áreas Verdes','Astas de Banderas','Pintura Exterior','Iluminación Perímetro','Rotulación'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: INTERIOR -->
+      <div class="inner-section" id="q3_sec_int">
+        <table class="insp-table">
+          <tr><th>Interior Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('int',['Portones','Pasamanos','Rejas','Pintura (lobby, pasillos, rampa, parapetos, plafones)','Áreas verdes - poda y jardinería','Gazebo','Paredes (grietas, empañetado)','Pisos (nivelación, grietas)','Aceras','Rampas','Iluminación','Desagües pluviales','Barandas','Juntas de Expansión'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: COMEDOR -->
+      <div class="inner-section" id="q3_sec_com">
+        <table class="insp-table">
+          <tr><th>Comedor</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('com',['Enchapado de paredes y piso','Campana de Extracción (extractores, sistema supresión)','Plomería (drenajes, llaves desagüe, lavamano)','Trampa de grasa','Walk-in Cooler and Freezer (refrigeración, drenajes)','Calentador de agua','Sistema de Distribución de Gas (tubería, válvula, tanques)','Ventanas (operador, escrín, expanded metal)','Puertas (escrines, herrajes)','Baños (inodoros, lavamanos, urinales, mezcladoras, duchas)','Luminarias'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ADMINISTRACIÓN -->
+      <div class="inner-section" id="q3_sec_adm">
+        <table class="insp-table">
+          <tr><th>Administración</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('adm',['Acondicionador de Aire','Condición de Paredes','Condición de Piso','Condición de baños (extractor, equipo sanitario)','Pintura','Enfriador de Agua','Cumplimiento ADA','Iluminación','Ventanas','Plafón Acústico','Intercom','Sistema de Timbre'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BIBLIOTECA -->
+      <div class="inner-section" id="q3_sec_bib">
+        <table class="insp-table">
+          <tr><th>Biblioteca</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('bib',['Aire Acondicionado','Condición de Paredes','Condición de Pisos','Oficina Bibliotecario - mostrador','Ventanas','Pinturas','Puertas','Luminaria'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ACADÉMICO -->
+      <div class="inner-section" id="q3_sec_aca">
+        <table class="insp-table">
+          <tr><th>Sistemas Académicos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('aca',['Cantidad de Salones','Pizarras','Iluminación','Receptáculos e Interruptores','Puertas','Gabinetes','Abanicos de techos','Ventanas','Condición de Pintura'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BAÑOS -->
+      <div class="inner-section" id="q3_sec_ban">
+        <table class="insp-table">
+          <tr><th>Baños</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ban',['Enchapado','Particiones','Ventanas','Drenajes','Inodoros','Lavamanos','Urinales','Llaves de Agua','Extractores','Pintura','Cumplimiento Ley ADA (dimensiones, grab bars)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: TECHOS -->
+      <div class="inner-section" id="q3_sec_tec">
+        <table class="insp-table">
+          <tr><th>Techos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('tec',['Acceso','Escotillas','Drenajes','Limpieza','Empozamientos','Filtraciones','Tratamiento'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: CANCHA -->
+      <div class="inner-section" id="q3_sec_can">
+        <table class="insp-table">
+          <tr><th>Cancha</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('can',['Canastos (tableros, operación)','Portones','Rejas y Barandas','Estructura','Gradas','Iluminación','Condiciones y Pintura Piso','Control de Palomas','Extractores','Baños','Fuentes de Agua','Abanicos','Filtraciones','Drenajes'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: SEGURIDAD -->
+      <div class="inner-section" id="q3_sec_seg">
+        <table class="insp-table">
+          <tr><th>Seguridad</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('seg',['Sistema de Intercomunicador (panel, bocinas)','Sistema de Alarma contra incendios (panel, pull station, detectores, strobes)','Gabinetes de Mangueras Contra Incendios','Extintores','Luces de Salida','Luces de Emergencia','Sistema de Seguridad (panel, sensores, cámaras)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ELECTRICIDAD -->
+      <div class="inner-section" id="q3_sec_ele">
+        <table class="insp-table">
+          <tr><th>Electricidad General</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ele',['Subestación (pintura, rotulación, candados, desyerbo)','Paneles Eléctricos (tapas, cerraduras, identificación)','Distribución Eléctrica (sobrecarga, conductos)','Sistema de Bombeo de Agua Potable','Sistema de Bombeo Sanitario','Planta de Tratamiento','Tanques de Retención de Aguas Usadas','Leaching Field','Sistemas de Energía Renovable','Generador de Emergencia (transfer switch, tanque diesel)','Fuentes de Agua','Cisterna Agua de Lluvia','Aire Acondicionado','Elevadores','Montasillas'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: DORMITORIOS -->
+      <div class="inner-section" id="q3_sec_dor">
+        <table class="insp-table">
+          <tr><th>Dormitorios</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('dor',['Pintura','Ventanas','Puertas','Linternas','Pisos','Duchas','Aire','Lavamanos'])}
+        </table>
+      </div>
+
+      <!-- OBSERVACIONES GENERALES E IA -->
+      <div class="ppr-section-title"><i class="ph-fill ph-pencil-simple"></i> Observaciones Generales e Inteligencia Artificial</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Observaciones Generales</label>
+          <textarea id="q3_obs_gen" rows="4" placeholder="Observaciones generales de la inspección..."></textarea>
+        </div>
+        <button class="btn-ai" onclick="generarHallazgoIA()" id="q3_ai_btn">
+          <i class="ph-fill ph-sparkle"></i> GENERAR HALLAZGO TÉCNICO CON IA
+        </button>
+        <div class="ai-result" id="q3_ai_result">
+          <div class="ai-title"><i class="ph-fill ph-sparkle"></i> Hallazgo Técnico — Generado por IA</div>
+          <p id="q3_ai_hallazgo" style="margin-bottom:10px"></p>
+          <div class="ai-title" style="margin-top:10px"><i class="ph-fill ph-clipboard-text"></i> Orden de Trabajo 137.1 Sugerida</div>
+          <p id="q3_ai_orden"></p>
+          <button onclick="usarHallazgoIA()" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar estos textos</button>
+        </div>
+        <div class="input-group" style="margin-top:12px">
+          <label>Hallazgos Finales *</label>
+          <textarea id="q3_hallazgos" rows="4" placeholder="Hallazgos de la inspección (puedes usar el texto generado por IA)..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Recomendaciones</label>
+          <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Estatus</label>
+          <select id="q3_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR INSPECCIONES A PDF</button>
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--gold)">
+      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q3')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q3_search" placeholder="Buscar por número, lugar, hallazgos..." oninput="aplicarFiltros('q3')">
+      <div class="filter-chips" id="q3_chips">
+        <span class="chip active" onclick="toggleChip(this,'q3','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q3','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q3','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q3','estatus','Completado')" data-val="Completado">Completado</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q3_desde" onchange="aplicarFiltros('q3')">
+        <input type="date" id="q3_hasta" onchange="aplicarFiltros('q3')">
+      </div>
+      <div class="filter-count" id="q3_count"></div>
+    </div>
+    <div id="lista_q3"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- CASOS ACTIVOS -->
+  <div id="casos" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-clipboard-text"></i> Casos Activos</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Caso</div>
+      <div class="input-group">
+        <label>Número de Caso *</label>
+        <input type="text" id="c_num" placeholder="Ej: CASO-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha Apertura</label><input type="date" id="c_fecha"></div>
+        <div class="input-group">
+          <label>Prioridad</label>
+          <select id="c_prioridad">
+            <option value="Alta">Alta</option>
+            <option value="Media" selected>Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Caso *</label>
+        <textarea id="c_desc" placeholder="Describa el caso con todos los detalles relevantes..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Responsable / Asignado</label>
+        <input type="text" id="c_resp" placeholder="Nombre del agente responsable" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Próxima Acción</label>
+        <input type="text" id="c_accion" placeholder="¿Qué debe hacerse a continuación?" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="c_estatus">
+          <option value="Activo">Activo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Pendiente Resolución">Pendiente Resolución</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+      </div>
+      <button class="btn-save green-btn" onclick="guardarCaso()">💾 GUARDAR CASO</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
+    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR CASOS ACTIVOS A PDF</button>
+
+    <!-- FILTROS CASOS -->
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--green)">
+      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('c')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="c_search" placeholder="Buscar por número, descripción, responsable..." oninput="aplicarFiltros('c')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Activo')" data-val="Activo">Activo</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Pendiente Resolución')" data-val="Pendiente Resolución">Pend. Resolución</span>
+        <span class="chip green" onclick="toggleChip(this,'c','estatus','Cerrado')" data-val="Cerrado">Cerrado</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','prioridad','')" data-val="">Prioridad: Todas</span>
+        <span class="chip red" onclick="toggleChip(this,'c','prioridad','Alta')" data-val="Alta">Alta</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','prioridad','Media')" data-val="Media">Media</span>
+        <span class="chip green" onclick="toggleChip(this,'c','prioridad','Baja')" data-val="Baja">Baja</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="c_desde" onchange="aplicarFiltros('c')">
+        <input type="date" id="c_hasta" onchange="aplicarFiltros('c')">
+      </div>
+      <div class="filter-count" id="c_count"></div>
+    </div>
+
+    <div id="lista_casos"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- REGISTRO MAESTRO -->
+  <div id="maestro" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-folder"></i> Registro Maestro</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Entrada</div>
+      <div class="input-group">
+        <label>Tipo de Actividad</label>
+        <select id="rm_tipo">
+          <option value="Orden de Trabajo 137.1">Orden de Trabajo 137.1</option>
+          <option value="Inspección 137.3">Inspección 137.3</option>
+          <option value="Caso Activo">Caso Activo</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Gestión Administrativa">Gestión Administrativa</option>
+          <option value="Capacitación / Adiestramiento">Capacitación / Adiestramiento</option>
+          <option value="Reunión Oficial">Reunión Oficial</option>
+          <option value="Comunicación Oficial">Comunicación Oficial</option>
+          <option value="Archivo / Documentación">Archivo / Documentación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="rm_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="rm_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Detalle *</label>
+        <textarea id="rm_desc" placeholder="Describa la actividad realizada de forma clara y detallada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notas / Referencias</label>
+        <textarea id="rm_notas" rows="3" placeholder="Notas adicionales, número de documento, referencias..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarMaestro()">💾 GUARDAR ENTRADA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
+    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REGISTRO MAESTRO A PDF</button>
+
+    <!-- FILTROS MAESTRO -->
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('rm')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="rm_search" placeholder="Buscar por tipo, descripción, notas..." oninput="aplicarFiltros('rm')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'rm','tipo','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Orden de Trabajo 137.1')" data-val="Orden de Trabajo 137.1">137.1</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Inspección 137.3')" data-val="Inspección 137.3">137.3</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Gestión Administrativa')" data-val="Gestión Administrativa">Administrativa</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Reunión Oficial')" data-val="Reunión Oficial">Reunión</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Coordinación Interagencial')" data-val="Coordinación Interagencial">Interagencial</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="rm_desde" onchange="aplicarFiltros('rm')">
+        <input type="date" id="rm_hasta" onchange="aplicarFiltros('rm')">
+      </div>
+      <div class="filter-count" id="rm_count"></div>
+    </div>
+
+    <div id="lista_maestro"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- MANTENIMIENTO -->
+  <div id="mantenimiento" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-wrench"></i> Mantenimiento</div>
+    <button class="btn-save" style="background:#0ea5e9; margin-bottom:14px;" onclick="changeTab('cisternas'); cargarCisternas()"><i class="ph-fill ph-drop"></i> CISTERNAS DEL ÁREA</button>
+    <div class="form-card">
+      <div class="form-section-label">Nuevo Trabajo de Mantenimiento</div>
+      <div class="input-group">
+        <label>Dependencia / Lugar *</label>
+        <select id="mt_lugar">
+          <option value="">— Seleccionar —</option>
+          <option>Comandancia Administracion</option>
+          <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+          <option>Prec. 107</option><option>Prec. 207</option>
+          <option>Almacen</option><option>UMA</option><option>Poligono</option>
+          <option>Operaciones Tacticas</option><option>Florida</option>
+          <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+          <option>Morovis</option><option>Transito Manati</option>
+          <option>Drogas Manati</option><option>Transito Arecibo</option>
+          <option>Vehiculos Hurtados</option><option>Maritima</option>
+          <option>Tecnologia</option><option>General</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Departamento / Tipo *</label>
+        <select id="mt_dept">
+          <option value="Refrigeración">Refrigeración / Aire Acondicionado</option>
+          <option value="Electricidad">Electricidad / Generador</option>
+          <option value="Plomería">Plomería / Agua</option>
+          <option value="Estructural">Estructural / Construcción</option>
+          <option value="Fumigación">Fumigación / Exterminación</option>
+          <option value="Combustible">Combustible / Diesel</option>
+          <option value="Equipos">Equipos / Tecnología</option>
+          <option value="Limpieza">Limpieza / Áreas Verdes</option>
+          <option value="Seguridad">Seguridad / Cámaras</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="mt_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="mt_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Trabajo *</label>
+        <textarea id="mt_desc" placeholder="Describa el trabajo realizado o la situación reportada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notificado A</label>
+        <input type="text" id="mt_notifico" placeholder="Nombre de quien se notificó" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Método de Notificación</label>
+        <select id="mt_metodo">
+          <option value="Personal">Personal</option>
+          <option value="Teléfono">Teléfono</option>
+          <option value="Correo Electrónico">Correo Electrónico</option>
+          <option value="Radio">Radio</option>
+          <option value="Sistema PADAWAN">Sistema PADAWAN</option>
+          <option value="No Aplica">No Aplica</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="mt_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+          <option value="Requiere Seguimiento">Requiere Seguimiento</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#7c3aed" onclick="guardarMantenimiento()">💾 GUARDAR MANTENIMIENTO</button>
+    </div>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="mt_total">0</span> trabajos)</div>
+    <button class="btn-pdf" style="background:#7c3aed" onclick="exportarPDF('mantenimiento')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR MANTENIMIENTO A PDF</button>
+
+    <!-- FILTROS MANTENIMIENTO -->
+    <div class="filter-box" style="margin-top:12px; border-left-color:#7c3aed">
+      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('mt')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="mt_search" placeholder="Buscar por lugar, descripción, tipo..." oninput="aplicarFiltros('mt')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'mt','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'mt','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip red" onclick="toggleChip(this,'mt','estatus','Requiere Seguimiento')" data-val="Requiere Seguimiento">Seguimiento</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','dept','')" data-val="">Tipo: Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Refrigeración')" data-val="Refrigeración">Refrigeración</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Electricidad')" data-val="Electricidad">Electricidad</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Plomería')" data-val="Plomería">Plomería</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Fumigación')" data-val="Fumigación">Fumigación</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Combustible')" data-val="Combustible">Combustible</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="mt_desde" onchange="aplicarFiltros('mt')">
+        <input type="date" id="mt_hasta" onchange="aplicarFiltros('mt')">
+      </div>
+      <div class="filter-count" id="mt_count"></div>
+    </div>
+
+    <div id="lista_mt"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ GENERADORES ══════════ -->
+  <div id="generadores" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-battery-full"></i> Bitácora de Generadores</div>
+
+    <!-- TABS INTERNOS -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-save" id="gen_tab_btn1" onclick="switchGenTab('registro')"
+        style="padding:10px;font-size:11px;background:var(--blue)"><i class="ph-fill ph-pencil-simple"></i> Registrar</button>
+      <button class="btn-save" id="gen_tab_btn2" onclick="switchGenTab('historial')"
+        style="padding:10px;font-size:11px;background:#94a3b8"><i class="ph-fill ph-clipboard-text"></i> Historial</button>
+      <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('resumen')"
+        style="padding:10px;font-size:11px;background:#94a3b8"><i class="ph-fill ph-chart-bar"></i> Resumen</button>
+    </div>
+
+    <!-- TAB: REGISTRO -->
+    <div id="gen_sec_registro">
+      <div class="ppr-header">
+        <h2>🔋 BITÁCORA DE GENERADOR ELÉCTRICO</h2>
+        <p>DACE Arecibo — Negociado de la Policía de Puerto Rico</p>
+      </div>
+      <div class="ppr-section">
+        <div class="ppr-section-title"><i class="ph-fill ph-lightning"></i> Identificación del Generador</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Dependencia / Cuartel *</label>
+            <select id="gen_lugar">
+              <option value="">— Seleccionar —</option>
+              <option>Comandancia Administracion</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Marca / Modelo</label>
+              <input type="text" id="gen_marca" placeholder="Ej: Generac, Kohler..." autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Capacidad Tanque (gal)</label>
+              <input type="number" id="gen_capacidad" placeholder="Ej: 500" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Datos de la Entrada</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group"><label>Fecha *</label><input type="date" id="gen_fecha"></div>
+            <div class="input-group"><label>Hora *</label><input type="time" id="gen_hora"></div>
+          </div>
+          <div class="input-group">
+            <label>Tipo de Actividad *</label>
+            <select id="gen_tipo">
+              <option value="Inspección Rutinaria">Inspección Rutinaria</option>
+              <option value="Suplido de Combustible">Suplido de Combustible</option>
+              <option value="Arranque de Prueba">Arranque de Prueba</option>
+              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+              <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
+              <option value="Falla / Avería">Falla / Avería</option>
+              <option value="Operación de Emergencia">Operación de Emergencia</option>
+              <option value="Cambio de Aceite">Cambio de Aceite</option>
+              <option value="Cambio de Filtros">Cambio de Filtros</option>
+              <option value="Prueba de Carga">Prueba de Carga</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ppr-section-title"><i class="ph-fill ph-gas-pump"></i> Niveles de Combustible</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group">
+              <label>Nivel Antes (%)</label>
+              <input type="number" id="gen_nivel_antes" placeholder="0-100" min="0" max="100">
+            </div>
+            <div class="input-group">
+              <label>Nivel Después (%)</label>
+              <input type="number" id="gen_nivel_despues" placeholder="0-100" min="0" max="100">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Galones Suministrados</label>
+              <input type="number" id="gen_galones" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Litros Suministrados</label>
+              <input type="number" id="gen_litros" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Costo ($)</label>
+              <input type="number" id="gen_costo" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Horas de Operación</label>
+              <input type="number" id="gen_horas" placeholder="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title"><i class="ph-bold ph-magnifying-glass"></i> Condición y Observaciones</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Condición General</label>
+            <select id="gen_condicion">
+              <option value="Óptimo"><i class="ph-bold ph-check"></i> Óptimo</option>
+              <option value="Regular">⚠️ Regular</option>
+              <option value="Deficiente"><i class="ph-bold ph-x"></i> Deficiente</option>
+              <option value="Fuera de Servicio">🚫 Fuera de Servicio</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Descripción / Observaciones *</label>
+            <textarea id="gen_obs" rows="4" placeholder="Describa detalladamente las actividades realizadas, condiciones encontradas, lecturas del panel, etc..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Proveedor / Técnico (si aplica)</label>
+            <input type="text" id="gen_proveedor" placeholder="Nombre del proveedor o técnico" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Número de Boleto / Factura</label>
+            <input type="text" id="gen_boleto" placeholder="Ej: BOL-2026-001" autocomplete="off">
+          </div>
+
+          <!-- Foto -->
+          <div class="foto-zone" onclick="document.getElementById('gen_foto_input').click()">
+            <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+            <p>Toca para fotografiar el panel o medidor</p>
+            <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del generador</p>
+          </div>
+          <input type="file" id="gen_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoGen()">
+          <img id="gen_foto_preview" class="foto-preview" alt="Vista previa">
+          <button class="btn-foto-clear" id="gen_foto_clear" onclick="clearFotoGen()">✕ Eliminar foto</button>
+        </div>
+      </div>
+
+      <button class="btn-save" style="background:#15803d" onclick="guardarGenerador()">💾 REGISTRAR EN BITÁCORA</button>
+      <button class="btn-pdf" style="background:#15803d;margin-top:8px" onclick="exportarGeneradoresPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR BITÁCORA PDF</button>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div id="gen_sec_historial" style="display:none">
+      <div class="input-group" style="margin-bottom:10px">
+        <input type="text" class="filter-search" id="gen_search"
+          placeholder="Buscar por lugar, tipo, observaciones..."
+          oninput="buscarGeneradores()" style="margin-bottom:0">
+      </div>
+      <div class="filter-chips" style="margin-bottom:12px">
+        <span class="chip active" onclick="filtrarGenTipo(this,'')" data-val="">Todos</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Suplido de Combustible')" data-val="Suplido de Combustible">Combustible</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Inspección Rutinaria')" data-val="Inspección Rutinaria">Inspección</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Mantenimiento Preventivo')" data-val="Mantenimiento Preventivo">Mantenimiento</span>
+        <span class="chip red" onclick="filtrarGenTipo(this,'Falla / Avería')" data-val="Falla / Avería">Falla</span>
+      </div>
+      <div class="list-header">Registros (<span id="gen_total">0</span>)</div>
+      <div id="lista_gen"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    </div>
+
+    <!-- TAB: RESUMEN -->
+    <div id="gen_sec_resumen" style="display:none">
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green">
+          <div class="stat-num" id="gen_rpt_total">—</div>
+          <div class="stat-label">Total Registros</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-num" id="gen_rpt_gal">—</div>
+          <div class="stat-label">Total Galones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="gen_rpt_costo">—</div>
+          <div class="stat-label">Costo Total $</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-num" id="gen_rpt_fallas">—</div>
+          <div class="stat-label">Fallas Registradas</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Consumo por Dependencia</div>
+        <div id="gen_rpt_dep" style="font-size:13px;color:#475569;line-height:2">
+          <div class="loading-state"><i class="ph-fill ph-hourglass"></i> Calculando...</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Distribución por Tipo de Actividad</div>
+        <div id="gen_rpt_tipo" style="font-size:13px;color:#475569;line-height:2"></div>
+      </div>
+      <button class="btn-save" style="background:#15803d" onclick="calcularResumenGen()">🔄 ACTUALIZAR RESUMEN</button>
+    </div>
+  </div>
+
+  <!-- MÁS -->
+  <div id="mas" class="tab-page">
+    <div class="page-title"><i class="ph-bold ph-dots-three"></i> Más Opciones</div>
+    <div class="more-grid">
+      <div class="more-card" onclick="changeTab('casos')">
+        <span class="more-icon"><i class="ph-fill ph-clipboard-text"></i></span>
+        <div class="more-title">Casos Activos</div>
+        <div class="more-sub">Seguimiento de casos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('maestro')">
+        <span class="more-icon"><i class="ph-fill ph-folder"></i></span>
+        <div class="more-title">Registro Maestro</div>
+        <div class="more-sub">Log de actividades</div>
+      </div>
+      <div class="more-card" onclick="changeTab('generadores')">
+        <span class="more-icon"><i class="ph-fill ph-battery-full"></i></span>
+        <div class="more-title">Generadores</div>
+        <div class="more-sub">Bitácora oficial</div>
+      </div>
+      <div class="more-card" onclick="changeTab('agenda')">
+        <span class="more-icon"><i class="ph-fill ph-calendar"></i></span>
+        <div class="more-title">Agenda</div>
+        <div class="more-sub">Tareas y compromisos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('directorio')">
+        <span class="more-icon"><i class="ph-fill ph-users"></i></span>
+        <div class="more-title">Directorio</div>
+        <div class="more-sub">Personal DACE</div>
+      </div>
+      <div class="more-card" onclick="changeTab('reportes')">
+        <span class="more-icon"><i class="ph-fill ph-chart-bar"></i></span>
+        <div class="more-title">Reportes</div>
+        <div class="more-sub">Estadísticas</div>
+      </div>
+      <div class="more-card" onclick="changeTab('archivo')">
+        <span class="more-icon"><i class="ph-fill ph-archive"></i></span>
+        <div class="more-title">Archivo DACE</div>
+        <div class="more-sub">Documentos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('jedi')">
+        <span class="more-icon"><i class="ph-fill ph-desktop"></i></span>
+        <div class="more-title">JEDI / ASG</div>
+        <div class="more-sub">Solicitudes de equipos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('config')">
+        <span class="more-icon"><i class="ph-fill ph-gear"></i></span>
+        <div class="more-title">Configuración</div>
+        <div class="more-sub">Sistema v8.0</div>
+      </div>
+      <div class="more-card" onclick="changeTab('cisternas'); cargarCisternas()">
+        <span class="more-icon"><i class="ph-fill ph-drop"></i></span>
+        <div class="more-title">Cisternas</div>
+        <div class="more-sub">Estatus y reportes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ JEDI / ASG ══════════ -->
+  <div id="jedi" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-desktop"></i> Solicitudes JEDI / ASG</div>
+
+    <div class="ppr-header">
+      <h2>REGISTRO DE SOLICITUDES JEDI / ASG</h2>
+      <p>DACE Arecibo — Área de Apoyo Operativo</p>
+    </div>
+
+    <div class="ppr-section">
+      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Nueva Solicitud</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Número de Solicitud</label>
+            <input type="text" id="jedi_num" placeholder="Ej: JEDI-2026-001" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="jedi_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Hora de Radicación</label>
+          <input type="time" id="jedi_hora">
+        </div>
+        <div class="input-group">
+          <label>Dependencia / Unidad Solicitante *</label>
+          <select id="jedi_unidad">
+            <option value="">— Seleccionar —</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option>
+            <option>General / Área Arecibo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Método de Adquisición</label>
+          <select id="jedi_tipo">
+            <option value="Contra Contrato">Contra Contrato</option>
+            <option value="Regular">Regular</option>
+            <option value="Emergencia">Emergencia</option>
+            <option value="Sole Source">Sole Source</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Descripción del Equipo / Necesidad *</label>
+          <textarea id="jedi_desc" rows="4" placeholder="Describa detalladamente el equipo o necesidad solicitada..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Justificación</label>
+          <textarea id="jedi_just" rows="3" placeholder="Justifique la necesidad operacional..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Estatus</label>
+          <select id="jedi_estatus">
+            <option value="En autorización de OGP">En autorización de OGP</option>
+            <option value="En Aprobación Inicial">En Aprobación Inicial</option>
+            <option value="En asignación de Presupuesto">En asignación de Presupuesto</option>
+            <option value="En proceso de compra">En proceso de compra</option>
+            <option value="Orden de cargos a contrato concluido">Orden de cargos a contrato concluido</option>
+            <option value="Cancelado">Cancelado</option>
+            <option value="Completado">Completado</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Fecha de Respuesta / Actualización</label>
+            <input type="date" id="jedi_fecha_resp">
+          </div>
+          <div class="input-group">
+            <label>Número de Requisición ASG</label>
+            <input type="text" id="jedi_ref_asg" placeholder="Ej: 26P-NPPR-00936" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Observaciones</label>
+          <textarea id="jedi_obs" rows="3" placeholder="Notas adicionales, seguimiento, contactos..."></textarea>
+        </div>
+
+        <!-- Foto screenshot -->
+        <div class="foto-zone" onclick="document.getElementById('jedi_foto_input').click()">
+          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <p>Toca para agregar screenshot de JEDI/ASG</p>
+          <p style="font-size:10px;margin-top:4px">Evidencia de la solicitud en el sistema</p>
+        </div>
+        <input type="file" id="jedi_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoJedi()">
+        <img id="jedi_foto_preview" class="foto-preview" alt="Screenshot JEDI">
+        <button class="btn-foto-clear" id="jedi_foto_clear" onclick="clearFotoJedi()">✕ Eliminar foto</button>
+      </div>
+    </div>
+
+    <button class="btn-save" style="background:#1d4ed8" onclick="guardarJedi()">💾 REGISTRAR SOLICITUD JEDI</button>
+    <button class="btn-pdf" style="background:#1d4ed8;margin-top:8px" onclick="exportarJediPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR SOLICITUDES PDF</button>
+
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="jedi_search"
+        placeholder="Buscar por número, dependencia, descripción..."
+        oninput="buscarJedi()" style="margin-bottom:0">
+    </div>
+    <div class="filter-chips" style="margin-bottom:12px">
+      <span class="chip active" onclick="filtrarJediEstatus(this,'')" data-val="">Todos</span>
+      <span class="chip gold" onclick="filtrarJediEstatus(this,'En autorización de OGP')" data-val="En autorización de OGP">OGP</span>
+      <span class="chip" onclick="filtrarJediEstatus(this,'En Aprobación Inicial')" data-val="En Aprobación Inicial">Aprobación</span>
+      <span class="chip" onclick="filtrarJediEstatus(this,'En asignación de Presupuesto')" data-val="En asignación de Presupuesto">Presupuesto</span>
+      <span class="chip green" onclick="filtrarJediEstatus(this,'Orden de cargos a contrato concluido')" data-val="Orden de cargos a contrato concluido">Concluido</span>
+      <span class="chip red" onclick="filtrarJediEstatus(this,'Cancelado')" data-val="Cancelado">Cancelado</span>
+    </div>
+    <div class="list-header">Solicitudes (<span id="jedi_total">0</span>)</div>
+    <div id="lista_jedi"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ AGENDA ══════════ -->
+  <div id="agenda" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-calendar"></i> Agenda</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Tarea / Compromiso</div>
+      <div class="input-group">
+        <label>Título *</label>
+        <input type="text" id="ag_titulo" placeholder="Ej: Inspección Cuartel Camuy" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="ag_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="ag_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Tipo</label>
+        <select id="ag_tipo">
+          <option value="Inspección">Inspección</option>
+          <option value="Reunión">Reunión</option>
+          <option value="Entrega de Documentos">Entrega de Documentos</option>
+          <option value="Seguimiento de Caso">Seguimiento de Caso</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Capacitación">Capacitación</option>
+          <option value="Mantenimiento Programado">Mantenimiento Programado</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Notas</label>
+        <textarea id="ag_desc" rows="3" placeholder="Detalles del compromiso..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Prioridad</label>
+        <select id="ag_prioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media" selected>Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#0369a1" onclick="guardarAgenda()">💾 GUARDAR TAREA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Tareas (<span id="ag_total">0</span>)</div>
+    <div id="lista_agenda"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ DIRECTORIO ══════════ -->
+  <div id="directorio" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-users"></i> Directorio DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Agregar Personal</div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Nombre Completo *</label>
+          <input type="text" id="dir_nombre" placeholder="Apellido, Nombre" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Placa / ID</label>
+          <input type="text" id="dir_placa" placeholder="Ej: 31093" autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Rango / Clasificación</label>
+        <select id="dir_rango">
+          <option value="Agente">Agente</option>
+          <option value="Sargento">Sargento</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
+          <option value="Comandante">Comandante</option>
+          <option value="Civil">Civil / Administrativo</option>
+          <option value="Contratista">Contratista</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Unidad / Dependencia</label>
+        <select id="dir_unidad">
+          <option value="DACE Arecibo">DACE Arecibo</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="General / Otra">General / Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Teléfono</label>
+          <input type="text" id="dir_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Extensión</label>
+          <input type="text" id="dir_ext" placeholder="Ext." autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <input type="text" id="dir_email" placeholder="correo@nppr.pr.gov" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Notas</label>
+        <textarea id="dir_notas" rows="2" placeholder="Información adicional..."></textarea>
+      </div>
+      <button class="btn-save" style="background:#0f766e" onclick="guardarDirectorio()">💾 GUARDAR CONTACTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="dir_search" placeholder="Buscar por nombre, placa, unidad..." oninput="buscarDirectorio()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Contactos (<span id="dir_total">0</span>)</div>
+    <div id="lista_dir"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ REPORTES ══════════ -->
+  <div id="reportes" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-chart-bar"></i> Reportes</div>
+
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
+      <div class="stat-card gold"><div class="stat-num" id="rpt_q3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green"><div class="stat-num" id="rpt_casos">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"><div class="stat-num" id="rpt_mt">—</div><div class="stat-label">Mantenimientos</div></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Órdenes de Trabajo 137.1</div>
+      <div id="rpt_q1_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Inspecciones 137.3</div>
+      <div id="rpt_q3_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Tipo — Mantenimiento</div>
+      <div id="rpt_mt_tipo" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Top 5 Dependencias — Mantenimiento</div>
+      <div id="rpt_mt_dep" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <button class="btn-save" onclick="generarReportes()" style="margin-top:4px">🔄 ACTUALIZAR REPORTES</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()" style="margin-top:8px"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- ══════════ ARCHIVO DACE ══════════ -->
+  <div id="archivo" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-archive"></i> Archivo DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Documento</div>
+      <div class="input-group">
+        <label>Nombre del Documento *</label>
+        <input type="text" id="arc_nombre" placeholder="Ej: PPR-137.1 Cuartel Camuy Mar 2026" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Categoría</label>
+        <select id="arc_cat">
+          <option value="PPR-137.1">PPR-137.1 Orden de Trabajo</option>
+          <option value="PPR-137.3">PPR-137.3 Inspección</option>
+          <option value="Correspondencia">Correspondencia Oficial</option>
+          <option value="Memorando">Memorando</option>
+          <option value="Solicitud">Solicitud / Requisición</option>
+          <option value="Informe">Informe</option>
+          <option value="Certificación">Certificación</option>
+          <option value="Orden de Trabajo">Orden de Trabajo</option>
+          <option value="PADAWAN">PADAWAN / JEDI</option>
+          <option value="Legal">Documento Legal</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Dependencia Relacionada</label>
+        <select id="arc_dep">
+          <option value="General">General</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="Almacen">Almacén</option>
+          <option value="Poligono">Polígono</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="arc_fecha"></div>
+        <div class="input-group">
+          <label>Año</label>
+          <select id="arc_anio">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Referencia</label>
+        <textarea id="arc_desc" rows="3" placeholder="Descripción del documento o referencia..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Número de Referencia / Radicado</label>
+        <input type="text" id="arc_ref" placeholder="Ej: SAOC-CA-2-DACE-1-94" autocomplete="off">
+      </div>
+      <button class="btn-save" style="background:#b45309" onclick="guardarArchivo()">💾 REGISTRAR DOCUMENTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="arc_search" placeholder="Buscar documento..." oninput="buscarArchivo()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Documentos (<span id="arc_total">0</span>)</div>
+    <div id="lista_arc"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ CONFIGURACIÓN ══════════ -->
+  <div id="config" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-gear"></i> Configuración</div>
+    <div class="info-card">
+      <div class="info-title">Estado del Sistema</div>
+      <p><strong>Versión:</strong> DACE Arecibo v8.0</p>
+      <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
+      <p><strong>Sincronización:</strong> Tiempo real (iPhone ↔ PC)</p>
+      <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel · 31093</p>
+      <p><strong>Unidad:</strong> DACE Arecibo — NPPR</p>
+      <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Módulos Activos</div>
+      <p><i class="ph-bold ph-check"></i> Panel General</p>
+      <p><i class="ph-bold ph-check"></i> Órdenes de Trabajo PPR-137.1</p>
+      <p><i class="ph-bold ph-check"></i> Inspecciones PPR-137.3</p>
+      <p><i class="ph-bold ph-check"></i> Casos Activos</p>
+      <p><i class="ph-bold ph-check"></i> Mantenimiento</p>
+      <p><i class="ph-bold ph-check"></i> Registro Maestro</p>
+      <p><i class="ph-bold ph-check"></i> Agenda</p>
+      <p><i class="ph-bold ph-check"></i> Directorio Personal</p>
+      <p><i class="ph-bold ph-check"></i> Reportes Estadísticos</p>
+      <p><i class="ph-bold ph-check"></i> Archivo DACE</p>
+      <p><i class="ph-bold ph-check"></i> Exportar PDF</p>
+      <p><i class="ph-bold ph-check"></i> Filtros y Búsqueda</p>
+      <p><i class="ph-bold ph-check"></i> Sincronización Firebase</p>
+      <p><i class="ph-bold ph-check"></i> Protección PIN</p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Acciones</div>
+      <button class="btn-save" style="margin-bottom:10px" onclick="generarReportes();showToast('<i class=\'ph-bold ph-check\'></i> Estadísticas actualizadas','#166534')"><i class="ph-bold ph-arrows-clockwise"></i> Actualizar Estadísticas</button>
+      <button class="btn-save" style="background:#dc2626" onclick="cerrarSesion()"><i class="ph-bold ph-lock"></i> Cerrar Sesión / Bloquear</button>
+    </div>
+  </div>
+
+  <!-- ══════════ TRABAJOS REALIZADOS ══════════ -->
+  <div id="trabajos_realizados" class="tab-page">
+    <div class="page-title"><i class="ph-bold ph-check"></i> Trabajos Realizados</div>
+    <div class="list-header">Historial de Completados (<span id="tr_total">0</span>)</div>
+    <div id="lista_trabajos"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando trabajos...</div></div>
+  </div>
+
+  <!-- ══════════ CISTERNAS DEL ÁREA ══════════ -->
+  <div id="cisternas" class="tab-page">
+    <div class="page-title"><i class="ph-fill ph-drop"></i> Cisternas del Área</div>
+    
+    <div class="form-card">
+      <div class="form-section-label">Nuevo Registro de Cisterna</div>
+      <div class="input-group">
+        <label>Dependencia / Cuartel *</label>
+        <select id="cis_lugar">
+          <option value="">— Seleccionar —</option>
+          <option>Comandancia Administracion</option>
+          <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+          <option>Prec. 107</option><option>Prec. 207</option>
+          <option>Almacen</option><option>UMA</option><option>Poligono</option>
+          <option>Operaciones Tacticas</option><option>Florida</option>
+          <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+          <option>Morovis</option><option>Transito Manati</option>
+          <option>Drogas Manati</option><option>Transito Arecibo</option>
+          <option>Vehiculos Hurtados</option><option>Maritima</option>
+          <option>Tecnologia</option><option>General</option>
+        </select>
+      </div>
+      
+      <div class="input-group">
+        <label>Estatus de la Cisterna *</label>
+        <div class="row-2" style="margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Funciona" checked style="width:16px;height:16px;accent-color:var(--green)"> Funciona</label>
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="No Funciona" style="width:16px;height:16px;accent-color:var(--red)"> No Funciona</label>
+        </div>
+        <div class="row-2">
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Necesita Reparación" style="width:16px;height:16px;accent-color:var(--gold)"> Reparación</label>
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Cambio" style="width:16px;height:16px;accent-color:var(--blue)"> Cambio</label>
+        </div>
+      </div>
+      
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="cis_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="cis_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Observaciones / Notas</label>
+        <textarea id="cis_obs" placeholder="Describa cualquier avería, condición o recomendación..."></textarea>
+      </div>
+      <button class="btn-save" style="background:#0ea5e9" onclick="guardarCisterna()">💾 GUARDAR REGISTRO</button>
+    </div>
+
+    <hr class="sep">
+    <div class="list-header">Registro Histórico (<span id="cis_total">0</span>)</div>
+    <div id="lista_cisternas"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+  </div>
+
+</main>
+
+<!-- NAVEGACIÓN -->
+<nav class="nav-bar">
+  <button id="btn-inicio"        class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon"><i class="ph-fill ph-chart-bar"></i></span>PANEL</button>
+  <button id="btn-q137_1"        class="nav-btn"        onclick="changeTab('q137_1')"><span class="nav-icon"><i class="ph-fill ph-scales"></i></span>137.1</button>
+  <button id="btn-q137_3"        class="nav-btn"        onclick="changeTab('q137_3')"><span class="nav-icon"><i class="ph-fill ph-buildings"></i></span>137.3</button>
+  <button id="btn-mantenimiento" class="nav-btn"        onclick="changeTab('mantenimiento')"><span class="nav-icon"><i class="ph-fill ph-wrench"></i></span>MANT.</button>
+  <button id="btn-mas"           class="nav-btn"        onclick="changeTab('mas')"><span class="nav-icon"><i class="ph-bold ph-dots-three"></i></span>MÁS</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
+     ═══════════════════════════════════════════════════════════ -->
+</body>
+</html>
