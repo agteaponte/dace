@@ -3192,100 +3192,103 @@ async function exportarFormulario137_1(id) {
     const docSnap = await db.collection('dace_q137_1').doc(id).get();
     if (!docSnap.exists) { showToast('❌ Registro no encontrado', '#dc2626'); return; }
     const d = docSnap.data();
-
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'letter' });
-    const W = doc.internal.pageSize.getWidth();
-    const H = doc.internal.pageSize.getHeight();
+    const W = doc.internal.pageSize.getWidth();   // 215.9mm
+    const H = doc.internal.pageSize.getHeight();  // 279.4mm
 
-    // Fondo: formulario oficial
+    // Formulario oficial como fondo
     doc.addImage(FORM_137_1_B64, 'JPEG', 0, 0, W, H);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(0,0,0);
 
-    // ── CAMPOS CON COORDENADAS EXACTAS DEL ACROFORM ──
-    // Coordenadas: x = inicio campo, y = inicio campo + altura campo (baseline del texto)
-    // Campos text: texto va en x del campo, y = y_campo + h_campo - 1.5mm
+    // ══════════════════════════════════════════════════════════════════
+    // COORDENADAS EXACTAS — baseline del texto = y_campo + h_campo - 1.5
+    // Conversión: pts × (25.4/72) = mm
+    // ══════════════════════════════════════════════════════════════════
 
-    // Número de solicitud: x:175.6 y:38.3 w:21.2 h:10.2mm
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text((d.numero||'').substring(0,20), 175.6, 45.5);
+    // NÚMERO DE SOLICITUD — campo y=38.31mm h=10.16mm → baseline=46.97mm
+    doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.text((d.numero||'').substring(0,22), 175.6, 46.97);
 
-    // Unidad Solicitante: x:13.1 y:58.1 w:59.3 h:6.2mm
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text((d.unidad||'').substring(0,28), 13.5, 62.5);
+    // UNIDAD SOLICITANTE — campo y=58.08mm h=6.22mm → baseline=62.80mm
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.text((d.unidad||'').substring(0,28), 13.5, 62.80);
 
-    // Área: x:72.9 y:58.1 w:40.3 h:6.2mm
-    doc.text((d.area||'Arecibo').substring(0,18), 73.2, 62.5);
+    // ÁREA — campo x=72.91mm y=58.08mm → baseline=62.80mm
+    doc.text((d.area||'Arecibo').substring(0,18), 73.2, 62.80);
 
-    // Director/supervisor: x:113.7 y:58.1 w:89.2 h:6.2mm
-    doc.text((d.director||'').substring(0,35), 114.0, 62.5);
+    // DIRECTOR/SUPERVISOR — campo x=113.78mm → baseline=62.80mm
+    doc.text((d.director||'').substring(0,30), 114.0, 62.80);
 
-    // Fecha: campo Text1 x:18.2 y:66.3 w:52.9 h:7.8mm
-    doc.text(d.fecha||'', 18.5, 72.5);
+    // FECHA — campo Text1 y=66.31mm h=7.76mm → baseline=72.57mm
+    doc.text(d.fecha||'', 18.5, 72.57);
 
-    // Checkboxes: centro del checkbox = x + w/2, y + h/2
-    // Cada checkbox: w:4.2 h:2.8mm — ponemos X centrado
+    // CHECKBOXES — campo y=81.11mm h=2.84mm → baseline=82.45mm
+    // El checkbox mide 4.23mm de ancho — ponemos X justo dentro
     const trabajos = d.trabajos || [];
     const checkboxes = {
-      'Carpintería':   { x:14.7,  y:81.1 },
-      'Electricidad':  { x:45.8,  y:81.1 },
-      'Pintura':       { x:75.9,  y:81.1 },
-      'Refrigeración': { x:95.8,  y:81.1 },
-      'Ebanistería':   { x:128.9, y:81.1 },
-      'Limpieza':      { x:160.4, y:81.1 },
-      'Plomería':      { x:14.7,  y:86.6 },
+      'Carpintería':   14.69,
+      'Electricidad':  45.82,
+      'Pintura':       75.92,
+      'Refrigeración': 95.86,
+      'Ebanistería':   128.89,
+      'Limpieza':      160.44,
     };
-    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.setFontSize(7); doc.setFont('helvetica','bold');
     trabajos.forEach(t => {
-      const cb = checkboxes[t];
-      if (cb) doc.text('X', cb.x + 0.5, cb.y + 2.2);
+      if (t === 'Plomería') {
+        // y=86.61mm h=2.84mm → baseline=87.95mm
+        doc.text('X', 14.69, 87.95);
+      } else if (checkboxes[t] !== undefined) {
+        doc.text('X', checkboxes[t] + 0.5, 82.45);
+      }
     });
 
-    // Descripción: x:13.3 y:99.1 w:189.4 h:70.7mm
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    // DESCRIPCIÓN — campo y=99.10mm → texto empieza en y=103mm
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
     const descLines = doc.splitTextToSize(d.descripcion||'', 187);
-    let yD = 103;
-    descLines.slice(0,14).forEach(l => { doc.text(l, 13.5, yD); yD += 5; });
+    let yD = 104;
+    descLines.slice(0,13).forEach(l => { doc.text(l, 13.5, yD); yD += 5.2; });
 
-    // Sección: x:13.1 y:181.7 w:44.6 h:6.2mm
-    doc.text((d.seccion ||'').substring(0,18), 13.5, 186.3);
+    // SECCIÓN — campo y=181.69mm h=6.22mm → baseline=186.42mm
+    doc.text((d.seccion||'').substring(0,18), 13.5, 186.42);
 
-    // División: x:58.2 y:181.7 w:44.2 h:6.2mm
-    doc.text((d.division||'').substring(0,18), 58.5, 186.3);
+    // DIVISIÓN — campo x=58.22mm
+    doc.text((d.division||'').substring(0,18), 58.5, 186.42);
 
-    // Distrito/Precinto: x:103.0 y:181.7 w:45.7 h:6.2mm
-    doc.text((d.distrito||'').substring(0,18), 103.3, 186.3);
+    // DISTRITO/PRECINTO — campo x=103.02mm
+    doc.text((d.distrito||'').substring(0,18), 103.3, 186.42);
 
-    // Área_2: x:149.3 y:181.7 w:53.6 h:6.2mm
-    doc.text((d.area||'Arecibo').substring(0,20), 149.6, 186.3);
+    // ÁREA_2 — campo x=149.30mm
+    doc.text((d.area||'Arecibo').substring(0,18), 149.6, 186.42);
 
-    // Negociado: x:13.1 y:192.1 w:89.4 h:6.2mm
-    doc.text('Policía de Puerto Rico', 13.5, 196.7);
+    // NEGOCIADO — campo y=192.07mm h=6.22mm → baseline=196.79mm
+    doc.text('Policía de Puerto Rico', 13.5, 196.79);
 
-    // Superintendencia Auxiliar: x:103.0 y:192.1
-    doc.text((d.negociado||'').substring(0,35), 103.3, 196.7);
+    // SUPERINTENDENCIA AUXILIAR — campo x=103.02mm
+    doc.text((d.negociado||'').substring(0,30), 103.3, 196.79);
 
-    // Firma del Solicitante: x:13.1 y:202.4 w:117.3 h:6.2mm
-    doc.text((d.solicitante||'').substring(0,40), 13.5, 207.0);
+    // FIRMA DEL SOLICITANTE — campo y=202.40mm h=6.22mm → baseline=207.12mm
+    doc.text((d.solicitante||'').substring(0,40), 13.5, 207.12);
 
-    // Teléfono: x:130.9 y:202.4 w:72.0 h:6.2mm
-    doc.text((d.telefono||'').substring(0,22), 131.2, 207.0);
+    // TELÉFONO — campo x=130.97mm
+    doc.text((d.telefono||'').substring(0,22), 131.2, 207.12);
 
-    // PARA USO OFICIAL — Firma digital coordinador DACE
-    // Autorizado por: x:13.1 y:220.5 w:132.5 h:6.2mm
-    try { doc.addImage(FIRMA_B64, 'PNG', 13.1, 211.0, 50, 10); } catch(e){}
+    // PARA USO OFICIAL — FIRMA DIGITAL COORDINADOR DACE
+    // Autorizado por: campo y=220.51mm h=6.22mm → baseline=225.24mm
+    // Firma sobre el campo
+    try { doc.addImage(FIRMA_B64, 'PNG', 13.1, 210.0, 52, 11); } catch(e){}
     doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('Agte. Jose C. Aponte Cancel · 31093', 13.5, 229.0);
+    doc.text('Agte. Jose C. Aponte Cancel · 31093', 13.5, 228.5);
     doc.setFont('helvetica','normal'); doc.setFontSize(7);
-    doc.text('Coordinador Auxiliar DACE Arecibo', 13.5, 233.0);
+    doc.text('Coordinador Auxiliar DACE Arecibo', 13.5, 232.5);
 
-    // Fecha_2: x:146.2 y:220.5 w:56.7 h:6.2mm
+    // FECHA_2 — campo x=146.21mm → baseline=225.24mm
     doc.setFontSize(9);
-    doc.text(d.fecha||'', 146.5, 225.1);
+    doc.text(d.fecha||'', 146.5, 225.24);
 
-    // Foto si existe — página 2
+    // FOTO — página 2
     if (d.fotoUrl) {
       try {
         const imgData = await cargarImagenComoBase64(d.fotoUrl);
