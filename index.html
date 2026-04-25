@@ -3198,86 +3198,122 @@ async function exportarFormulario137_1(id) {
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
 
+    // Fondo: formulario oficial
     doc.addImage(FORM_137_1_B64, 'JPEG', 0, 0, W, H);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
 
-    // Número de solicitud — alineado con "SOL-137.1-..." en la fila del título
-    doc.setFontSize(10); doc.setFont('helvetica','bold');
-    doc.text(d.numero || '', 165, 38);
+    // ── CAMPOS CON COORDENADAS EXACTAS DEL ACROFORM ──
+    // Coordenadas: x = inicio campo, y = inicio campo + altura campo (baseline del texto)
+    // Campos text: texto va en x del campo, y = y_campo + h_campo - 1.5mm
 
-    // Fila encabezado: Unidad | Área | Director (labels y:54.3mm, datos ~6mm abajo)
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text((d.unidad    || '').substring(0,28), 15, 61);
-    doc.text((d.area      || 'Arecibo').substring(0,18), 75, 61);
-    doc.text((d.director  || '').substring(0,28), 116, 61);
+    // Número de solicitud: x:175.6 y:38.3 w:21.2 h:10.2mm
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text((d.numero||'').substring(0,20), 175.6, 45.5);
 
-    // Fecha (label y:64.6mm)
-    doc.text(d.fecha || '', 15, 71);
+    // Unidad Solicitante: x:13.1 y:58.1 w:59.3 h:6.2mm
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.text((d.unidad||'').substring(0,28), 13.5, 62.5);
 
-    // Checkboxes trabajo (labels y:80.1mm — checkbox cuadrado está antes del texto)
+    // Área: x:72.9 y:58.1 w:40.3 h:6.2mm
+    doc.text((d.area||'Arecibo').substring(0,18), 73.2, 62.5);
+
+    // Director/supervisor: x:113.7 y:58.1 w:89.2 h:6.2mm
+    doc.text((d.director||'').substring(0,35), 114.0, 62.5);
+
+    // Fecha: campo Text1 x:18.2 y:66.3 w:52.9 h:7.8mm
+    doc.text(d.fecha||'', 18.5, 72.5);
+
+    // Checkboxes: centro del checkbox = x + w/2, y + h/2
+    // Cada checkbox: w:4.2 h:2.8mm — ponemos X centrado
     const trabajos = d.trabajos || [];
-    const checkX = {
-      'Carpintería':   15.3, 'Electricidad': 46.4, 'Pintura': 76.6,
-      'Refrigeración': 96.5, 'Ebanistería': 129.5, 'Limpieza': 161.0,
-      'Plomería':      15.3
+    const checkboxes = {
+      'Carpintería':   { x:14.7,  y:81.1 },
+      'Electricidad':  { x:45.8,  y:81.1 },
+      'Pintura':       { x:75.9,  y:81.1 },
+      'Refrigeración': { x:95.8,  y:81.1 },
+      'Ebanistería':   { x:128.9, y:81.1 },
+      'Limpieza':      { x:160.4, y:81.1 },
+      'Plomería':      { x:14.7,  y:86.6 },
     };
-    doc.setFontSize(10);
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
     trabajos.forEach(t => {
-      const x = checkX[t];
-      const y = t === 'Plomería' ? 85.6 : 80.1;
-      if (x !== undefined) doc.text('X', x, y);
+      const cb = checkboxes[t];
+      if (cb) doc.text('X', cb.x + 0.5, cb.y + 2.2);
     });
 
-    // Descripción (área grande y:92.3mm a y:171.5mm — empieza a y:98)
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    const descLines = doc.splitTextToSize(d.descripcion || '', W - 28);
-    let yD = 99;
-    descLines.slice(0, 15).forEach(l => { doc.text(l, 15, yD); yD += 5; });
+    // Descripción: x:13.3 y:99.1 w:189.4 h:70.7mm
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    const descLines = doc.splitTextToSize(d.descripcion||'', 187);
+    let yD = 103;
+    descLines.slice(0,14).forEach(l => { doc.text(l, 13.5, yD); yD += 5; });
 
-    // Localización (labels y:177.8mm, datos ~6mm abajo)
-    doc.text((d.seccion  || '').substring(0,18), 15,  184);
-    doc.text((d.division || '').substring(0,18), 60,  184);
-    doc.text((d.distrito || '').substring(0,20), 105, 184);
-    doc.text((d.area     || 'Arecibo').substring(0,14), 151, 184);
+    // Sección: x:13.1 y:181.7 w:44.6 h:6.2mm
+    doc.text((d.seccion ||'').substring(0,18), 13.5, 186.3);
 
-    // Negociado / Superintendencia (labels y:188.2mm)
-    doc.text('Policía de Puerto Rico', 15, 195);
+    // División: x:58.2 y:181.7 w:44.2 h:6.2mm
+    doc.text((d.division||'').substring(0,18), 58.5, 186.3);
 
-    // Firma solicitante / teléfono (labels y:198.5mm)
-    doc.text((d.solicitante || '').substring(0,35), 15,  206);
-    doc.text((d.telefono    || '').substring(0,20), 133, 206);
+    // Distrito/Precinto: x:103.0 y:181.7 w:45.7 h:6.2mm
+    doc.text((d.distrito||'').substring(0,18), 103.3, 186.3);
 
-    // Firma digital coordinador DACE (sección "Para uso oficial" y:210.2mm)
-    try { doc.addImage(FIRMA_B64, 'PNG', 12, 211, 52, 10); } catch(e){}
+    // Área_2: x:149.3 y:181.7 w:53.6 h:6.2mm
+    doc.text((d.area||'Arecibo').substring(0,20), 149.6, 186.3);
+
+    // Negociado: x:13.1 y:192.1 w:89.4 h:6.2mm
+    doc.text('Policía de Puerto Rico', 13.5, 196.7);
+
+    // Superintendencia Auxiliar: x:103.0 y:192.1
+    doc.text((d.negociado||'').substring(0,35), 103.3, 196.7);
+
+    // Firma del Solicitante: x:13.1 y:202.4 w:117.3 h:6.2mm
+    doc.text((d.solicitante||'').substring(0,40), 13.5, 207.0);
+
+    // Teléfono: x:130.9 y:202.4 w:72.0 h:6.2mm
+    doc.text((d.telefono||'').substring(0,22), 131.2, 207.0);
+
+    // PARA USO OFICIAL — Firma digital coordinador DACE
+    // Autorizado por: x:13.1 y:220.5 w:132.5 h:6.2mm
+    try { doc.addImage(FIRMA_B64, 'PNG', 13.1, 211.0, 50, 10); } catch(e){}
     doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('Agte. Jose C. Aponte Cancel · 31093', 12, 224);
+    doc.text('Agte. Jose C. Aponte Cancel · 31093', 13.5, 229.0);
     doc.setFont('helvetica','normal'); doc.setFontSize(7);
-    doc.text('Coordinador Auxiliar DACE Arecibo', 12, 228);
-    doc.setFontSize(9);
-    doc.text(d.fecha || '', 148, 222);
+    doc.text('Coordinador Auxiliar DACE Arecibo', 13.5, 233.0);
 
-    // Foto si existe
+    // Fecha_2: x:146.2 y:220.5 w:56.7 h:6.2mm
+    doc.setFontSize(9);
+    doc.text(d.fecha||'', 146.5, 225.1);
+
+    // Foto si existe — página 2
     if (d.fotoUrl) {
       try {
         const imgData = await cargarImagenComoBase64(d.fotoUrl);
         if (imgData) {
           doc.addPage();
-          doc.setFontSize(12); doc.setFont('helvetica','bold');
-          doc.setTextColor(10,25,47);
-          doc.text('EVIDENCIA FOTOGRÁFICA', W/2, 20, {align:'center'});
+          doc.setFillColor(10,25,47);
+          doc.rect(0,0,W,22,'F');
+          doc.setTextColor(255,255,255);
+          doc.setFontSize(13); doc.setFont('helvetica','bold');
+          doc.text('EVIDENCIA FOTOGRÁFICA', W/2, 11, {align:'center'});
           doc.setFontSize(9); doc.setFont('helvetica','normal');
-          doc.text(`${d.numero||''} · ${d.unidad||''} · ${d.fecha||''}`, W/2, 28, {align:'center'});
-          doc.addImage(imgData, 'JPEG', 15, 35, W-30, 120);
-          try { doc.addImage(FIRMA_B64, 'PNG', 10, H-30, 65, 13); } catch(e){}
+          doc.text((d.numero||'')+' · '+(d.unidad||'')+' · '+(d.fecha||''), W/2, 18, {align:'center'});
+          doc.setTextColor(0,0,0);
+          doc.addImage(imgData, 'JPEG', 10, 28, W-20, 120);
+          try { doc.addImage(FIRMA_B64, 'PNG', 10, H-28, 50, 10); } catch(e){}
+          doc.setFontSize(8); doc.setFont('helvetica','bold');
+          doc.setTextColor(10,25,47);
+          doc.text('Agte. Jose C. Aponte Cancel · Placa 31093', 10, H-14);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7);
+          doc.text('Coordinador Auxiliar DACE Arecibo', 10, H-10);
         }
-      } catch(e) {}
+      } catch(e){}
     }
 
     const fecha = new Date().toISOString().split('T')[0];
-    doc.save(`PPR-137.1_${d.numero||'orden'}_${fecha}.pdf`);
+    doc.save('PPR-137.1_'+(d.numero||'orden')+'_'+fecha+'.pdf');
     showToast('✅ Formulario PPR-137.1 generado', '#166534');
-  } catch(e) { showToast('❌ Error: ' + e.message, '#dc2626'); console.error(e); }
+  } catch(e) { showToast('❌ Error: '+e.message, '#dc2626'); console.error(e); }
 }
 
 /* ═══ EXPORTAR FORMULARIO OFICIAL PPR-137.3 (individual) ═══ */
