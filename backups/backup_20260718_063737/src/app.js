@@ -2,7 +2,6 @@
 
 // Cache de datos completos para filtrar localmente
 const _cache = { q1:[], q3:[], c:[], rm:[], mt:[] };
-let _guardando = false;
 // Estado de filtros activos
 const _filtros = {
   q1:  { texto:'', estatus:'', desde:'', hasta:'' },
@@ -21,10 +20,8 @@ function toggleChip(el, modulo, campo, valor) {
   aplicarFiltros(modulo);
 }
 
-function obtenerDatosFiltrados(modulo) {
+function aplicarFiltros(modulo) {
   const f   = _filtros[modulo];
-  if (!f) return _cache[modulo] || [];
-
   const txt = (document.getElementById(modulo + '_search')?.value || '').toLowerCase().trim();
   const des = document.getElementById(modulo + '_desde')?.value || '';
   const has = document.getElementById(modulo + '_hasta')?.value || '';
@@ -33,7 +30,7 @@ function obtenerDatosFiltrados(modulo) {
   f.desde = des;
   f.hasta = has;
 
-  let datos = _cache[modulo] || [];
+  let datos = _cache[modulo];
 
   // Filtro texto
   if (txt) {
@@ -66,6 +63,7 @@ function obtenerDatosFiltrados(modulo) {
           const [a, b, c] = parts;
           // Si el año está al final
           if (c.length === 4) fechaNorm = `${c}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
+          else fechaNorm = rawFecha; // fallback
         }
       }
       if (des && fechaNorm < des) return false;
@@ -73,12 +71,6 @@ function obtenerDatosFiltrados(modulo) {
       return true;
     });
   }
-
-  return datos;
-}
-
-function aplicarFiltros(modulo) {
-  const datos = obtenerDatosFiltrados(modulo);
 
   // Renderizar resultados filtrados
   const configs = {
@@ -90,7 +82,6 @@ function aplicarFiltros(modulo) {
   };
 
   const cfg = configs[modulo];
-  if (!cfg) return;
   const el  = document.getElementById(cfg.container);
   const cnt = document.getElementById(cfg.count);
 
@@ -266,12 +257,10 @@ function clearFotoGen() {
 }
 
 async function guardarGenerador() {
-  if (_guardando) return;
   const lugar = document.getElementById('gen_lugar')?.value;
   const obs   = v('gen_obs');
   if (!lugar || !obs) { showToast('⚠️ Dependencia y observaciones son requeridas', '#92400e'); return; }
 
-  _guardando = true;
   showToast('<i class="ph-fill ph-hourglass"></i> Registrando en bitácora...', '#0a192f');
   try {
     const docRef  = db.collection('dace_generadores').doc();
@@ -305,12 +294,6 @@ async function guardarGenerador() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'Bitácora Generador',
-      `Suministro/Actividad en ${lugar}: ${v('gen_tipo')} - Condición: ${v('gen_condicion')}`,
-      `Marca: ${v('gen_marca')} · Galones: ${v('gen_galones')} · Costo: $${v('gen_costo')} · Obs: ${obs}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Entrada registrada en bitácora', '#166534');
     ['gen_marca','gen_obs','gen_proveedor','gen_boleto',
      'gen_galones','gen_litros','gen_costo','gen_horas',
@@ -318,7 +301,7 @@ async function guardarGenerador() {
     set('gen_lugar',''); set('gen_condicion','Óptimo');
     set('gen_fecha', hoy()); set('gen_hora', ahora());
     clearFotoGen();
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 function buscarGeneradores() {
@@ -481,10 +464,8 @@ async function exportarGeneradoresPDF() {
 let _agendaCache = [];
 
 async function guardarAgenda() {
-  if (_guardando) return;
   const titulo = v('ag_titulo'), fecha = v('ag_fecha');
   if (!titulo || !fecha) { showToast('⚠️ Título y fecha son requeridos', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_agenda').add({
       titulo, fecha, hora: v('ag_hora'),
@@ -493,17 +474,10 @@ async function guardarAgenda() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Agenda / Tarea',
-      `Nueva tarea programada: ${titulo} (${v('ag_tipo')})`,
-      `Fecha: ${fecha} · Prioridad: ${v('ag_prioridad')} · Desc: ${v('ag_desc')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Tarea guardada', '#166534');
     limpiar(['ag_titulo','ag_desc']);
     set('ag_fecha', hoy()); set('ag_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function renderAgenda(docs) {
@@ -550,10 +524,8 @@ async function completarTarea(id, estatusActual) {
 let _dirCache = [];
 
 async function guardarDirectorio() {
-  if (_guardando) return;
   const nombre = v('dir_nombre');
   if (!nombre) { showToast('⚠️ El nombre es requerido', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_directorio').add({
       nombre, placa: v('dir_placa'), rango: v('dir_rango'),
@@ -563,16 +535,9 @@ async function guardarDirectorio() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Directorio Personal',
-      `Contacto añadido: ${nombre} (${v('dir_rango')})`,
-      `Unidad: ${v('dir_unidad')} · Tel: ${v('dir_tel')} · Email: ${v('dir_email')} · Notas: ${v('dir_notas')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Contacto guardado', '#166534');
     limpiar(['dir_nombre','dir_placa','dir_tel','dir_ext','dir_email','dir_notas']);
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarDirectorio() {
@@ -647,10 +612,8 @@ async function generarReportes() {
 let _arcCache = [];
 
 async function guardarArchivo() {
-  if (_guardando) return;
   const nombre = v('arc_nombre');
   if (!nombre) { showToast('⚠️ El nombre del documento es requerido', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_archivo').add({
       nombre, categoria: v('arc_cat'), dependencia: v('arc_dep'),
@@ -659,17 +622,10 @@ async function guardarArchivo() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Archivo DACE',
-      `Documento registrado: ${nombre} (${v('arc_cat')})`,
-      `Dependencia: ${v('arc_dep')} · Año: ${v('arc_anio')} · Referencia: ${v('arc_ref')} · Desc: ${v('arc_desc')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Documento registrado', '#166534');
     limpiar(['arc_nombre','arc_desc','arc_ref']);
     set('arc_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarArchivo() {
@@ -730,12 +686,10 @@ function clearFotoJedi() {
 }
 
 async function guardarJedi() {
-  if (_guardando) return;
   const unidad = document.getElementById('jedi_unidad')?.value;
   const desc   = v('jedi_desc');
   if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridas', '#92400e'); return; }
 
-  _guardando = true;
   showToast('<i class="ph-fill ph-hourglass"></i> Registrando solicitud...', '#0a192f');
   try {
     const docRef  = db.collection('dace_jedi').doc();
@@ -766,18 +720,12 @@ async function guardarJedi() {
       createdAt:    firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'PADAWAN / JEDI',
-      `Solicitud JEDI registrada: ${v('jedi_num') || '—'} (${unidad})`,
-      `Estatus: ${v('jedi_estatus')} · Equipo: ${desc} · Ref ASG: ${v('jedi_ref_asg')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Solicitud JEDI registrada', '#166534');
     limpiar(['jedi_num','jedi_desc','jedi_just','jedi_obs','jedi_ref_asg','jedi_fecha_resp']);
     set('jedi_unidad',''); set('jedi_estatus','Pendiente');
     set('jedi_fecha', hoy()); set('jedi_hora', ahora());
     clearFotoJedi();
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarJedi() {
@@ -1178,11 +1126,9 @@ function usarHallazgoIA() {
 
 /* ═══ GUARDAR: 137.1 (con soporte edición) ═══ */
 async function guardarQ1() {
-  if (_guardando) return;
   const unidad = document.getElementById('q1_unidad')?.value;
   const desc   = v('q1_desc');
   if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
-  _guardando = true;
 
   const trabajos = [];
   if (document.getElementById('q1_carp')?.checked) trabajos.push('Carpintería');
@@ -1207,11 +1153,6 @@ async function guardarQ1() {
   try {
     if (_editando.col === 'dace_q137_1' && _editando.id) {
       await db.collection('dace_q137_1').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'PPR-137.1 (Edición)',
-        `Orden de Trabajo actualizada: ${datos.numero || _editando.id}`,
-        `Unidad: ${unidad} · Trabajos: ${trabajos.join(', ')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Orden actualizada correctamente', '#166534');
       _editando = { col: null, id: null };
       const btn = document.querySelector('#q137_1 .btn-save');
@@ -1226,11 +1167,6 @@ async function guardarQ1() {
       const fotoUrl = await subirFoto('q1', docRef.id);
       datos.fotoUrl = fotoUrl || null;
       await docRef.set(datos);
-      await registrarEnMaestroAuto(
-        'PPR-137.1',
-        `Nueva Orden de Trabajo creada: ${datos.numero}`,
-        `Unidad: ${unidad} · Trabajos: ${trabajos.join(', ')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Orden ' + datos.numero + ' guardada', '#166534');
     }
     limpiar(['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito']);
@@ -1240,7 +1176,7 @@ async function guardarQ1() {
     clearFoto('q1');
     document.getElementById('q1_ai_result').classList.remove('visible');
     set('q1_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 /* ═══ GUARDAR: 137.3 (con soporte edición) ═══ */
@@ -1280,11 +1216,9 @@ function recopilarInspeccion() {
 
 /* ═══ GUARDAR: 137.3 (actualizado) ═══ */
 async function guardarQ3() {
-  if (_guardando) return;
   const lugar = document.getElementById('q3_lugar')?.value;
   const hall  = v('q3_hallazgos');
   if (!lugar || !hall) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
-  _guardando = true;
 
   showToast('<i class="ph-fill ph-hourglass"></i> Guardando inspección...', '#0a192f');
   try {
@@ -1310,19 +1244,13 @@ async function guardarQ3() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'PPR-137.3',
-      `Nueva Inspección creada: ${numAuto}`,
-      `Lugar: ${lugar} · Hallazgos: ${hall} · Recomendaciones: ${v('q3_rec')}`
-    );
-
     showToast(`<i class="ph-bold ph-check"></i> Inspección ${numAuto} guardada y sincronizada`, '#166534');
     limpiar(['q3_director','q3_tel','q3_dir','q3_obs_gen','q3_hallazgos','q3_rec']);
     set('q3_lugar',''); set('q3_estatus','Pendiente'); set('q3_fecha', hoy());
     clearFoto('q3');
     document.getElementById('q3_ai_result').classList.remove('visible');
     document.getElementById('q3_num').placeholder = `INS-137.3-${anio}-${String(total+1).padStart(3,'0')}`;
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 /* ═══ HELPER: CARGAR IMAGEN DESDE URL PARA PDF ═══ */
@@ -1347,7 +1275,6 @@ function pdfHeader(doc, titulo) {
   const azul  = [10, 25, 47];
   const gold  = [197, 160, 89];
   const W     = doc.internal.pageSize.getWidth();
-  const ts    = new Date().toLocaleString('es-PR');
 
   // Fondo encabezado
   doc.setFillColor(...azul);
@@ -1379,6 +1306,7 @@ function pdfHeader(doc, titulo) {
   doc.setTextColor(180, 180, 180);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
+  const ts = new Date().toLocaleString('es-PR');
   doc.text(`Generado: ${ts}  |  Agte. Aponte Cancel · Placa 31093`, W / 2, 37, { align: 'center' });
 
   return 45; // y de inicio del contenido
@@ -1408,318 +1336,349 @@ async function exportarPDF(modulo) {
   const azul  = [10, 25, 47];
   const gold  = [197, 160, 89];
 
-  let titulo, y;
-
-  const keyMap = { q137_1: 'q1', q137_3: 'q3', casos: 'c', maestro: 'rm', mantenimiento: 'mt' };
-  const key = keyMap[modulo] || modulo;
-  const items = obtenerDatosFiltrados(key);
-
-  if (!items || items.length === 0) {
-    showToast('<i class="ph-bold ph-x"></i> No hay registros para exportar', '#92400e');
-    return;
-  }
-
-  // Confirmar si incluir imágenes para no congelar el navegador en reportes grandes
-  let incluirFotos = false;
-  const tieneFotos = items.some(d => d.fotoUrl);
-  if (tieneFotos) {
-    incluirFotos = confirm(
-      `El reporte contiene ${items.length} registro(s).\n\n` +
-      `¿Deseas incluir las fotos de evidencia fotográfica en el PDF?\n` +
-      `(Nota: Si exportas muchos registros con fotos, la generación tardará más tiempo y podría congelar el navegador).`
-    );
-  }
+  let titulo, snap, y;
 
   try {
     if (modulo === 'q137_1') {
       titulo = 'Registro de Órdenes de Trabajo PPR-137.1';
+      snap   = await db.collection('dace_q137_1').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay órdenes registradas.', W/2, y+10, {align:'center'});
+      } else {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(240, 244, 248);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...azul);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Solicitante', d.solicitante],
-          ['Unidad', d.unidad],
-          ['Tipos de Trabajo', d.trabajos?.join(', ')],
-          ['Descripción', d.descripcion],
-          ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
-          ['Estatus', d.estatus],
-          ['Observaciones', d.observaciones],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(240, 244, 248);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(...azul);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        if (d.fotoUrl && incluirFotos) {
-          try {
-            y = checkPage(doc, y, 65);
+          const campos = [
+            ['Solicitante', d.solicitante],
+            ['Unidad', d.unidad],
+            ['Tipos de Trabajo', d.trabajos?.join(', ')],
+            ['Descripción', d.descripcion],
+            ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
+            ['Estatus', d.estatus],
+            ['Observaciones', d.observaciones],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
             doc.setTextColor(...azul);
             doc.setFontSize(7);
             doc.setFont('helvetica','bold');
-            doc.text('Evidencia Fotográfica:', 13, y);
-            y += 4;
-            const imgData = await cargarImagenComoBase64(d.fotoUrl);
-            if (imgData) {
-              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
-              y += 58;
-            }
-          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
-        }
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
 
-        y = pdfLinea(doc, y+2, W);
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(...azul);
+              doc.setFontSize(7);
+              doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
+
+          y = pdfLinea(doc, y+2, W);
+        }
       }
     }
 
     else if (modulo === 'q137_3') {
       titulo = 'Registro de Inspecciones PPR-137.3';
+      snap   = await db.collection('dace_q137_3').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay inspecciones registradas.', W/2, y+10, {align:'center'});
+      } else {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(255, 249, 235);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(92, 70, 10);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Lugar/Unidad', d.lugar],
-          ['Director', d.director],
-          ['Dirección', d.direccion],
-          ['Obs. Generales', d.observacionesGenerales],
-          ['Hallazgos', d.hallazgos],
-          ['Recomendaciones', d.recomendaciones],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(255, 249, 235);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(92, 70, 10);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        if (d.inspeccion) {
-          const secNombres = {
-            ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
-            bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
-            can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
-          };
-          Object.keys(d.inspeccion).forEach(sec => {
-            const secItems = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
-            if (secItems.length === 0) return;
-            y = checkPage(doc, y, 12);
-            doc.setFillColor(255,245,220);
-            doc.rect(13, y-2, W-26, 6, 'F');
-            doc.setTextColor(92,70,10);
-            doc.setFontSize(7); doc.setFont('helvetica','bold');
-            doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
-            y += 8;
-            secItems.forEach(it => {
-              y = checkPage(doc, y, 7);
-              doc.setFont('helvetica','normal');
-              doc.setTextColor(60,60,60);
-              const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
-              const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
-              const lines = doc.splitTextToSize(txt, W-30);
-              doc.text(lines, 16, y);
-              y += (lines.length * 4) + 1;
-            });
+          const campos = [
+            ['Lugar/Unidad', d.lugar],
+            ['Director', d.director],
+            ['Dirección', d.direccion],
+            ['Obs. Generales', d.observacionesGenerales],
+            ['Hallazgos', d.hallazgos],
+            ['Recomendaciones', d.recomendaciones],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(92, 70, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
           });
-        }
 
-        if (d.fotoUrl && incluirFotos) {
-          try {
-            y = checkPage(doc, y, 65);
-            doc.setTextColor(92,70,10);
-            doc.setFontSize(7); doc.setFont('helvetica','bold');
-            doc.text('Evidencia Fotográfica:', 13, y);
-            y += 4;
-            const imgData = await cargarImagenComoBase64(d.fotoUrl);
-            if (imgData) {
-              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
-              y += 58;
-            }
-          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
-        }
+          if (d.inspeccion) {
+            const secNombres = {
+              ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
+              bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
+              can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
+            };
+            Object.keys(d.inspeccion).forEach(sec => {
+              const items = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
+              if (items.length === 0) return;
+              y = checkPage(doc, y, 12);
+              doc.setFillColor(255,245,220);
+              doc.rect(13, y-2, W-26, 6, 'F');
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
+              y += 8;
+              items.forEach(it => {
+                y = checkPage(doc, y, 7);
+                doc.setFont('helvetica','normal');
+                doc.setTextColor(60,60,60);
+                const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
+                const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
+                const lines = doc.splitTextToSize(txt, W-30);
+                doc.text(lines, 16, y);
+                y += (lines.length * 4) + 1;
+              });
+            });
+          }
 
-        y = pdfLinea(doc, y+2, W);
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
+
+          y = pdfLinea(doc, y+2, W);
+        }
       }
     }
 
     else if (modulo === 'casos') {
       titulo = 'Registro de Casos Activos';
+      snap   = await db.collection('dace_casos').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay casos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
-        doc.setFillColor(245, 245, 245);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...prioColor);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}  [${d.prioridad||''}]`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Descripción', d.descripcion],
-          ['Responsable', d.responsable],
-          ['Próxima Acción', d.accion],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
-          doc.setTextColor(...azul);
-          doc.setFontSize(7);
+          const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...prioColor);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}  [${d.prioridad||''}]`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+2, W);
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Responsable', d.responsable],
+            ['Próxima Acción', d.accion],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
       }
     }
 
     else if (modulo === 'maestro') {
       titulo = 'Registro Maestro de Actividades';
+      snap   = await db.collection('dace_maestro').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 30);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay entradas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 30);
 
-        doc.setFillColor(245, 245, 245);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...azul);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.tipo||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        if (d.descripcion) {
-          y = checkPage(doc, y, 10);
-          doc.setTextColor(60,60,60);
-          doc.setFontSize(8);
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.tipo||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          const lines = doc.splitTextToSize(d.descripcion, W - 25);
-          doc.text(lines, 13, y);
-          y += (lines.length * 4) + 2;
-        }
-        if (d.notas) {
-          y = checkPage(doc, y, 8);
-          doc.setTextColor(130,130,130);
+          doc.setTextColor(100,100,100);
           doc.setFontSize(7);
-          const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
-          doc.text(lines, 13, y);
-          y += (lines.length * 4) + 2;
-        }
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+1, W);
+          if (d.descripcion) {
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(60,60,60);
+            doc.setFontSize(8);
+            doc.setFont('helvetica','normal');
+            const lines = doc.splitTextToSize(d.descripcion, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+          if (d.notas) {
+            y = checkPage(doc, y, 8);
+            doc.setTextColor(130,130,130);
+            doc.setFontSize(7);
+            const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+
+          y = pdfLinea(doc, y+1, W);
+        });
       }
     }
 
     else if (modulo === 'mantenimiento') {
       titulo = 'Registro de Trabajos de Mantenimiento';
+      snap   = await db.collection('dace_mantenimiento').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay trabajos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(245, 240, 255);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(124, 58, 237);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.departamento||''}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Descripción', d.descripcion],
-          ['Notificado A', d.notificadoA],
-          ['Método', d.metodo],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(245, 240, 255);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(124, 58, 237);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.departamento||''}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+2, W);
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Notificado A', d.notificadoA],
+            ['Método', d.metodo],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(124, 58, 237);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
       }
+    }
+
+    // Pie de página en todas las páginas
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPags; p++) {
+      doc.setPage(p);
+      doc.setFillColor(...azul);
+      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+      doc.setTextColor(150,150,150);
+      doc.setFontSize(7);
+      doc.setFont('helvetica','normal');
+      doc.text(`DACE Arecibo — NPPR — Documento oficial  |  Página ${p} de ${totalPags}`,
+        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
     }
 
     // Agregar firma en última página de 137.1 y 137.3
     if (modulo === 'q137_1' || modulo === 'q137_3') {
       const lastPage = doc.internal.getNumberOfPages();
       doc.setPage(lastPage);
+      const H = doc.internal.pageSize.getHeight();
       y = checkPage(doc, y, 35);
 
       // Línea de firma
@@ -1754,50 +1713,20 @@ async function exportarPDF(modulo) {
       doc.text(new Date().toLocaleDateString('es-PR',{day:'2-digit',month:'long',year:'numeric'}), 115, y+30);
     }
 
-    // Pie de página en todas las páginas (dibujado al final para asegurar la página de firma si esta overflows)
-    const totalPags = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPags; p++) {
-      doc.setPage(p);
-      doc.setFillColor(...azul);
-      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
-      doc.setTextColor(150,150,150);
-      doc.setFontSize(7);
-      doc.setFont('helvetica','normal');
-      doc.text(`DACE Arecibo — NPPR — Documento oficial  |  Página ${p} de ${totalPags}`,
-        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
-    }
-
     // Nombre del archivo
     const nombres = {
       q137_1: 'PPR-137.1_Incidentes',
       q137_3: 'PPR-137.3_Inspecciones',
       casos:  'Casos_Activos',
-      maestro:'Registro_Maestro',
-      mantenimiento: 'Registro_Mantenimiento'
+      maestro:'Registro_Maestro'
     };
     const fecha = new Date().toISOString().split('T')[0];
-    doc.save(`DACE_Arecibo_${nombres[modulo]||modulo}_${fecha}.pdf`);
+    doc.save(`DACE_Arecibo_${nombres[modulo]}_${fecha}.pdf`);
     showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
 
   } catch(e) {
     showToast('<i class="ph-bold ph-x"></i> Error al generar PDF: ' + e.message, '#dc2626');
     console.error(e);
-  }
-}
-
-async function registrarEnMaestroAuto(tipo, descripcion, notas = '') {
-  try {
-    await db.collection('dace_maestro').add({
-      tipo,
-      fecha: hoy(),
-      hora: ahora(),
-      descripcion,
-      notas,
-      usuario: 'Sistema · Sincronización',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(e) {
-    console.error('Error auto-sincronizando al Registro Maestro:', e);
   }
 }
 
@@ -1847,20 +1776,6 @@ async function exportarPanelPDF() {
       y += 15;
     });
 
-    const sortRecientes = (docs) => {
-      return [...docs].sort((a,b) => {
-        const t1 = a.data().createdAt?.seconds || 0;
-        const t2 = b.data().createdAt?.seconds || 0;
-        return t2 - t1;
-      }).slice(0, 5);
-    };
-
-    const q1Recientes = sortRecientes(s1.docs);
-    const q3Recientes = sortRecientes(s2.docs);
-    const casosRecientes = sortRecientes(s3.docs);
-    const rmRecientes = sortRecientes(s4.docs);
-
-    // 1. INCIDENTES 137.1
     y += 5;
     doc.setTextColor(...azul);
     doc.setFontSize(9);
@@ -1868,36 +1783,25 @@ async function exportarPanelPDF() {
     doc.text('ACTIVIDAD RECIENTE — INCIDENTES 137.1', 10, y);
     y += 5;
 
-    if (!q1Recientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de incidentes.', 13, y+4);
-      y += 10;
-    } else {
-      q1Recientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(245,248,252);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(...azul); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Estatus: ${d.estatus || '—'}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.unidad || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    s1.docs.slice(0,5).forEach((docSnap, i) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(245,248,252);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(...azul);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      const desc = limpiarDesc(d.descripcion||'', 80);
+      doc.text(desc, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
 
-    // 2. INSPECCIONES 137.3
     y += 3;
     doc.setTextColor(...azul);
     doc.setFontSize(9);
@@ -1905,131 +1809,42 @@ async function exportarPanelPDF() {
     doc.text('ACTIVIDAD RECIENTE — INSPECCIONES 137.3', 10, y);
     y += 5;
 
-    if (!q3Recientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de inspecciones.', 13, y+4);
-      y += 10;
-    } else {
-      q3Recientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(255,251,235);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(92,70,10); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const lugarTipo = limpiarDesc(`${d.lugar || ''} · ${d.tipo || ''}`, 70);
-        doc.text(lugarTipo, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Estatus: ${d.estatus || '—'}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.director || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    s2.docs.slice(0,5).forEach((docSnap) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(255,251,235);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(92,70,10);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      doc.text(`${d.lugar||''} · ${d.tipo||''}`, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
 
-    // 3. CASOS ACTIVOS
-    y += 3;
-    doc.setTextColor(...azul);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('ACTIVIDAD RECIENTE — CASOS ACTIVOS', 10, y);
-    y += 5;
-
-    if (!casosRecientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de casos activos.', 13, y+4);
-      y += 10;
-    } else {
-      casosRecientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(240,253,244);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(21,128,61); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Prioridad: ${d.prioridad || ''} · Estatus: ${d.estatus || ''}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.responsable || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
-
-    // 4. REGISTRO MAESTRO
-    y += 3;
-    doc.setTextColor(...azul);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('ACTIVIDAD RECIENTE — REGISTRO MAESTRO', 10, y);
-    y += 5;
-
-    if (!rmRecientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros en el maestro.', 13, y+4);
-      y += 10;
-    } else {
-      rmRecientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(254,242,242);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(153,27,27); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.tipo || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(`${d.fecha || ''} ${d.hora || ''}`, 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.text(limpiarDesc(d.notas || '', 70), 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    // Pie de página
+    doc.setFillColor(...azul);
+    doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+    doc.setTextColor(150,150,150);
+    doc.setFontSize(7);
+    doc.text('DACE Arecibo — NPPR — Documento oficial',
+      W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
 
     // Firma en reporte general
-    y = checkPage(doc, y, 35);
     try {
-      doc.addImage(FIRMA_B64, 'PNG', 10, y+5, 70, 14);
+      doc.addImage(FIRMA_B64, 'PNG', 10, doc.internal.pageSize.getHeight()-52, 70, 14);
     } catch(e) {}
     doc.setDrawColor(...azul); doc.setLineWidth(0.5);
-    doc.line(10, y+22, 85, y+22);
+    doc.line(10, doc.internal.pageSize.getHeight()-38, 85, doc.internal.pageSize.getHeight()-38);
     doc.setTextColor(...azul); doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('Agte. Jose C. Aponte Cancel · Placa 31093', 10, y+26);
+    doc.text('Agte. Jose C. Aponte Cancel · Placa 31093', 10, doc.internal.pageSize.getHeight()-34);
     doc.setFont('helvetica','normal'); doc.setTextColor(100,100,100);
-    doc.text('Coordinador Auxiliar DACE Arecibo', 10, y+30);
-
-    // Dibujar pie de página en todas las hojas creadas
-    const totalPags = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPags; p++) {
-      doc.setPage(p);
-      doc.setFillColor(...azul);
-      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
-      doc.setTextColor(150,150,150);
-      doc.setFontSize(7);
-      doc.setFont('helvetica','normal');
-      doc.text(`DACE Arecibo — NPPR — Reporte General del Sistema  |  Página ${p} de ${totalPags}`,
-        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
-    }
+    doc.text('Coordinador Auxiliar DACE Arecibo', 10, doc.internal.pageSize.getHeight()-30);
 
     const fecha = new Date().toISOString().split('T')[0];
     doc.save(`DACE_Arecibo_Reporte_General_${fecha}.pdf`);
@@ -2634,10 +2449,8 @@ async function editarMaestro(id) {
 
 /* ═══ GUARDAR: CASOS (con soporte edición) ═══ */
 async function guardarCaso() {
-  if (_guardando) return;
   const num = v('c_num'), desc = v('c_desc');
   if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
     descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
@@ -2646,37 +2459,25 @@ async function guardarCaso() {
   try {
     if (_editando.col === 'dace_casos' && _editando.id) {
       await db.collection('dace_casos').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'Caso Activo (Edición)',
-        `Caso actualizado: ${num || _editando.id}`,
-        `Estatus: ${v('c_estatus')} · Responsable: ${v('c_resp')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Caso actualizado', '#166534');
       _editando = { col: null, id: null };
       const btn = document.querySelector('#casos .btn-save');
       if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR CASO'; }
     } else {
-      if (!num) { showToast('⚠️ Número es requerido', '#92400e'); _guardando = false; return; }
+      if (!num) { showToast('⚠️ Número es requerido', '#92400e'); return; }
       datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('dace_casos').add(datos);
-      await registrarEnMaestroAuto(
-        'Caso Activo',
-        `Caso registrado: ${num}`,
-        `Prioridad: ${v('c_prioridad')} · Responsable: ${v('c_resp')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Caso guardado y sincronizado', '#166534');
     }
     limpiar(['c_num','c_desc','c_resp','c_accion']);
     set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ GUARDAR: MANTENIMIENTO (con soporte edición) ═══ */
 async function guardarMantenimiento() {
-  if (_guardando) return;
   const lugar = v('mt_lugar'), desc = v('mt_desc');
   if (!lugar || !desc) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     lugar, departamento: v('mt_dept'),
     fecha: v('mt_fecha'), hora: v('mt_hora'),
@@ -2687,35 +2488,23 @@ async function guardarMantenimiento() {
   try {
     if (_editando.col === 'dace_mantenimiento' && _editando.id) {
       await db.collection('dace_mantenimiento').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'Mantenimiento (Edición)',
-        `Trabajo de Mantenimiento actualizado en ${lugar} (${v('mt_dept')})`,
-        `Estatus: ${v('mt_estatus')} · Notificado A: ${v('mt_notifico')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Mantenimiento actualizado', '#166534');
       _editando = { col: null, id: null };
     } else {
       datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('dace_mantenimiento').add(datos);
-      await registrarEnMaestroAuto(
-        'Mantenimiento',
-        `Nuevo Trabajo de Mantenimiento registrado en ${lugar} (${v('mt_dept')})`,
-        `Estatus: ${v('mt_estatus')} · Notificado A: ${v('mt_notifico')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Mantenimiento guardado y sincronizado', '#166534');
     }
     limpiar(['mt_desc','mt_notifico']);
     set('mt_lugar',''); set('mt_estatus','Pendiente');
     set('mt_fecha', hoy()); set('mt_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ GUARDAR: MAESTRO (con soporte edición) ═══ */
 async function guardarMaestro() {
-  if (_guardando) return;
   const desc = v('rm_desc');
   if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
     descripcion: desc, notas: v('rm_notas'),
@@ -2735,7 +2524,7 @@ async function guardarMaestro() {
     }
     limpiar(['rm_desc','rm_notas']);
     set('rm_fecha', hoy()); set('rm_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ ELIMINAR ═══ */
@@ -2914,14 +2703,12 @@ async function imprimirIndividualPDF(col, id) {
 
 /* ═══ CISTERNAS DEL ÁREA ═══ */
 async function guardarCisterna() {
-  if (_guardando) return;
   const lugar = v('cis_lugar');
   const obs = v('cis_obs');
   let estatus = '';
   document.getElementsByName('cis_estatus').forEach(r => { if(r.checked) estatus = r.value; });
   
   if (!lugar) { showToast('⚠️ El lugar es requerido', '#92400e'); return; }
-  _guardando = true;
   
   const datos = {
     lugar, estatus, observaciones: obs,
@@ -2932,17 +2719,10 @@ async function guardarCisterna() {
   
   try {
     await db.collection('dace_cisternas').add(datos);
-
-    await registrarEnMaestroAuto(
-      'Bitácora Cisterna',
-      `Actividad en Cisterna de ${lugar}`,
-      `Estatus/Condición: ${estatus} · Observaciones: ${obs}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Cisterna registrada', '#166534');
     set('cis_lugar', ''); set('cis_obs', '');
     set('cis_fecha', hoy()); set('cis_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function cargarCisternas() {
@@ -3046,114 +2826,8 @@ function imprimirCisternaPDF(id, tipo) {
   }).catch(e => showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'));
 }
 
-async function importarConversacionesChatGPT() {
-  const input = document.getElementById('import_chat_input');
-  const statusEl = document.getElementById('import_chat_status');
-  if (!input || !input.files || !input.files[0]) return;
-
-  const file = input.files[0];
-  statusEl.textContent = '⏳ Leyendo archivo...';
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const chats = JSON.parse(e.target.result);
-      if (!Array.isArray(chats)) {
-        throw new Error('El archivo no tiene el formato oficial de exportación de ChatGPT.');
-      }
-
-      statusEl.textContent = '🔍 Buscando coincidencias DACE...';
-      let importados = 0;
-
-      // Palabras clave para filtrar (incluyendo las nuevas provistas por el usuario)
-      const keywords = [
-        'dace', 'arecibo', 'ppr-137', 'cisterna', 'generador', 'inspeccion', 
-        'cuartel', 'record', 'trabajos', 'informacion', 'planta fisica', 
-        'reservas de agua'
-      ];
-
-      for (const chat of chats) {
-        const title = chat.title || 'Chat sin título';
-        const titleLower = title.toLowerCase();
-        
-        let chatText = '';
-        if (chat.mapping) {
-          Object.values(chat.mapping).forEach(node => {
-            const message = node.message;
-            if (message && message.content && message.content.parts) {
-              message.content.parts.forEach(part => {
-                if (typeof part === 'string') {
-                  chatText += ' ' + part;
-                }
-              });
-            }
-          });
-        }
-        const textLower = chatText.toLowerCase();
-
-        // Verificar si coincide con palabras clave
-        const coincide = keywords.some(kw => titleLower.includes(kw) || textLower.includes(kw));
-
-        if (coincide) {
-          // Extraer fecha/hora del chat
-          const createTime = chat.create_time;
-          let fechaStr = hoy();
-          let horaStr = ahora();
-          if (createTime) {
-            const date = new Date(createTime * 1000);
-            fechaStr = date.toISOString().split('T')[0];
-            horaStr = date.toTimeString().split(' ')[0].substring(0, 5);
-          }
-
-          // Resumir mensajes
-          let mensajesLimpios = '';
-          if (chat.mapping) {
-            const nodes = Object.values(chat.mapping)
-              .filter(node => node.message && node.message.content && node.message.content.parts)
-              .sort((a, b) => (a.message.create_time || 0) - (b.message.create_time || 0));
-
-            nodes.forEach(node => {
-              const role = node.message.author?.role === 'user' ? 'Usuario' : 'ChatGPT';
-              const part = node.message.content.parts[0];
-              if (typeof part === 'string' && part.trim()) {
-                mensajesLimpios += `[${role}]: ${part.substring(0, 400)}${part.length > 400 ? '...' : ''}\n\n`;
-              }
-            });
-          }
-
-          // Limitar a un tamaño seguro de Firestore
-          mensajesLimpios = mensajesLimpios.substring(0, 3000);
-
-          // Guardar en dace_maestro
-          await db.collection('dace_maestro').add({
-            tipo: 'Importación ChatGPT',
-            fecha: fechaStr,
-            hora: horaStr,
-            descripcion: `Chat: ${title}`,
-            notas: mensajesLimpios || 'Sin contenido de texto extraíble.',
-            usuario: 'Importador ChatGPT',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          importados++;
-        }
-      }
-
-      statusEl.textContent = `✅ Importados ${importados} chats con éxito`;
-      showToast(`✅ Se importaron ${importados} conversaciones sobre DACE Arecibo`, '#166534');
-      if (typeof cargarMaestro === 'function') cargarMaestro();
-      
-    } catch(err) {
-      statusEl.textContent = '❌ Error al importar';
-      showToast('❌ Error: ' + err.message, '#dc2626');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-}
-
 /* --- EXPORTAR A WINDOW (MODULARIZACION) --- */
 window.generarDescripcionIA = generarDescripcionIA;
-window.importarConversacionesChatGPT = importarConversacionesChatGPT;
 window.trunc = trunc;
 window.imprimirIndividualPDF = imprimirIndividualPDF;
 window.mostrarPinSiNecesario = mostrarPinSiNecesario;

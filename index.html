@@ -17,14 +17,227 @@
 <!-- jsPDF para exportar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
-<link rel="stylesheet" href="./css/style.css?v=2.3">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  --navy:   #06101e;
+  --dark:   #0d1b2e;
+  --panel:  #112036;
+  --card:   #162840;
+  --blue:   #0ea5e9;
+  --gold:   #f59e0b;
+  --red:    #ef4444;
+  --green:  #22c55e;
+  --purple: #a78bfa;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --border: rgba(255,255,255,0.08);
+  --bg:     #06101e;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
+html,body { height:100%; }
+body {
+  background: var(--navy);
+  font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+#lockScreen {
+  position:fixed; inset:0; z-index:9999;
+  background: linear-gradient(160deg, #06101e 0%, #0d1b2e 50%, #061624 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:40px 30px;
+}
+#lockScreen::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(14,165,233,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+#lockScreen .lock-logo { width:80px; height:80px; object-fit:contain; border-radius:20px; margin-bottom:20px; box-shadow:0 0 30px rgba(14,165,233,0.3); }
+#lockScreen .lock-title { color:white; font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700; text-transform:uppercase; letter-spacing:3px; text-align:center; margin-bottom:4px; }
+#lockScreen .lock-sub { color:var(--gold); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; text-align:center; margin-bottom:44px; }
+#lockScreen .pin-dots { display:flex; gap:16px; margin-bottom:36px; }
+#lockScreen .pin-dot { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,0.2); background:transparent; transition:all 0.2s; }
+#lockScreen .pin-dot.filled { background:var(--blue); border-color:var(--blue); box-shadow:0 0 10px rgba(14,165,233,0.6); }
+#lockScreen .pin-dot.error { background:var(--red); border-color:var(--red); box-shadow:0 0 10px rgba(239,68,68,0.6); }
+#lockScreen .pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; max-width:260px; }
+#lockScreen .pin-key { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 10px; color:white; font-size:24px; font-weight:500; cursor:pointer; transition:all 0.12s; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:'Rajdhani',sans-serif; }
+#lockScreen .pin-key:active { background:rgba(14,165,233,0.2); border-color:rgba(14,165,233,0.4); transform:scale(0.94); }
+#lockScreen .pin-key.zero { grid-column:2; }
+#lockScreen .pin-key.del { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.2); }
+#lockScreen .pin-key sub { font-size:7px; color:rgba(255,255,255,0.3); font-weight:600; letter-spacing:1.5px; font-family:'DM Sans',sans-serif; }
+#lockScreen .lock-msg { color:rgba(255,255,255,0.3); font-size:11px; font-weight:500; margin-top:24px; text-align:center; min-height:18px; }
+.app-header { display:flex; justify-content:space-between; align-items:center; padding:54px 16px 14px; background:linear-gradient(180deg, var(--dark) 0%, var(--panel) 100%); border-bottom:1px solid rgba(14,165,233,0.2); box-shadow:0 4px 24px rgba(0,0,0,0.4); position:sticky; top:0; z-index:200; }
+.header-logo { width:48px; height:48px; object-fit:contain; flex-shrink:0; border-radius:10px; box-shadow:0 0 14px rgba(14,165,233,0.2); }
+.header-logo-placeholder { width:48px; height:48px; background:linear-gradient(135deg, var(--blue), #0369a1); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.header-text { text-align:center; flex:1; padding:0 8px; }
+.header-text h1 { font-size:16px; font-weight:700; color:white; text-transform:uppercase; letter-spacing:1.5px; font-family:'Rajdhani',sans-serif; line-height:1.2; }
+.header-text .sub { font-size:9px; font-weight:500; color:rgba(255,255,255,0.45); margin-top:2px; }
+.header-text .oficial { font-size:9px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.8px; margin-top:3px; }
+.firebase-bar { background:rgba(14,165,233,0.08); border-bottom:1px solid rgba(14,165,233,0.15); color:rgba(255,255,255,0.6); font-size:9px; font-weight:600; text-align:center; padding:5px 12px; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.fb-dot { width:6px; height:6px; border-radius:50%; background:#475569; flex-shrink:0; transition:background 0.4s; }
+.fb-dot.online { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,0.6); }
+.fb-dot.error { background:var(--red); }
+.nav-bar { position:fixed; bottom:0; width:100%; max-width:540px; left:50%; transform:translateX(-50%); background:rgba(13,27,46,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); display:flex; padding:10px 0 env(safe-area-inset-bottom,22px); border-top:1px solid rgba(14,165,233,0.15); z-index:1000; box-shadow:0 -8px 30px rgba(0,0,0,0.5); }
+.nav-btn { flex:1; border:none; background:none; color:rgba(255,255,255,0.3); font-size:8px; font-weight:700; cursor:pointer; padding:2px 0; display:flex; flex-direction:column; align-items:center; gap:4px; text-transform:uppercase; letter-spacing:0.5px; transition:all 0.2s; font-family:'Rajdhani',sans-serif; }
+.nav-btn.active { color:var(--blue); }
+.nav-btn.active .nav-icon { filter:drop-shadow(0 0 6px rgba(14,165,233,0.7)); }
+.nav-icon { font-size:20px; line-height:1; }
+.main-content { padding:16px 14px 120px; max-width:540px; margin:0 auto; }
+.tab-page { display:none; }
+.tab-page.active { display:block; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.page-title { font-size:22px; font-weight:700; color:white; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(14,165,233,0.25); display:flex; align-items:center; gap:8px; font-family:'Rajdhani',sans-serif; letter-spacing:0.5px; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.stat-card { background:var(--card); padding:16px 14px; border-radius:16px; border:1px solid var(--border); border-top:3px solid var(--blue); cursor:pointer; transition:transform 0.15s; position:relative; overflow:hidden; }
+.stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--blue), transparent); }
+.stat-card.gold { border-top-color:var(--gold); }
+.stat-card.gold::after { background:linear-gradient(90deg, var(--gold), transparent); }
+.stat-card.green { border-top-color:var(--green); }
+.stat-card.green::after { background:linear-gradient(90deg, var(--green), transparent); }
+.stat-card.red { border-top-color:var(--red); }
+.stat-card.red::after { background:linear-gradient(90deg, var(--red), transparent); }
+.stat-card:active { transform:scale(0.97); }
+.stat-num { font-size:36px; font-weight:700; color:white; line-height:1; font-family:'Rajdhani',sans-serif; }
+.stat-card.gold .stat-num { color:var(--gold); }
+.stat-card.green .stat-num { color:var(--green); }
+.stat-card.red .stat-num { color:var(--red); }
+.stat-label { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-top:5px; letter-spacing:0.8px; }
+.feed-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin:4px 0 10px; }
+.activity-item { background:var(--card); padding:12px 14px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+.activity-item:active { border-color:rgba(14,165,233,0.3); }
+.activity-icon { font-size:20px; flex-shrink:0; }
+.activity-info { flex:1; min-width:0; }
+.activity-info strong { display:block; font-size:13px; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; }
+.activity-info span { font-size:10px; color:var(--muted); }
+.form-card { background:var(--card); padding:18px; border-radius:16px; border:1px solid var(--border); margin-bottom:14px; }
+.form-section-label { font-size:12px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); font-family:'Rajdhani',sans-serif; }
+.input-group { margin-bottom:14px; }
+.input-group label { display:block; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+.input-group input, .input-group select, .input-group textarea, input[type=text], input[type=date], input[type=time], input[type=number], input[type=email], input[type=password], select, textarea { width:100%; padding:13px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:15px; color:white; -webkit-appearance:none; appearance:none; font-family:'DM Sans',sans-serif; transition:border-color 0.2s, background 0.2s; }
+input::placeholder, textarea::placeholder { color:rgba(255,255,255,0.2); }
+input:focus, select:focus, textarea:focus { outline:none; border-color:rgba(14,165,233,0.5); background:rgba(14,165,233,0.06); }
+textarea { resize:vertical; min-height:88px; }
+select { background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-repeat:no-repeat; background-position:right 10px center; background-size:18px; padding-right:36px; }
+select option { background:#0d1b2e; color:white; }
+.row-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.filter-box { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; border:1px solid var(--border); border-left:3px solid var(--gold); }
+.filter-box .filter-title { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.filter-search { width:100%; padding:11px 12px 11px 36px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; font-size:14px; background:rgba(255,255,255,0.04); color:white; -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0'/%3e%3c/svg%3e"); background-repeat:no-repeat; background-position:10px center; background-size:16px; margin-bottom:10px; transition:border-color 0.2s; font-family:'DM Sans',sans-serif; }
+.filter-search::placeholder { color:rgba(255,255,255,0.25); }
+.filter-search:focus { outline:none; border-color:rgba(14,165,233,0.4); }
+.filter-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.chip { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--muted); transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.chip.active { background:rgba(14,165,233,0.15); color:var(--blue); border-color:rgba(14,165,233,0.4); }
+.chip.gold.active { background:rgba(245,158,11,0.15); color:var(--gold); border-color:rgba(245,158,11,0.4); }
+.chip.green.active { background:rgba(34,197,94,0.15); color:var(--green); border-color:rgba(34,197,94,0.4); }
+.chip.red.active { background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.4); }
+.filter-dates { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.filter-dates input { width:100%; padding:9px 10px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; font-size:13px; background:rgba(255,255,255,0.04); color:white; -webkit-appearance:none; appearance:none; }
+.filter-count { font-size:10px; color:var(--muted); font-weight:600; margin-top:8px; text-align:right; }
+.btn-clear-filter { background:none; border:none; color:var(--red); font-size:10px; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:6px; float:right; margin-top:-2px; }
+.btn-save { width:100%; padding:16px; color:white; border:none; border-radius:14px; font-weight:700; font-size:15px; cursor:pointer; margin-top:4px; letter-spacing:0.5px; transition:opacity 0.15s, transform 0.1s; background:linear-gradient(135deg, #0ea5e9, #0369a1); font-family:'Rajdhani',sans-serif; box-shadow:0 4px 15px rgba(14,165,233,0.25); }
+.btn-save:active { opacity:0.85; transform:scale(0.99); }
+.btn-save.gold-btn { background:linear-gradient(135deg, #f59e0b, #d97706); color:#1a0e00; box-shadow:0 4px 15px rgba(245,158,11,0.25); }
+.btn-save.green-btn { background:linear-gradient(135deg, #22c55e, #16a34a); box-shadow:0 4px 15px rgba(34,197,94,0.25); }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.b-pending { background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+.b-process { background:rgba(14,165,233,0.15); color:var(--blue); border:1px solid rgba(14,165,233,0.3); }
+.b-done { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+.b-archived { background:rgba(100,116,139,0.15); color:var(--muted); border:1px solid rgba(100,116,139,0.2); }
+.b-alta { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.b-media { background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+.b-baja { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+.list-header { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:18px 0 10px; font-family:'Rajdhani',sans-serif; }
+.record-item { background:var(--card); padding:14px; border-radius:14px; margin-bottom:8px; border:1px solid var(--border); border-left:3px solid var(--blue); transition:border-color 0.2s; }
+.record-item:active { border-color:rgba(14,165,233,0.4); }
+.record-item.gold { border-left-color:var(--gold); }
+.record-item.green { border-left-color:var(--green); }
+.record-item.red { border-left-color:var(--red); }
+.record-item.gray { border-left-color:var(--muted); }
+.record-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px; }
+.record-id { font-size:13px; font-weight:700; color:white; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.record-ts { font-size:9px; color:var(--muted); flex-shrink:0; font-family:'Rajdhani',sans-serif; }
+.record-body { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.55; margin-bottom:2px; }
+.record-body strong { color:rgba(255,255,255,0.9); font-weight:600; }
+.record-foot { margin-top:9px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.btn-del { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:var(--red); font-size:11px; font-weight:700; cursor:pointer; margin-left:auto; padding:5px 10px; border-radius:8px; }
+.btn-del:active { background:rgba(239,68,68,0.2); }
+.btn-edit { background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.2); color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:8px; }
+.btn-edit:active { background:rgba(14,165,233,0.2); }
+.more-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.more-card { background:var(--card); padding:20px 14px; border-radius:16px; border:1px solid var(--border); text-align:center; cursor:pointer; transition:all 0.15s; position:relative; overflow:hidden; }
+.more-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent); }
+.more-card:active { border-color:rgba(14,165,233,0.3); transform:scale(0.96); }
+.more-icon { font-size:28px; display:block; margin-bottom:8px; }
+.more-title { font-size:12px; font-weight:700; color:white; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.more-sub { font-size:10px; color:var(--muted); margin-top:3px; }
+.info-card { background:var(--card); border-radius:14px; padding:16px; margin-top:12px; border:1px solid var(--border); }
+.info-card p { font-size:12px; color:rgba(255,255,255,0.6); margin:5px 0; line-height:1.5; }
+.info-card strong { color:white; }
+.info-title { font-size:12px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-family:'Rajdhani',sans-serif; }
+.toast { position:fixed; bottom:105px; left:50%; transform:translateX(-50%); background:rgba(13,27,46,0.96); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); color:white; padding:12px 24px; border-radius:30px; font-size:13px; font-weight:600; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+.toast.show { opacity:1; }
+.empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+.empty-icon { font-size:44px; display:block; margin-bottom:12px; opacity:0.5; }
+.empty-state p { font-size:13px; font-weight:500; }
+.loading-state { text-align:center; padding:24px; color:var(--muted); font-size:12px; font-weight:500; }
+.btn-pdf { width:100%; padding:15px; color:white; border:none; border-radius:14px; font-weight:700; font-size:14px; cursor:pointer; margin-top:8px; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.15s, transform 0.1s; background:linear-gradient(135deg, var(--red), #b91c1c); font-family:'Rajdhani',sans-serif; box-shadow:0 4px 15px rgba(239,68,68,0.2); }
+.btn-pdf:active { opacity:0.85; transform:scale(0.99); }
+.btn-pdf.gold-pdf { background:linear-gradient(135deg, #92700a, #78590a); }
+.btn-pdf.green-pdf { background:linear-gradient(135deg, #166534, #14532d); }
+.btn-pdf.blue-pdf { background:linear-gradient(135deg, #0ea5e9, #0369a1); }
+.sep { border:none; border-top:1px solid var(--border); margin:18px 0; }
+.ppr-header { background:linear-gradient(135deg, #0d1b2e, #162840); border:1px solid rgba(14,165,233,0.2); border-bottom:none; padding:16px; border-radius:14px 14px 0 0; margin-bottom:0; text-align:center; position:relative; overflow:hidden; }
+.ppr-header::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, var(--blue), var(--gold), transparent); }
+.ppr-header h2 { font-size:14px; font-weight:700; letter-spacing:2px; color:white; font-family:'Rajdhani',sans-serif; }
+.ppr-header p { font-size:9px; color:rgba(255,255,255,0.4); margin-top:3px; letter-spacing:0.5px; }
+.ppr-section { background:var(--card); border-radius:0; padding:0; margin-bottom:0; border:1px solid rgba(14,165,233,0.15); border-top:none; }
+.ppr-section:last-child { border-radius:0 0 14px 14px; margin-bottom:14px; }
+.ppr-section-title { background:rgba(245,158,11,0.1); border-bottom:1px solid rgba(245,158,11,0.2); color:var(--gold); font-size:11px; font-weight:700; padding:10px 14px; text-transform:uppercase; letter-spacing:1px; font-family:'Rajdhani',sans-serif; }
+.insp-table { width:100%; border-collapse:collapse; }
+.insp-table th { background:rgba(255,255,255,0.03); font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; padding:8px; border-bottom:1px solid var(--border); text-align:center; letter-spacing:0.5px; }
+.insp-table th:first-child { text-align:left; }
+.insp-table td { padding:8px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:11px; color:rgba(255,255,255,0.75); vertical-align:middle; }
+.insp-table td:first-child { font-weight:600; padding-left:12px; }
+.insp-table tr:last-child td { border-bottom:none; }
+.insp-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+.insp-radio-group { display:flex; gap:6px; justify-content:center; }
+.insp-radio-group label { display:flex; flex-direction:column; align-items:center; font-size:7px; font-weight:700; color:var(--muted); gap:3px; cursor:pointer; text-transform:uppercase; }
+.insp-radio-group input[type=radio] { width:16px; height:16px; cursor:pointer; accent-color:var(--blue); }
+.insp-obs { width:100%; border:none; background:transparent; font-size:11px; color:rgba(255,255,255,0.6); padding:4px; resize:none; outline:none; min-height:28px; font-family:'DM Sans',sans-serif; }
+.insp-cant { width:50px; border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-size:11px; text-align:center; background:rgba(255,255,255,0.05); color:white; }
+.foto-zone { border:2px dashed rgba(255,255,255,0.15); border-radius:14px; padding:20px; text-align:center; cursor:pointer; background:rgba(14,165,233,0.03); transition:all 0.2s; margin:12px 0; }
+.foto-zone:active { border-color:rgba(14,165,233,0.4); background:rgba(14,165,233,0.08); }
+.foto-zone .foto-icon { font-size:36px; display:block; margin-bottom:8px; }
+.foto-zone p { font-size:12px; color:var(--muted); font-weight:500; }
+.foto-preview { width:100%; border-radius:12px; margin-top:10px; display:none; object-fit:cover; max-height:200px; border:1px solid var(--border); }
+.foto-preview.visible { display:block; }
+.btn-foto-clear { background:none; border:none; color:var(--red); font-size:11px; font-weight:700; cursor:pointer; margin-top:6px; display:none; }
+.btn-foto-clear.visible { display:block; }
+.ai-badge { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border:1px solid rgba(139,92,246,0.3); color:#a78bfa; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700; margin-bottom:8px; }
+.ai-result { background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:14px; margin:10px 0; display:none; }
+.ai-result.visible { display:block; }
+.ai-result .ai-title { font-size:10px; font-weight:700; color:#a78bfa; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.ai-result p { font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; }
+.btn-ai { width:100%; padding:15px; background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border:1px solid rgba(139,92,246,0.3); color:#a78bfa; border-radius:14px; font-weight:700; font-size:13px; cursor:pointer; margin-top:8px; letter-spacing:0.5px; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Rajdhani',sans-serif; }
+.btn-ai:active { opacity:0.8; }
+.btn-ai:disabled { opacity:0.4; cursor:not-allowed; }
+.inner-tabs { display:flex; overflow-x:auto; gap:6px; padding:12px 14px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); scrollbar-width:none; }
+.inner-tabs::-webkit-scrollbar { display:none; }
+.inner-tab { flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:10px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--muted); transition:all 0.15s; text-transform:uppercase; white-space:nowrap; font-family:'Rajdhani',sans-serif; letter-spacing:0.5px; }
+.inner-tab.active { background:rgba(14,165,233,0.15); color:var(--blue); border-color:rgba(14,165,233,0.35); }
+.inner-section { display:none; padding:14px; }
+.inner-section.active { display:block; }
+
+</style>
 </head>
 <body>
 
 <!-- PANTALLA DE LOGIN FIREBASE -->
-<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--blue); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
   <img src="https://agteaponte.github.io/dace/dace-logo-pin.png"
        style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px"
        alt="DACE" onerror="this.style.display='none'">
@@ -47,18 +260,18 @@
     </div>
     <button onclick="loginFirebase()"
             style="width:100%;padding:17px;background:var(--gold);color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
-      <i class="ph-fill ph-lock-key"></i> ACCEDER
+      🔐 ACCEDER
     </button>
     <div id="login_error" style="color:#fca5a5;font-size:12px;font-weight:700;text-align:center;margin-top:14px;min-height:18px"></div>
   </div>
 </div>
 
 <!-- PANTALLA DE ACCESO PIN -->
-<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--blue); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
   <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
-       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'><i class=\'ph-fill ph-bank\'></i></div>'">
+       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>🏛️</div>'">
   <div class="lock-title">DACE Arecibo</div>
-  <div class="lock-sub">Negociado de la Policía de Puerto Rico</div>
+  <div class="lock-sub">Policía de Puerto Rico</div>
   <div class="pin-dots">
     <div class="pin-dot" id="d0"></div>
     <div class="pin-dot" id="d1"></div>
@@ -83,16 +296,16 @@
 
 <!-- CABECERA -->
 <header class="app-header">
-  <img src="./logo_optimized.png" class="header-logo" alt="DACE"
-       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'><i class=\'ph-fill ph-bank\'></i></div>'">
+  <img src="./Logo.png" class="header-logo" alt="DACE"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>🏛️</div>'">
   <div class="header-text">
     <h1>DACE ARECIBO</h1>
-    <div class="sub">Negociado de la Policía de Puerto Rico</div>
+    <div class="sub">Policía de Puerto Rico</div>
     <div class="oficial">Agte. Jose Aponte Cancel · Placa 31093</div>
     <div class="oficial">Coordinador Auxiliar DACE Arecibo</div>
   </div>
   <img src="./policia.png" class="header-logo" alt="PPR"
-       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'><i class=\'ph-fill ph-scales\'></i></div>'">
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>⚖️</div>'">
 </header>
 
 <!-- BARRA ESTADO FIREBASE -->
@@ -106,32 +319,31 @@
 
   <!-- PANEL -->
   <div id="inicio" class="tab-page active">
-    <div class="page-title"><i class="ph-fill ph-chart-bar"></i> Panel General</div>
+    <div class="page-title">📊 Panel General</div>
     <div class="stats-grid">
-      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label"><i class="ph-fill ph-scales"></i> Órdenes 137.1</div></div>
-      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label"><i class="ph-fill ph-buildings"></i> Inspecciones</div></div>
-      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label"><i class="ph-fill ph-folder-open"></i> Casos Activos</div></div>
-      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label"><i class="ph-fill ph-folder"></i> Reg. Maestro</div></div>
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
+      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label">Registro Maestro</div></div>
     </div>
     <div class="feed-title">Actividad Reciente</div>
-    <div id="feedArea"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando actividad...</div></div>
-    <button class="btn-save" style="background:#16a34a; margin-top:8px;" onclick="changeTab('trabajos_realizados'); cargarTrabajosRealizados()"><i class="ph-bold ph-check"></i> VER TRABAJOS REALIZADOS</button>
+    <div id="feedArea"><div class="loading-state">⏳ Cargando actividad...</div></div>
     <hr class="sep">
-    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REPORTE GENERAL PDF</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()">📄 EXPORTAR REPORTE GENERAL PDF</button>
   </div>
 
   <!-- PPR-137.1 SOLICITUD ORDEN DE TRABAJO -->
   <div id="q137_1" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-scales"></i> PPR-137.1 Orden de Trabajo</div>
+    <div class="page-title">⚖️ PPR-137.1 Orden de Trabajo</div>
 
     <!-- FORMULARIO OFICIAL -->
     <div class="ppr-header">
       <h2>PPR-137.1 — SOLICITUD ORDEN DE TRABAJO</h2>
-      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
+      <p>Policía de Puerto Rico — DACE Arecibo</p>
     </div>
     <div class="ppr-section">
       <!-- Identificación -->
-      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Identificación</div>
+      <div class="ppr-section-title">📋 Identificación</div>
       <div style="padding:14px">
         <div class="row-2">
           <div class="input-group">
@@ -149,6 +361,33 @@
             <option value="">— Seleccionar —</option>
             <option>DACE Arecibo</option>
             <option>Comandancia Administracion</option>
+            <option>Comandancia Seguridad y Proteccion</option>
+            <option>Comandancia Adiestramientos</option>
+            <option>Comandancia Asuntos Antidiscrimen</option>
+            <option>Comandancia Oficina Legal</option>
+            <option>Comandancia Estadisticas</option>
+            <option>Comandancia Centro de Mando</option>
+            <option>Comandancia Prensa</option>
+            <option>Comandancia CIC Administracion</option>
+            <option>Comandancia CIC Homicidios</option>
+            <option>Comandancia CIC Violencia Domestica</option>
+            <option>Comandancia CIC Ayuda Juvenil</option>
+            <option>Comandancia CIC Delitos Sexuales</option>
+            <option>Comandancia CIC Ley 266</option>
+            <option>Comandancia CIC Ley 300</option>
+            <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+            <option>Comandancia Relaciones Con la Comunidad</option>
+            <option>Comandancia Liga Atletica</option>
+            <option>Comandancia CRADIC</option>
+            <option>Comandancia Armas</option>
+            <option>Comandancia Servicios Tecnicos</option>
+            <option>Comandancia Precinto 107 Administracion</option>
+            <option>Comandancia Investigaciones Administrativas</option>
+            <option>Comandancia Oficina Psicologia</option>
+            <option>Comandancia Division Transportacion</option>
+            <option>Comandancia Taller de Radio</option>
+            <option>Comandancia Taller Mecanica</option>
+            <option>Comandancia UMA</option>
             <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
             <option>Prec. 107</option><option>Prec. 207</option>
             <option>Almacen</option><option>UMA</option><option>Poligono</option>
@@ -179,7 +418,7 @@
       </div>
 
       <!-- Trabajo Solicitado -->
-      <div class="ppr-section-title"><i class="ph-fill ph-wrench"></i> Trabajo Solicitado</div>
+      <div class="ppr-section-title">🔧 Trabajo Solicitado</div>
       <div style="padding:14px">
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
@@ -211,7 +450,7 @@
 
         <!-- Foto -->
         <div class="foto-zone" onclick="document.getElementById('q1_foto_input').click()">
-          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <span class="foto-icon">📷</span>
           <p>Toca para tomar foto o seleccionar de galería</p>
           <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del problema</p>
         </div>
@@ -221,17 +460,17 @@
 
         <!-- IA -->
         <button class="btn-ai" onclick="generarDescripcionIA('q1')" id="q1_ai_btn">
-          <i class="ph-fill ph-sparkle"></i> GENERAR DESCRIPCIÓN CON IA
+          ✨ GENERAR DESCRIPCIÓN CON IA
         </button>
         <div class="ai-result" id="q1_ai_result">
-          <div class="ai-title"><i class="ph-fill ph-sparkle"></i> Descripción generada por IA</div>
+          <div class="ai-title">✨ Descripción generada por IA</div>
           <p id="q1_ai_texto"></p>
           <button onclick="usarTextoIA('q1')" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar este texto</button>
         </div>
       </div>
 
       <!-- Localización -->
-      <div class="ppr-section-title"><i class="ph-fill ph-map-pin"></i> Localización Avería o Propiedad</div>
+      <div class="ppr-section-title">📍 Localización Avería o Propiedad</div>
       <div style="padding:14px">
         <div class="row-2">
           <div class="input-group">
@@ -266,7 +505,7 @@
       </div>
 
       <!-- Estatus -->
-      <div class="ppr-section-title"><i class="ph-fill ph-push-pin"></i> Estatus</div>
+      <div class="ppr-section-title">📌 Estatus</div>
       <div style="padding:14px">
         <div class="input-group">
           <label>Estatus de la Solicitud</label>
@@ -288,9 +527,9 @@
 
     <hr class="sep">
     <div class="list-header">Registro (<span id="q1_total">0</span> órdenes)</div>
-    <button class="btn-pdf" onclick="exportarPDF('q137_1')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR ÓRDENES DE TRABAJO A PDF</button>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR ÓRDENES DE TRABAJO A PDF</button>
     <div class="filter-box" style="margin-top:12px">
-      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+      <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('q1')">✕ Limpiar</button>
       </div>
       <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, solicitante, descripción..." oninput="aplicarFiltros('q1')">
@@ -307,21 +546,21 @@
       </div>
       <div class="filter-count" id="q1_count"></div>
     </div>
-    <div id="lista_q1"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- PPR-137.3 INSPECCIÓN PREVENTIVA -->
   <div id="q137_3" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-buildings"></i> PPR-137.3 Inspección Preventiva</div>
+    <div class="page-title">🏗️ PPR-137.3 Inspección Preventiva</div>
 
     <div class="ppr-header">
       <h2>PPR-137.3 — INSPECCIÓN PREVENTIVA</h2>
-      <p>Negociado de la Policía de Puerto Rico — DACE Arecibo</p>
+      <p>Policía de Puerto Rico — DACE Arecibo</p>
     </div>
 
     <div class="ppr-section">
       <!-- Encabezado -->
-      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Identificación</div>
+      <div class="ppr-section-title">📋 Identificación</div>
       <div style="padding:14px">
         <div class="row-2">
           <div class="input-group">
@@ -338,6 +577,33 @@
           <select id="q3_lugar">
             <option value="">— Seleccionar —</option>
             <option>Comandancia Administracion</option>
+            <option>Comandancia Seguridad y Proteccion</option>
+            <option>Comandancia Adiestramientos</option>
+            <option>Comandancia Asuntos Antidiscrimen</option>
+            <option>Comandancia Oficina Legal</option>
+            <option>Comandancia Estadisticas</option>
+            <option>Comandancia Centro de Mando</option>
+            <option>Comandancia Prensa</option>
+            <option>Comandancia CIC Administracion</option>
+            <option>Comandancia CIC Homicidios</option>
+            <option>Comandancia CIC Violencia Domestica</option>
+            <option>Comandancia CIC Ayuda Juvenil</option>
+            <option>Comandancia CIC Delitos Sexuales</option>
+            <option>Comandancia CIC Ley 266</option>
+            <option>Comandancia CIC Ley 300</option>
+            <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+            <option>Comandancia Relaciones Con la Comunidad</option>
+            <option>Comandancia Liga Atletica</option>
+            <option>Comandancia CRADIC</option>
+            <option>Comandancia Armas</option>
+            <option>Comandancia Servicios Tecnicos</option>
+            <option>Comandancia Precinto 107 Administracion</option>
+            <option>Comandancia Investigaciones Administrativas</option>
+            <option>Comandancia Oficina Psicologia</option>
+            <option>Comandancia Division Transportacion</option>
+            <option>Comandancia Taller de Radio</option>
+            <option>Comandancia Taller Mecanica</option>
+            <option>Comandancia UMA</option>
             <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
             <option>Prec. 107</option><option>Prec. 207</option>
             <option>Almacen</option><option>UMA</option><option>Poligono</option>
@@ -368,10 +634,10 @@
       </div>
 
       <!-- Foto General -->
-      <div class="ppr-section-title"><i class="ph-fill ph-camera"></i> Evidencia Fotográfica</div>
+      <div class="ppr-section-title">📷 Evidencia Fotográfica</div>
       <div style="padding:14px">
         <div class="foto-zone" onclick="document.getElementById('q3_foto_input').click()">
-          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <span class="foto-icon">📷</span>
           <p>Toca para tomar foto o seleccionar de galería</p>
           <p style="font-size:10px;margin-top:4px">Foto general del área inspeccionada</p>
         </div>
@@ -493,19 +759,19 @@
       </div>
 
       <!-- OBSERVACIONES GENERALES E IA -->
-      <div class="ppr-section-title"><i class="ph-fill ph-pencil-simple"></i> Observaciones Generales e Inteligencia Artificial</div>
+      <div class="ppr-section-title">📝 Observaciones Generales e Inteligencia Artificial</div>
       <div style="padding:14px">
         <div class="input-group">
           <label>Observaciones Generales</label>
           <textarea id="q3_obs_gen" rows="4" placeholder="Observaciones generales de la inspección..."></textarea>
         </div>
         <button class="btn-ai" onclick="generarHallazgoIA()" id="q3_ai_btn">
-          <i class="ph-fill ph-sparkle"></i> GENERAR HALLAZGO TÉCNICO CON IA
+          ✨ GENERAR HALLAZGO TÉCNICO CON IA
         </button>
         <div class="ai-result" id="q3_ai_result">
-          <div class="ai-title"><i class="ph-fill ph-sparkle"></i> Hallazgo Técnico — Generado por IA</div>
+          <div class="ai-title">✨ Hallazgo Técnico — Generado por IA</div>
           <p id="q3_ai_hallazgo" style="margin-bottom:10px"></p>
-          <div class="ai-title" style="margin-top:10px"><i class="ph-fill ph-clipboard-text"></i> Orden de Trabajo 137.1 Sugerida</div>
+          <div class="ai-title" style="margin-top:10px">📋 Orden de Trabajo 137.1 Sugerida</div>
           <p id="q3_ai_orden"></p>
           <button onclick="usarHallazgoIA()" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar estos textos</button>
         </div>
@@ -531,9 +797,9 @@
     <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
     <hr class="sep">
     <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
-    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR INSPECCIONES A PDF</button>
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES A PDF</button>
     <div class="filter-box" style="margin-top:12px; border-left-color: var(--gold)">
-      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+      <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('q3')">✕ Limpiar</button>
       </div>
       <input type="text" class="filter-search" id="q3_search" placeholder="Buscar por número, lugar, hallazgos..." oninput="aplicarFiltros('q3')">
@@ -549,12 +815,12 @@
       </div>
       <div class="filter-count" id="q3_count"></div>
     </div>
-    <div id="lista_q3"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- CASOS ACTIVOS -->
   <div id="casos" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-clipboard-text"></i> Casos Activos</div>
+    <div class="page-title">📋 Casos Activos</div>
     <div class="form-card">
       <div class="form-section-label">Registrar Caso</div>
       <div class="input-group">
@@ -597,11 +863,11 @@
     </div>
     <hr class="sep">
     <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
-    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR CASOS ACTIVOS A PDF</button>
+    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')">📄 EXPORTAR CASOS ACTIVOS A PDF</button>
 
     <!-- FILTROS CASOS -->
     <div class="filter-box" style="margin-top:12px; border-left-color: var(--green)">
-      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+      <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('c')">✕ Limpiar</button>
       </div>
       <input type="text" class="filter-search" id="c_search" placeholder="Buscar por número, descripción, responsable..." oninput="aplicarFiltros('c')">
@@ -625,12 +891,12 @@
       <div class="filter-count" id="c_count"></div>
     </div>
 
-    <div id="lista_casos"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_casos"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- REGISTRO MAESTRO -->
   <div id="maestro" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-folder"></i> Registro Maestro</div>
+    <div class="page-title">📁 Registro Maestro</div>
     <div class="form-card">
       <div class="form-section-label">Nueva Entrada</div>
       <div class="input-group">
@@ -664,11 +930,11 @@
     </div>
     <hr class="sep">
     <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
-    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REGISTRO MAESTRO A PDF</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')">📄 EXPORTAR REGISTRO MAESTRO A PDF</button>
 
     <!-- FILTROS MAESTRO -->
     <div class="filter-box" style="margin-top:12px">
-      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+      <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('rm')">✕ Limpiar</button>
       </div>
       <input type="text" class="filter-search" id="rm_search" placeholder="Buscar por tipo, descripción, notas..." oninput="aplicarFiltros('rm')">
@@ -687,13 +953,12 @@
       <div class="filter-count" id="rm_count"></div>
     </div>
 
-    <div id="lista_maestro"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_maestro"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- MANTENIMIENTO -->
   <div id="mantenimiento" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-wrench"></i> Mantenimiento</div>
-    <button class="btn-save" style="background:#0ea5e9; margin-bottom:14px;" onclick="changeTab('cisternas'); cargarCisternas()"><i class="ph-fill ph-drop"></i> CISTERNAS DEL ÁREA</button>
+    <div class="page-title">🔧 Mantenimiento</div>
     <div class="form-card">
       <div class="form-section-label">Nuevo Trabajo de Mantenimiento</div>
       <div class="input-group">
@@ -701,6 +966,33 @@
         <select id="mt_lugar">
           <option value="">— Seleccionar —</option>
           <option>Comandancia Administracion</option>
+          <option>Comandancia Seguridad y Proteccion</option>
+          <option>Comandancia Adiestramientos</option>
+          <option>Comandancia Asuntos Antidiscrimen</option>
+          <option>Comandancia Oficina Legal</option>
+          <option>Comandancia Estadisticas</option>
+          <option>Comandancia Centro de Mando</option>
+          <option>Comandancia Prensa</option>
+          <option>Comandancia CIC Administracion</option>
+          <option>Comandancia CIC Homicidios</option>
+          <option>Comandancia CIC Violencia Domestica</option>
+          <option>Comandancia CIC Ayuda Juvenil</option>
+          <option>Comandancia CIC Delitos Sexuales</option>
+          <option>Comandancia CIC Ley 266</option>
+          <option>Comandancia CIC Ley 300</option>
+          <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+          <option>Comandancia Relaciones Con la Comunidad</option>
+          <option>Comandancia Liga Atletica</option>
+          <option>Comandancia CRADIC</option>
+          <option>Comandancia Armas</option>
+          <option>Comandancia Servicios Tecnicos</option>
+          <option>Comandancia Precinto 107 Administracion</option>
+          <option>Comandancia Investigaciones Administrativas</option>
+          <option>Comandancia Oficina Psicologia</option>
+          <option>Comandancia Division Transportacion</option>
+          <option>Comandancia Taller de Radio</option>
+          <option>Comandancia Taller Mecanica</option>
+          <option>Comandancia UMA</option>
           <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
           <option>Prec. 107</option><option>Prec. 207</option>
           <option>Almacen</option><option>UMA</option><option>Poligono</option>
@@ -764,11 +1056,11 @@
 
     <hr class="sep">
     <div class="list-header">Registro (<span id="mt_total">0</span> trabajos)</div>
-    <button class="btn-pdf" style="background:#7c3aed" onclick="exportarPDF('mantenimiento')"><i class="ph-fill ph-file-pdf"></i> EXPORTAR MANTENIMIENTO A PDF</button>
+    <button class="btn-pdf" style="background:#7c3aed" onclick="exportarPDF('mantenimiento')">📄 EXPORTAR MANTENIMIENTO A PDF</button>
 
     <!-- FILTROS MANTENIMIENTO -->
     <div class="filter-box" style="margin-top:12px; border-left-color:#7c3aed">
-      <div class="filter-title"><i class="ph-bold ph-magnifying-glass"></i> Buscar y Filtrar
+      <div class="filter-title">🔍 Buscar y Filtrar
         <button class="btn-clear-filter" onclick="limpiarFiltros('mt')">✕ Limpiar</button>
       </div>
       <input type="text" class="filter-search" id="mt_search" placeholder="Buscar por lugar, descripción, tipo..." oninput="aplicarFiltros('mt')">
@@ -794,37 +1086,64 @@
       <div class="filter-count" id="mt_count"></div>
     </div>
 
-    <div id="lista_mt"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_mt"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- ══════════ GENERADORES ══════════ -->
   <div id="generadores" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-battery-full"></i> Bitácora de Generadores</div>
+    <div class="page-title">🔋 Bitácora de Generadores</div>
 
     <!-- TABS INTERNOS -->
     <div style="display:flex;gap:8px;margin-bottom:16px">
       <button class="btn-save" id="gen_tab_btn1" onclick="switchGenTab('registro')"
-        style="padding:10px;font-size:11px;background:var(--blue)"><i class="ph-fill ph-pencil-simple"></i> Registrar</button>
+        style="padding:10px;font-size:11px;background:var(--blue)">⚡ Generador</button>
       <button class="btn-save" id="gen_tab_btn2" onclick="switchGenTab('historial')"
-        style="padding:10px;font-size:11px;background:#94a3b8"><i class="ph-fill ph-clipboard-text"></i> Historial</button>
+        style="padding:10px;font-size:11px;background:var(--muted)">📋 Historial</button>
       <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('resumen')"
-        style="padding:10px;font-size:11px;background:#94a3b8"><i class="ph-fill ph-chart-bar"></i> Resumen</button>
+        style="padding:10px;font-size:11px;background:var(--muted)">📊 Resumen</button>
     </div>
 
     <!-- TAB: REGISTRO -->
     <div id="gen_sec_registro">
       <div class="ppr-header">
         <h2>🔋 BITÁCORA DE GENERADOR ELÉCTRICO</h2>
-        <p>DACE Arecibo — Negociado de la Policía de Puerto Rico</p>
+        <p>DACE Arecibo — Policía de Puerto Rico</p>
       </div>
       <div class="ppr-section">
-        <div class="ppr-section-title"><i class="ph-fill ph-lightning"></i> Identificación del Generador</div>
+        <div class="ppr-section-title">⚡ Identificación del Generador</div>
         <div style="padding:14px">
           <div class="input-group">
             <label>Dependencia / Cuartel *</label>
             <select id="gen_lugar">
               <option value="">— Seleccionar —</option>
               <option>Comandancia Administracion</option>
+              <option>Comandancia Seguridad y Proteccion</option>
+              <option>Comandancia Adiestramientos</option>
+              <option>Comandancia Asuntos Antidiscrimen</option>
+              <option>Comandancia Oficina Legal</option>
+              <option>Comandancia Estadisticas</option>
+              <option>Comandancia Centro de Mando</option>
+              <option>Comandancia Prensa</option>
+              <option>Comandancia CIC Administracion</option>
+              <option>Comandancia CIC Homicidios</option>
+              <option>Comandancia CIC Violencia Domestica</option>
+              <option>Comandancia CIC Ayuda Juvenil</option>
+              <option>Comandancia CIC Delitos Sexuales</option>
+              <option>Comandancia CIC Ley 266</option>
+              <option>Comandancia CIC Ley 300</option>
+              <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+              <option>Comandancia Relaciones Con la Comunidad</option>
+              <option>Comandancia Liga Atletica</option>
+              <option>Comandancia CRADIC</option>
+              <option>Comandancia Armas</option>
+              <option>Comandancia Servicios Tecnicos</option>
+              <option>Comandancia Precinto 107 Administracion</option>
+              <option>Comandancia Investigaciones Administrativas</option>
+              <option>Comandancia Oficina Psicologia</option>
+              <option>Comandancia Division Transportacion</option>
+              <option>Comandancia Taller de Radio</option>
+              <option>Comandancia Taller Mecanica</option>
+              <option>Comandancia UMA</option>
               <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
               <option>Prec. 107</option><option>Prec. 207</option>
               <option>Almacen</option><option>UMA</option><option>Poligono</option>
@@ -846,7 +1165,7 @@
           </div>
         </div>
 
-        <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Datos de la Entrada</div>
+        <div class="ppr-section-title">📋 Datos de la Entrada</div>
         <div style="padding:14px">
           <div class="row-2">
             <div class="input-group"><label>Fecha *</label><input type="date" id="gen_fecha"></div>
@@ -869,7 +1188,7 @@
           </div>
         </div>
 
-        <div class="ppr-section-title"><i class="ph-fill ph-gas-pump"></i> Niveles de Combustible</div>
+        <div class="ppr-section-title">⛽ Niveles de Combustible</div>
         <div style="padding:14px">
           <div class="row-2">
             <div class="input-group">
@@ -903,14 +1222,14 @@
           </div>
         </div>
 
-        <div class="ppr-section-title"><i class="ph-bold ph-magnifying-glass"></i> Condición y Observaciones</div>
+        <div class="ppr-section-title">🔍 Condición y Observaciones</div>
         <div style="padding:14px">
           <div class="input-group">
             <label>Condición General</label>
             <select id="gen_condicion">
-              <option value="Óptimo"><i class="ph-bold ph-check"></i> Óptimo</option>
+              <option value="Óptimo">✅ Óptimo</option>
               <option value="Regular">⚠️ Regular</option>
-              <option value="Deficiente"><i class="ph-bold ph-x"></i> Deficiente</option>
+              <option value="Deficiente">❌ Deficiente</option>
               <option value="Fuera de Servicio">🚫 Fuera de Servicio</option>
             </select>
           </div>
@@ -929,7 +1248,7 @@
 
           <!-- Foto -->
           <div class="foto-zone" onclick="document.getElementById('gen_foto_input').click()">
-            <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+            <span class="foto-icon">📷</span>
             <p>Toca para fotografiar el panel o medidor</p>
             <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del generador</p>
           </div>
@@ -940,14 +1259,14 @@
       </div>
 
       <button class="btn-save" style="background:#15803d" onclick="guardarGenerador()">💾 REGISTRAR EN BITÁCORA</button>
-      <button class="btn-pdf" style="background:#15803d;margin-top:8px" onclick="exportarGeneradoresPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR BITÁCORA PDF</button>
+      <button class="btn-pdf" style="background:#15803d;margin-top:8px" onclick="exportarGeneradoresPDF()">📄 EXPORTAR BITÁCORA PDF</button>
     </div>
 
     <!-- TAB: HISTORIAL -->
     <div id="gen_sec_historial" style="display:none">
       <div class="input-group" style="margin-bottom:10px">
         <input type="text" class="filter-search" id="gen_search"
-          placeholder="Buscar por lugar, tipo, observaciones..."
+          placeholder="🔍 Buscar por lugar, tipo, observaciones..."
           oninput="buscarGeneradores()" style="margin-bottom:0">
       </div>
       <div class="filter-chips" style="margin-bottom:12px">
@@ -958,7 +1277,7 @@
         <span class="chip red" onclick="filtrarGenTipo(this,'Falla / Avería')" data-val="Falla / Avería">Falla</span>
       </div>
       <div class="list-header">Registros (<span id="gen_total">0</span>)</div>
-      <div id="lista_gen"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+      <div id="lista_gen"><div class="loading-state">⏳ Cargando...</div></div>
     </div>
 
     <!-- TAB: RESUMEN -->
@@ -984,7 +1303,7 @@
       <div class="form-card">
         <div class="form-section-label">Consumo por Dependencia</div>
         <div id="gen_rpt_dep" style="font-size:13px;color:#475569;line-height:2">
-          <div class="loading-state"><i class="ph-fill ph-hourglass"></i> Calculando...</div>
+          <div class="loading-state">⏳ Calculando...</div>
         </div>
       </div>
       <div class="form-card">
@@ -997,64 +1316,64 @@
 
   <!-- MÁS -->
   <div id="mas" class="tab-page">
-    <div class="page-title"><i class="ph-bold ph-dots-three"></i> Más Opciones</div>
+    <div class="page-title">⋯ Más Opciones</div>
     <div class="more-grid">
       <div class="more-card" onclick="changeTab('casos')">
-        <span class="more-icon"><i class="ph-fill ph-clipboard-text"></i></span>
+        <span class="more-icon">📋</span>
         <div class="more-title">Casos Activos</div>
         <div class="more-sub">Seguimiento de casos</div>
       </div>
       <div class="more-card" onclick="changeTab('maestro')">
-        <span class="more-icon"><i class="ph-fill ph-folder"></i></span>
+        <span class="more-icon">📁</span>
         <div class="more-title">Registro Maestro</div>
         <div class="more-sub">Log de actividades</div>
       </div>
       <div class="more-card" onclick="changeTab('generadores')">
-        <span class="more-icon"><i class="ph-fill ph-battery-full"></i></span>
+        <span class="more-icon">🔋</span>
         <div class="more-title">Generadores</div>
         <div class="more-sub">Bitácora oficial</div>
       </div>
       <div class="more-card" onclick="changeTab('agenda')">
-        <span class="more-icon"><i class="ph-fill ph-calendar"></i></span>
+        <span class="more-icon">📅</span>
         <div class="more-title">Agenda</div>
         <div class="more-sub">Tareas y compromisos</div>
       </div>
       <div class="more-card" onclick="changeTab('directorio')">
-        <span class="more-icon"><i class="ph-fill ph-users"></i></span>
+        <span class="more-icon">👥</span>
         <div class="more-title">Directorio</div>
         <div class="more-sub">Personal DACE</div>
       </div>
       <div class="more-card" onclick="changeTab('reportes')">
-        <span class="more-icon"><i class="ph-fill ph-chart-bar"></i></span>
+        <span class="more-icon">📊</span>
         <div class="more-title">Reportes</div>
         <div class="more-sub">Estadísticas</div>
       </div>
       <div class="more-card" onclick="changeTab('archivo')">
-        <span class="more-icon"><i class="ph-fill ph-archive"></i></span>
+        <span class="more-icon">🗃️</span>
         <div class="more-title">Archivo DACE</div>
         <div class="more-sub">Documentos</div>
       </div>
       <div class="more-card" onclick="changeTab('jedi')">
-        <span class="more-icon"><i class="ph-fill ph-desktop"></i></span>
+        <span class="more-icon">🖥️</span>
         <div class="more-title">JEDI / ASG</div>
         <div class="more-sub">Solicitudes de equipos</div>
       </div>
+      <div class="more-card" onclick="changeTab('cisternas')">
+        <span class="more-icon">💧</span>
+        <div class="more-title">Cisternas</div>
+        <div class="more-sub">Control de agua</div>
+      </div>
       <div class="more-card" onclick="changeTab('config')">
-        <span class="more-icon"><i class="ph-fill ph-gear"></i></span>
+        <span class="more-icon">⚙️</span>
         <div class="more-title">Configuración</div>
         <div class="more-sub">Sistema v8.0</div>
-      </div>
-      <div class="more-card" onclick="changeTab('cisternas'); cargarCisternas()">
-        <span class="more-icon"><i class="ph-fill ph-drop"></i></span>
-        <div class="more-title">Cisternas</div>
-        <div class="more-sub">Estatus y reportes</div>
       </div>
     </div>
   </div>
 
   <!-- ══════════ JEDI / ASG ══════════ -->
   <div id="jedi" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-desktop"></i> Solicitudes JEDI / ASG</div>
+    <div class="page-title">🖥️ Solicitudes JEDI / ASG</div>
 
     <div class="ppr-header">
       <h2>REGISTRO DE SOLICITUDES JEDI / ASG</h2>
@@ -1062,7 +1381,7 @@
     </div>
 
     <div class="ppr-section">
-      <div class="ppr-section-title"><i class="ph-fill ph-clipboard-text"></i> Nueva Solicitud</div>
+      <div class="ppr-section-title">📋 Nueva Solicitud</div>
       <div style="padding:14px">
         <div class="row-2">
           <div class="input-group">
@@ -1083,6 +1402,33 @@
           <select id="jedi_unidad">
             <option value="">— Seleccionar —</option>
             <option>Comandancia Administracion</option>
+            <option>Comandancia Seguridad y Proteccion</option>
+            <option>Comandancia Adiestramientos</option>
+            <option>Comandancia Asuntos Antidiscrimen</option>
+            <option>Comandancia Oficina Legal</option>
+            <option>Comandancia Estadisticas</option>
+            <option>Comandancia Centro de Mando</option>
+            <option>Comandancia Prensa</option>
+            <option>Comandancia CIC Administracion</option>
+            <option>Comandancia CIC Homicidios</option>
+            <option>Comandancia CIC Violencia Domestica</option>
+            <option>Comandancia CIC Ayuda Juvenil</option>
+            <option>Comandancia CIC Delitos Sexuales</option>
+            <option>Comandancia CIC Ley 266</option>
+            <option>Comandancia CIC Ley 300</option>
+            <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+            <option>Comandancia Relaciones Con la Comunidad</option>
+            <option>Comandancia Liga Atletica</option>
+            <option>Comandancia CRADIC</option>
+            <option>Comandancia Armas</option>
+            <option>Comandancia Servicios Tecnicos</option>
+            <option>Comandancia Precinto 107 Administracion</option>
+            <option>Comandancia Investigaciones Administrativas</option>
+            <option>Comandancia Oficina Psicologia</option>
+            <option>Comandancia Division Transportacion</option>
+            <option>Comandancia Taller de Radio</option>
+            <option>Comandancia Taller Mecanica</option>
+            <option>Comandancia UMA</option>
             <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
             <option>Prec. 107</option><option>Prec. 207</option>
             <option>Almacen</option><option>UMA</option><option>Poligono</option>
@@ -1139,7 +1485,7 @@
 
         <!-- Foto screenshot -->
         <div class="foto-zone" onclick="document.getElementById('jedi_foto_input').click()">
-          <span class="foto-icon"><i class="ph-fill ph-camera"></i></span>
+          <span class="foto-icon">📷</span>
           <p>Toca para agregar screenshot de JEDI/ASG</p>
           <p style="font-size:10px;margin-top:4px">Evidencia de la solicitud en el sistema</p>
         </div>
@@ -1150,12 +1496,12 @@
     </div>
 
     <button class="btn-save" style="background:#1d4ed8" onclick="guardarJedi()">💾 REGISTRAR SOLICITUD JEDI</button>
-    <button class="btn-pdf" style="background:#1d4ed8;margin-top:8px" onclick="exportarJediPDF()"><i class="ph-fill ph-file-pdf"></i> EXPORTAR SOLICITUDES PDF</button>
+    <button class="btn-pdf" style="background:#1d4ed8;margin-top:8px" onclick="exportarJediPDF()">📄 EXPORTAR SOLICITUDES PDF</button>
 
     <hr class="sep">
     <div class="input-group" style="margin-bottom:10px">
       <input type="text" class="filter-search" id="jedi_search"
-        placeholder="Buscar por número, dependencia, descripción..."
+        placeholder="🔍 Buscar por número, dependencia, descripción..."
         oninput="buscarJedi()" style="margin-bottom:0">
     </div>
     <div class="filter-chips" style="margin-bottom:12px">
@@ -1167,12 +1513,12 @@
       <span class="chip red" onclick="filtrarJediEstatus(this,'Cancelado')" data-val="Cancelado">Cancelado</span>
     </div>
     <div class="list-header">Solicitudes (<span id="jedi_total">0</span>)</div>
-    <div id="lista_jedi"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_jedi"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- ══════════ AGENDA ══════════ -->
   <div id="agenda" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-calendar"></i> Agenda</div>
+    <div class="page-title">📅 Agenda</div>
     <div class="form-card">
       <div class="form-section-label">Nueva Tarea / Compromiso</div>
       <div class="input-group">
@@ -1212,12 +1558,12 @@
     </div>
     <hr class="sep">
     <div class="list-header">Tareas (<span id="ag_total">0</span>)</div>
-    <div id="lista_agenda"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_agenda"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- ══════════ DIRECTORIO ══════════ -->
   <div id="directorio" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-users"></i> Directorio DACE</div>
+    <div class="page-title">👥 Directorio DACE</div>
     <div class="form-card">
       <div class="form-section-label">Agregar Personal</div>
       <div class="row-2">
@@ -1281,15 +1627,15 @@
     </div>
     <hr class="sep">
     <div class="input-group" style="margin-bottom:10px">
-      <input type="text" class="filter-search" id="dir_search" placeholder="Buscar por nombre, placa, unidad..." oninput="buscarDirectorio()" style="margin-bottom:0">
+      <input type="text" class="filter-search" id="dir_search" placeholder="🔍 Buscar por nombre, placa, unidad..." oninput="buscarDirectorio()" style="margin-bottom:0">
     </div>
     <div class="list-header">Contactos (<span id="dir_total">0</span>)</div>
-    <div id="lista_dir"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_dir"><div class="loading-state">⏳ Cargando...</div></div>
   </div>
 
   <!-- ══════════ REPORTES ══════════ -->
   <div id="reportes" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-chart-bar"></i> Reportes</div>
+    <div class="page-title">📊 Reportes</div>
 
     <div class="stats-grid" style="margin-bottom:16px">
       <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
@@ -1319,12 +1665,12 @@
     </div>
 
     <button class="btn-save" onclick="generarReportes()" style="margin-top:4px">🔄 ACTUALIZAR REPORTES</button>
-    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()" style="margin-top:8px"><i class="ph-fill ph-file-pdf"></i> EXPORTAR REPORTE GENERAL PDF</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()" style="margin-top:8px">📄 EXPORTAR REPORTE GENERAL PDF</button>
   </div>
 
   <!-- ══════════ ARCHIVO DACE ══════════ -->
   <div id="archivo" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-archive"></i> Archivo DACE</div>
+    <div class="page-title">🗃️ Archivo DACE</div>
     <div class="form-card">
       <div class="form-section-label">Registrar Documento</div>
       <div class="input-group">
@@ -1388,15 +1734,143 @@
     </div>
     <hr class="sep">
     <div class="input-group" style="margin-bottom:10px">
-      <input type="text" class="filter-search" id="arc_search" placeholder="Buscar documento..." oninput="buscarArchivo()" style="margin-bottom:0">
+      <input type="text" class="filter-search" id="arc_search" placeholder="🔍 Buscar documento..." oninput="buscarArchivo()" style="margin-bottom:0">
     </div>
     <div class="list-header">Documentos (<span id="arc_total">0</span>)</div>
-    <div id="lista_arc"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
+    <div id="lista_arc"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ CISTERNAS ══════════ -->
+  <div id="cisternas" class="tab-page">
+    <div class="page-title">💧 Cisternas</div>
+      <div class="ppr-header" style="border-radius:14px 14px 0 0">
+        <h2>💧 BITÁCORA DE CISTERNAS</h2>
+        <p>DACE Arecibo — Control de Agua</p>
+      </div>
+      <div class="ppr-section" style="border-radius:0 0 14px 14px;margin-bottom:14px">
+        <div class="ppr-section-title">🏗️ Nueva Entrada</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Dependencia / Cuartel *</label>
+            <select id="cis_lugar">
+              <option value="">— Seleccionar —</option>
+              <option>Comandancia Administracion</option>
+              <option>Comandancia Seguridad y Proteccion</option>
+              <option>Comandancia Adiestramientos</option>
+              <option>Comandancia Asuntos Antidiscrimen</option>
+              <option>Comandancia Oficina Legal</option>
+              <option>Comandancia Estadisticas</option>
+              <option>Comandancia Centro de Mando</option>
+              <option>Comandancia Prensa</option>
+              <option>Comandancia CIC Administracion</option>
+              <option>Comandancia CIC Homicidios</option>
+              <option>Comandancia CIC Violencia Domestica</option>
+              <option>Comandancia CIC Ayuda Juvenil</option>
+              <option>Comandancia CIC Delitos Sexuales</option>
+              <option>Comandancia CIC Ley 266</option>
+              <option>Comandancia CIC Ley 300</option>
+              <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+              <option>Comandancia Relaciones Con la Comunidad</option>
+              <option>Comandancia Liga Atletica</option>
+              <option>Comandancia CRADIC</option>
+              <option>Comandancia Armas</option>
+              <option>Comandancia Servicios Tecnicos</option>
+              <option>Comandancia Precinto 107 Administracion</option>
+              <option>Comandancia Investigaciones Administrativas</option>
+              <option>Comandancia Oficina Psicologia</option>
+              <option>Comandancia Division Transportacion</option>
+              <option>Comandancia Taller de Radio</option>
+              <option>Comandancia Taller Mecanica</option>
+              <option>Comandancia UMA</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group"><label>Fecha *</label><input type="date" id="cis_fecha"></div>
+            <div class="input-group"><label>Hora</label><input type="time" id="cis_hora"></div>
+          </div>
+          <div class="input-group">
+            <label>Tipo de Actividad</label>
+            <select id="cis_tipo">
+              <option value="Inspección Rutinaria">Inspección Rutinaria</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Llenado">Llenado de Cisterna</option>
+              <option value="Reparación">Reparación</option>
+              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+              <option value="Falla / Avería">Falla / Avería</option>
+              <option value="Inspección Sanitaria">Inspección Sanitaria</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Capacidad Total (galones)</label>
+              <input type="number" id="cis_capacidad" placeholder="Ej: 10000" min="0">
+            </div>
+            <div class="input-group">
+              <label>Nivel Actual (%)</label>
+              <input type="number" id="cis_nivel" placeholder="0-100" min="0" max="100">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Estado Operacional</label>
+            <select id="cis_operacional">
+              <option value="Operacional">✅ Operacional</option>
+              <option value="Operacional con Limitaciones">⚠️ Operacional con Limitaciones</option>
+              <option value="No Operacional">❌ No Operacional</option>
+              <option value="En Mantenimiento">🔧 En Mantenimiento</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Condición del Agua</label>
+            <select id="cis_condicion_agua">
+              <option value="Buena">Buena</option>
+              <option value="Regular">Regular</option>
+              <option value="Requiere Tratamiento">Requiere Tratamiento</option>
+              <option value="No Potable">No Potable</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Condición General</label>
+            <select id="cis_condicion">
+              <option value="Óptima">✅ Óptima</option>
+              <option value="Regular">⚠️ Regular</option>
+              <option value="Deficiente">❌ Deficiente</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Observaciones *</label>
+            <textarea id="cis_obs" rows="4" placeholder="Describa el estado de la cisterna, trabajos realizados, lecturas, etc..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Técnico / Personal</label>
+            <input type="text" id="cis_tecnico" placeholder="Nombre del técnico o personal" autocomplete="off">
+          </div>
+          <div class="foto-zone" onclick="document.getElementById('cis_foto_input').click()">
+            <span class="foto-icon">📷</span>
+            <p>Toca para fotografiar la cisterna</p>
+            <p style="font-size:10px;margin-top:4px">Evidencia fotográfica</p>
+          </div>
+          <input type="file" id="cis_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoCisterna()">
+          <img id="cis_foto_preview" class="foto-preview" alt="Cisterna">
+          <button class="btn-foto-clear" id="cis_foto_clear" onclick="clearFotoCisterna()">✕ Eliminar foto</button>
+        </div>
+      </div>
+      <button class="btn-save" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)" onclick="guardarCisterna()">💾 REGISTRAR CISTERNA</button>
+      <hr class="sep">
+      <div class="list-header">Registros (<span id="cis_total">0</span>)</div>
+      <div id="lista_cis"><div class="loading-state">⏳ Cargando...</div></div>
+    </div>
   </div>
 
   <!-- ══════════ CONFIGURACIÓN ══════════ -->
   <div id="config" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-gear"></i> Configuración</div>
+    <div class="page-title">⚙️ Configuración</div>
     <div class="info-card">
       <div class="info-title">Estado del Sistema</div>
       <p><strong>Versión:</strong> DACE Arecibo v8.0</p>
@@ -1408,95 +1882,49 @@
     </div>
     <div class="info-card" style="margin-top:12px">
       <div class="info-title">Módulos Activos</div>
-      <p><i class="ph-bold ph-check"></i> Panel General</p>
-      <p><i class="ph-bold ph-check"></i> Órdenes de Trabajo PPR-137.1</p>
-      <p><i class="ph-bold ph-check"></i> Inspecciones PPR-137.3</p>
-      <p><i class="ph-bold ph-check"></i> Casos Activos</p>
-      <p><i class="ph-bold ph-check"></i> Mantenimiento</p>
-      <p><i class="ph-bold ph-check"></i> Registro Maestro</p>
-      <p><i class="ph-bold ph-check"></i> Agenda</p>
-      <p><i class="ph-bold ph-check"></i> Directorio Personal</p>
-      <p><i class="ph-bold ph-check"></i> Reportes Estadísticos</p>
-      <p><i class="ph-bold ph-check"></i> Archivo DACE</p>
-      <p><i class="ph-bold ph-check"></i> Exportar PDF</p>
-      <p><i class="ph-bold ph-check"></i> Filtros y Búsqueda</p>
-      <p><i class="ph-bold ph-check"></i> Sincronización Firebase</p>
-      <p><i class="ph-bold ph-check"></i> Protección PIN</p>
+      <p>✅ Panel General</p>
+      <p>✅ Órdenes de Trabajo PPR-137.1</p>
+      <p>✅ Inspecciones PPR-137.3</p>
+      <p>✅ Casos Activos</p>
+      <p>✅ Mantenimiento</p>
+      <p>✅ Registro Maestro</p>
+      <p>✅ Agenda</p>
+      <p>✅ Directorio Personal</p>
+      <p>✅ Reportes Estadísticos</p>
+      <p>✅ Archivo DACE</p>
+      <p>✅ Exportar PDF</p>
+      <p>✅ Filtros y Búsqueda</p>
+      <p>✅ Sincronización Firebase</p>
+      <p>✅ Protección PIN</p>
     </div>
+    <div class="info-card" style="margin-top:12px; border-left: 4px solid var(--gold);">
+      <div class="info-title">📥 Importador de Historial ChatGPT</div>
+      <p style="font-size:11px;color:#64748b;margin-bottom:10px">
+        Selecciona tu archivo <code>conversations.json</code> (exportado desde la configuración de ChatGPT) para nutrir automáticamente el Registro Maestro.
+      </p>
+      <div class="foto-zone" onclick="document.getElementById('import_chat_input').click()" style="border-style:dashed;padding:20px;background:#f8fafc;cursor:pointer">
+        <span class="foto-icon">📥</span>
+        <p id="import_chat_status" style="margin-top:4px;font-weight:700">Toca aquí para seleccionar conversations.json</p>
+      </div>
+      <input type="file" id="import_chat_input" accept=".json" style="display:none" onchange="importarConversacionesChatGPT()">
+    </div>
+
     <div class="info-card" style="margin-top:12px">
       <div class="info-title">Acciones</div>
-      <button class="btn-save" style="margin-bottom:10px" onclick="generarReportes();showToast('<i class=\'ph-bold ph-check\'></i> Estadísticas actualizadas','#166534')"><i class="ph-bold ph-arrows-clockwise"></i> Actualizar Estadísticas</button>
-      <button class="btn-save" style="background:#dc2626" onclick="cerrarSesion()"><i class="ph-bold ph-lock"></i> Cerrar Sesión / Bloquear</button>
+      <button class="btn-save" style="margin-bottom:10px" onclick="generarReportes();showToast('✅ Estadísticas actualizadas','#166534')">🔄 Actualizar Estadísticas</button>
+      <button class="btn-save" style="background:#dc2626" onclick="cerrarSesion()">🔒 Cerrar Sesión / Bloquear</button>
     </div>
-  </div>
-
-  <!-- ══════════ TRABAJOS REALIZADOS ══════════ -->
-  <div id="trabajos_realizados" class="tab-page">
-    <div class="page-title"><i class="ph-bold ph-check"></i> Trabajos Realizados</div>
-    <div class="list-header">Historial de Completados (<span id="tr_total">0</span>)</div>
-    <div id="lista_trabajos"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando trabajos...</div></div>
-  </div>
-
-  <!-- ══════════ CISTERNAS DEL ÁREA ══════════ -->
-  <div id="cisternas" class="tab-page">
-    <div class="page-title"><i class="ph-fill ph-drop"></i> Cisternas del Área</div>
-    
-    <div class="form-card">
-      <div class="form-section-label">Nuevo Registro de Cisterna</div>
-      <div class="input-group">
-        <label>Dependencia / Cuartel *</label>
-        <select id="cis_lugar">
-          <option value="">— Seleccionar —</option>
-          <option>Comandancia Administracion</option>
-          <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
-          <option>Prec. 107</option><option>Prec. 207</option>
-          <option>Almacen</option><option>UMA</option><option>Poligono</option>
-          <option>Operaciones Tacticas</option><option>Florida</option>
-          <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
-          <option>Morovis</option><option>Transito Manati</option>
-          <option>Drogas Manati</option><option>Transito Arecibo</option>
-          <option>Vehiculos Hurtados</option><option>Maritima</option>
-          <option>Tecnologia</option><option>General</option>
-        </select>
-      </div>
-      
-      <div class="input-group">
-        <label>Estatus de la Cisterna *</label>
-        <div class="row-2" style="margin-bottom:8px">
-          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Funciona" checked style="width:16px;height:16px;accent-color:var(--green)"> Funciona</label>
-          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="No Funciona" style="width:16px;height:16px;accent-color:var(--red)"> No Funciona</label>
-        </div>
-        <div class="row-2">
-          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Necesita Reparación" style="width:16px;height:16px;accent-color:var(--gold)"> Reparación</label>
-          <label style="display:flex;align-items:center;gap:6px;text-transform:none"><input type="radio" name="cis_estatus" value="Cambio" style="width:16px;height:16px;accent-color:var(--blue)"> Cambio</label>
-        </div>
-      </div>
-      
-      <div class="row-2">
-        <div class="input-group"><label>Fecha *</label><input type="date" id="cis_fecha"></div>
-        <div class="input-group"><label>Hora</label><input type="time" id="cis_hora"></div>
-      </div>
-      <div class="input-group">
-        <label>Observaciones / Notas</label>
-        <textarea id="cis_obs" placeholder="Describa cualquier avería, condición o recomendación..."></textarea>
-      </div>
-      <button class="btn-save" style="background:#0ea5e9" onclick="guardarCisterna()">💾 GUARDAR REGISTRO</button>
-    </div>
-
-    <hr class="sep">
-    <div class="list-header">Registro Histórico (<span id="cis_total">0</span>)</div>
-    <div id="lista_cisternas"><div class="loading-state"><i class="ph-fill ph-hourglass"></i> Cargando...</div></div>
   </div>
 
 </main>
 
 <!-- NAVEGACIÓN -->
 <nav class="nav-bar">
-  <button id="btn-inicio"        class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon"><i class="ph-fill ph-chart-bar"></i></span>PANEL</button>
-  <button id="btn-q137_1"        class="nav-btn"        onclick="changeTab('q137_1')"><span class="nav-icon"><i class="ph-fill ph-scales"></i></span>137.1</button>
-  <button id="btn-q137_3"        class="nav-btn"        onclick="changeTab('q137_3')"><span class="nav-icon"><i class="ph-fill ph-buildings"></i></span>137.3</button>
-  <button id="btn-mantenimiento" class="nav-btn"        onclick="changeTab('mantenimiento')"><span class="nav-icon"><i class="ph-fill ph-wrench"></i></span>MANT.</button>
-  <button id="btn-mas"           class="nav-btn"        onclick="changeTab('mas')"><span class="nav-icon"><i class="ph-bold ph-dots-three"></i></span>MÁS</button>
+  <button id="btn-inicio"        class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
+  <button id="btn-q137_1"        class="nav-btn"        onclick="changeTab('q137_1')"><span class="nav-icon">⚖️</span>137.1</button>
+  <button id="btn-q137_3"        class="nav-btn"        onclick="changeTab('q137_3')"><span class="nav-icon">🏗️</span>137.3</button>
+  <button id="btn-mantenimiento" class="nav-btn"        onclick="changeTab('mantenimiento')"><span class="nav-icon">🔧</span>MANT.</button>
+  <button id="btn-mas"           class="nav-btn"        onclick="changeTab('mas')"><span class="nav-icon">⋯</span>MÁS</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -1504,6 +1932,10 @@
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
      ═══════════════════════════════════════════════════════════ -->
-<script type="module" src="./src/main.js"></script>
+<script src="SECURITY_UTILS.js"></script>
+<script src="REFACTORED_RENDERING.js"></script>
+<script src="REFACTORED_CRUD.js"></script>
+<script src="REFACTORED_AUTH.js"></script>
+<script src="src/app.js"></script>
 </body>
 </html>

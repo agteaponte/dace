@@ -1,8 +1,1769 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DACE ARECIBO">
+<title>DACE ARECIBO</title>
+
+<!-- Firebase SDK (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  --navy:   #06101e;
+  --dark:   #0d1b2e;
+  --panel:  #112036;
+  --card:   #162840;
+  --blue:   #0ea5e9;
+  --gold:   #f59e0b;
+  --red:    #ef4444;
+  --green:  #22c55e;
+  --purple: #a78bfa;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --border: rgba(255,255,255,0.08);
+  --bg:     #06101e;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
+html,body { height:100%; }
+body {
+  background: var(--navy);
+  font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+#lockScreen {
+  position:fixed; inset:0; z-index:9999;
+  background: linear-gradient(160deg, #06101e 0%, #0d1b2e 50%, #061624 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:40px 30px;
+}
+#lockScreen::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(14,165,233,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+#lockScreen .lock-logo { width:80px; height:80px; object-fit:contain; border-radius:20px; margin-bottom:20px; box-shadow:0 0 30px rgba(14,165,233,0.3); }
+#lockScreen .lock-title { color:white; font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700; text-transform:uppercase; letter-spacing:3px; text-align:center; margin-bottom:4px; }
+#lockScreen .lock-sub { color:var(--gold); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; text-align:center; margin-bottom:44px; }
+#lockScreen .pin-dots { display:flex; gap:16px; margin-bottom:36px; }
+#lockScreen .pin-dot { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,0.2); background:transparent; transition:all 0.2s; }
+#lockScreen .pin-dot.filled { background:var(--blue); border-color:var(--blue); box-shadow:0 0 10px rgba(14,165,233,0.6); }
+#lockScreen .pin-dot.error { background:var(--red); border-color:var(--red); box-shadow:0 0 10px rgba(239,68,68,0.6); }
+#lockScreen .pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; max-width:260px; }
+#lockScreen .pin-key { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 10px; color:white; font-size:24px; font-weight:500; cursor:pointer; transition:all 0.12s; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:'Rajdhani',sans-serif; }
+#lockScreen .pin-key:active { background:rgba(14,165,233,0.2); border-color:rgba(14,165,233,0.4); transform:scale(0.94); }
+#lockScreen .pin-key.zero { grid-column:2; }
+#lockScreen .pin-key.del { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.2); }
+#lockScreen .pin-key sub { font-size:7px; color:rgba(255,255,255,0.3); font-weight:600; letter-spacing:1.5px; font-family:'DM Sans',sans-serif; }
+#lockScreen .lock-msg { color:rgba(255,255,255,0.3); font-size:11px; font-weight:500; margin-top:24px; text-align:center; min-height:18px; }
+.app-header { display:flex; justify-content:space-between; align-items:center; padding:54px 16px 14px; background:linear-gradient(180deg, var(--dark) 0%, var(--panel) 100%); border-bottom:1px solid rgba(14,165,233,0.2); box-shadow:0 4px 24px rgba(0,0,0,0.4); position:sticky; top:0; z-index:200; }
+.header-logo { width:48px; height:48px; object-fit:contain; flex-shrink:0; border-radius:10px; box-shadow:0 0 14px rgba(14,165,233,0.2); }
+.header-logo-placeholder { width:48px; height:48px; background:linear-gradient(135deg, var(--blue), #0369a1); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.header-text { text-align:center; flex:1; padding:0 8px; }
+.header-text h1 { font-size:16px; font-weight:700; color:white; text-transform:uppercase; letter-spacing:1.5px; font-family:'Rajdhani',sans-serif; line-height:1.2; }
+.header-text .sub { font-size:9px; font-weight:500; color:rgba(255,255,255,0.45); margin-top:2px; }
+.header-text .oficial { font-size:9px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.8px; margin-top:3px; }
+.firebase-bar { background:rgba(14,165,233,0.08); border-bottom:1px solid rgba(14,165,233,0.15); color:rgba(255,255,255,0.6); font-size:9px; font-weight:600; text-align:center; padding:5px 12px; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.fb-dot { width:6px; height:6px; border-radius:50%; background:#475569; flex-shrink:0; transition:background 0.4s; }
+.fb-dot.online { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,0.6); }
+.fb-dot.error { background:var(--red); }
+.nav-bar { position:fixed; bottom:0; width:100%; max-width:540px; left:50%; transform:translateX(-50%); background:rgba(13,27,46,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); display:flex; padding:10px 0 env(safe-area-inset-bottom,22px); border-top:1px solid rgba(14,165,233,0.15); z-index:1000; box-shadow:0 -8px 30px rgba(0,0,0,0.5); }
+.nav-btn { flex:1; border:none; background:none; color:rgba(255,255,255,0.3); font-size:8px; font-weight:700; cursor:pointer; padding:2px 0; display:flex; flex-direction:column; align-items:center; gap:4px; text-transform:uppercase; letter-spacing:0.5px; transition:all 0.2s; font-family:'Rajdhani',sans-serif; }
+.nav-btn.active { color:var(--blue); }
+.nav-btn.active .nav-icon { filter:drop-shadow(0 0 6px rgba(14,165,233,0.7)); }
+.nav-icon { font-size:20px; line-height:1; }
+.main-content { padding:16px 14px 120px; max-width:540px; margin:0 auto; }
+.tab-page { display:none; }
+.tab-page.active { display:block; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.page-title { font-size:22px; font-weight:700; color:white; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(14,165,233,0.25); display:flex; align-items:center; gap:8px; font-family:'Rajdhani',sans-serif; letter-spacing:0.5px; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.stat-card { background:var(--card); padding:16px 14px; border-radius:16px; border:1px solid var(--border); border-top:3px solid var(--blue); cursor:pointer; transition:transform 0.15s; position:relative; overflow:hidden; }
+.stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--blue), transparent); }
+.stat-card.gold { border-top-color:var(--gold); }
+.stat-card.gold::after { background:linear-gradient(90deg, var(--gold), transparent); }
+.stat-card.green { border-top-color:var(--green); }
+.stat-card.green::after { background:linear-gradient(90deg, var(--green), transparent); }
+.stat-card.red { border-top-color:var(--red); }
+.stat-card.red::after { background:linear-gradient(90deg, var(--red), transparent); }
+.stat-card:active { transform:scale(0.97); }
+.stat-num { font-size:36px; font-weight:700; color:white; line-height:1; font-family:'Rajdhani',sans-serif; }
+.stat-card.gold .stat-num { color:var(--gold); }
+.stat-card.green .stat-num { color:var(--green); }
+.stat-card.red .stat-num { color:var(--red); }
+.stat-label { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-top:5px; letter-spacing:0.8px; }
+.feed-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin:4px 0 10px; }
+.activity-item { background:var(--card); padding:12px 14px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+.activity-item:active { border-color:rgba(14,165,233,0.3); }
+.activity-icon { font-size:20px; flex-shrink:0; }
+.activity-info { flex:1; min-width:0; }
+.activity-info strong { display:block; font-size:13px; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; }
+.activity-info span { font-size:10px; color:var(--muted); }
+.form-card { background:var(--card); padding:18px; border-radius:16px; border:1px solid var(--border); margin-bottom:14px; }
+.form-section-label { font-size:12px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); font-family:'Rajdhani',sans-serif; }
+.input-group { margin-bottom:14px; }
+.input-group label { display:block; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+.input-group input, .input-group select, .input-group textarea, input[type=text], input[type=date], input[type=time], input[type=number], input[type=email], input[type=password], select, textarea { width:100%; padding:13px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:15px; color:white; -webkit-appearance:none; appearance:none; font-family:'DM Sans',sans-serif; transition:border-color 0.2s, background 0.2s; }
+input::placeholder, textarea::placeholder { color:rgba(255,255,255,0.2); }
+input:focus, select:focus, textarea:focus { outline:none; border-color:rgba(14,165,233,0.5); background:rgba(14,165,233,0.06); }
+textarea { resize:vertical; min-height:88px; }
+select { background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-repeat:no-repeat; background-position:right 10px center; background-size:18px; padding-right:36px; }
+select option { background:#0d1b2e; color:white; }
+.row-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.filter-box { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; border:1px solid var(--border); border-left:3px solid var(--gold); }
+.filter-box .filter-title { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.filter-search { width:100%; padding:11px 12px 11px 36px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; font-size:14px; background:rgba(255,255,255,0.04); color:white; -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0'/%3e%3c/svg%3e"); background-repeat:no-repeat; background-position:10px center; background-size:16px; margin-bottom:10px; transition:border-color 0.2s; font-family:'DM Sans',sans-serif; }
+.filter-search::placeholder { color:rgba(255,255,255,0.25); }
+.filter-search:focus { outline:none; border-color:rgba(14,165,233,0.4); }
+.filter-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.chip { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--muted); transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.chip.active { background:rgba(14,165,233,0.15); color:var(--blue); border-color:rgba(14,165,233,0.4); }
+.chip.gold.active { background:rgba(245,158,11,0.15); color:var(--gold); border-color:rgba(245,158,11,0.4); }
+.chip.green.active { background:rgba(34,197,94,0.15); color:var(--green); border-color:rgba(34,197,94,0.4); }
+.chip.red.active { background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.4); }
+.filter-dates { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.filter-dates input { width:100%; padding:9px 10px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; font-size:13px; background:rgba(255,255,255,0.04); color:white; -webkit-appearance:none; appearance:none; }
+.filter-count { font-size:10px; color:var(--muted); font-weight:600; margin-top:8px; text-align:right; }
+.btn-clear-filter { background:none; border:none; color:var(--red); font-size:10px; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:6px; float:right; margin-top:-2px; }
+.btn-save { width:100%; padding:16px; color:white; border:none; border-radius:14px; font-weight:700; font-size:15px; cursor:pointer; margin-top:4px; letter-spacing:0.5px; transition:opacity 0.15s, transform 0.1s; background:linear-gradient(135deg, #0ea5e9, #0369a1); font-family:'Rajdhani',sans-serif; box-shadow:0 4px 15px rgba(14,165,233,0.25); }
+.btn-save:active { opacity:0.85; transform:scale(0.99); }
+.btn-save.gold-btn { background:linear-gradient(135deg, #f59e0b, #d97706); color:#1a0e00; box-shadow:0 4px 15px rgba(245,158,11,0.25); }
+.btn-save.green-btn { background:linear-gradient(135deg, #22c55e, #16a34a); box-shadow:0 4px 15px rgba(34,197,94,0.25); }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.b-pending { background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+.b-process { background:rgba(14,165,233,0.15); color:var(--blue); border:1px solid rgba(14,165,233,0.3); }
+.b-done { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+.b-archived { background:rgba(100,116,139,0.15); color:var(--muted); border:1px solid rgba(100,116,139,0.2); }
+.b-alta { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.b-media { background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+.b-baja { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+.list-header { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:18px 0 10px; font-family:'Rajdhani',sans-serif; }
+.record-item { background:var(--card); padding:14px; border-radius:14px; margin-bottom:8px; border:1px solid var(--border); border-left:3px solid var(--blue); transition:border-color 0.2s; }
+.record-item:active { border-color:rgba(14,165,233,0.4); }
+.record-item.gold { border-left-color:var(--gold); }
+.record-item.green { border-left-color:var(--green); }
+.record-item.red { border-left-color:var(--red); }
+.record-item.gray { border-left-color:var(--muted); }
+.record-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px; }
+.record-id { font-size:13px; font-weight:700; color:white; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.record-ts { font-size:9px; color:var(--muted); flex-shrink:0; font-family:'Rajdhani',sans-serif; }
+.record-body { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.55; margin-bottom:2px; }
+.record-body strong { color:rgba(255,255,255,0.9); font-weight:600; }
+.record-foot { margin-top:9px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.btn-del { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:var(--red); font-size:11px; font-weight:700; cursor:pointer; margin-left:auto; padding:5px 10px; border-radius:8px; }
+.btn-del:active { background:rgba(239,68,68,0.2); }
+.btn-edit { background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.2); color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:8px; }
+.btn-edit:active { background:rgba(14,165,233,0.2); }
+.more-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.more-card { background:var(--card); padding:20px 14px; border-radius:16px; border:1px solid var(--border); text-align:center; cursor:pointer; transition:all 0.15s; position:relative; overflow:hidden; }
+.more-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent); }
+.more-card:active { border-color:rgba(14,165,233,0.3); transform:scale(0.96); }
+.more-icon { font-size:28px; display:block; margin-bottom:8px; }
+.more-title { font-size:12px; font-weight:700; color:white; text-transform:uppercase; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.more-sub { font-size:10px; color:var(--muted); margin-top:3px; }
+.info-card { background:var(--card); border-radius:14px; padding:16px; margin-top:12px; border:1px solid var(--border); }
+.info-card p { font-size:12px; color:rgba(255,255,255,0.6); margin:5px 0; line-height:1.5; }
+.info-card strong { color:white; }
+.info-title { font-size:12px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-family:'Rajdhani',sans-serif; }
+.toast { position:fixed; bottom:105px; left:50%; transform:translateX(-50%); background:rgba(13,27,46,0.96); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); color:white; padding:12px 24px; border-radius:30px; font-size:13px; font-weight:600; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+.toast.show { opacity:1; }
+.empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+.empty-icon { font-size:44px; display:block; margin-bottom:12px; opacity:0.5; }
+.empty-state p { font-size:13px; font-weight:500; }
+.loading-state { text-align:center; padding:24px; color:var(--muted); font-size:12px; font-weight:500; }
+.btn-pdf { width:100%; padding:15px; color:white; border:none; border-radius:14px; font-weight:700; font-size:14px; cursor:pointer; margin-top:8px; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.15s, transform 0.1s; background:linear-gradient(135deg, var(--red), #b91c1c); font-family:'Rajdhani',sans-serif; box-shadow:0 4px 15px rgba(239,68,68,0.2); }
+.btn-pdf:active { opacity:0.85; transform:scale(0.99); }
+.btn-pdf.gold-pdf { background:linear-gradient(135deg, #92700a, #78590a); }
+.btn-pdf.green-pdf { background:linear-gradient(135deg, #166534, #14532d); }
+.btn-pdf.blue-pdf { background:linear-gradient(135deg, #0ea5e9, #0369a1); }
+.sep { border:none; border-top:1px solid var(--border); margin:18px 0; }
+.ppr-header { background:linear-gradient(135deg, #0d1b2e, #162840); border:1px solid rgba(14,165,233,0.2); border-bottom:none; padding:16px; border-radius:14px 14px 0 0; margin-bottom:0; text-align:center; position:relative; overflow:hidden; }
+.ppr-header::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, var(--blue), var(--gold), transparent); }
+.ppr-header h2 { font-size:14px; font-weight:700; letter-spacing:2px; color:white; font-family:'Rajdhani',sans-serif; }
+.ppr-header p { font-size:9px; color:rgba(255,255,255,0.4); margin-top:3px; letter-spacing:0.5px; }
+.ppr-section { background:var(--card); border-radius:0; padding:0; margin-bottom:0; border:1px solid rgba(14,165,233,0.15); border-top:none; }
+.ppr-section:last-child { border-radius:0 0 14px 14px; margin-bottom:14px; }
+.ppr-section-title { background:rgba(245,158,11,0.1); border-bottom:1px solid rgba(245,158,11,0.2); color:var(--gold); font-size:11px; font-weight:700; padding:10px 14px; text-transform:uppercase; letter-spacing:1px; font-family:'Rajdhani',sans-serif; }
+.insp-table { width:100%; border-collapse:collapse; }
+.insp-table th { background:rgba(255,255,255,0.03); font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; padding:8px; border-bottom:1px solid var(--border); text-align:center; letter-spacing:0.5px; }
+.insp-table th:first-child { text-align:left; }
+.insp-table td { padding:8px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:11px; color:rgba(255,255,255,0.75); vertical-align:middle; }
+.insp-table td:first-child { font-weight:600; padding-left:12px; }
+.insp-table tr:last-child td { border-bottom:none; }
+.insp-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+.insp-radio-group { display:flex; gap:6px; justify-content:center; }
+.insp-radio-group label { display:flex; flex-direction:column; align-items:center; font-size:7px; font-weight:700; color:var(--muted); gap:3px; cursor:pointer; text-transform:uppercase; }
+.insp-radio-group input[type=radio] { width:16px; height:16px; cursor:pointer; accent-color:var(--blue); }
+.insp-obs { width:100%; border:none; background:transparent; font-size:11px; color:rgba(255,255,255,0.6); padding:4px; resize:none; outline:none; min-height:28px; font-family:'DM Sans',sans-serif; }
+.insp-cant { width:50px; border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-size:11px; text-align:center; background:rgba(255,255,255,0.05); color:white; }
+.foto-zone { border:2px dashed rgba(255,255,255,0.15); border-radius:14px; padding:20px; text-align:center; cursor:pointer; background:rgba(14,165,233,0.03); transition:all 0.2s; margin:12px 0; }
+.foto-zone:active { border-color:rgba(14,165,233,0.4); background:rgba(14,165,233,0.08); }
+.foto-zone .foto-icon { font-size:36px; display:block; margin-bottom:8px; }
+.foto-zone p { font-size:12px; color:var(--muted); font-weight:500; }
+.foto-preview { width:100%; border-radius:12px; margin-top:10px; display:none; object-fit:cover; max-height:200px; border:1px solid var(--border); }
+.foto-preview.visible { display:block; }
+.btn-foto-clear { background:none; border:none; color:var(--red); font-size:11px; font-weight:700; cursor:pointer; margin-top:6px; display:none; }
+.btn-foto-clear.visible { display:block; }
+.ai-badge { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border:1px solid rgba(139,92,246,0.3); color:#a78bfa; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700; margin-bottom:8px; }
+.ai-result { background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:14px; margin:10px 0; display:none; }
+.ai-result.visible { display:block; }
+.ai-result .ai-title { font-size:10px; font-weight:700; color:#a78bfa; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
+.ai-result p { font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; }
+.btn-ai { width:100%; padding:15px; background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border:1px solid rgba(139,92,246,0.3); color:#a78bfa; border-radius:14px; font-weight:700; font-size:13px; cursor:pointer; margin-top:8px; letter-spacing:0.5px; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Rajdhani',sans-serif; }
+.btn-ai:active { opacity:0.8; }
+.btn-ai:disabled { opacity:0.4; cursor:not-allowed; }
+.inner-tabs { display:flex; overflow-x:auto; gap:6px; padding:12px 14px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border); scrollbar-width:none; }
+.inner-tabs::-webkit-scrollbar { display:none; }
+.inner-tab { flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:10px; font-weight:700; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--muted); transition:all 0.15s; text-transform:uppercase; white-space:nowrap; font-family:'Rajdhani',sans-serif; letter-spacing:0.5px; }
+.inner-tab.active { background:rgba(14,165,233,0.15); color:var(--blue); border-color:rgba(14,165,233,0.35); }
+.inner-section { display:none; padding:14px; }
+.inner-section.active { display:block; }
+
+</style>
+</head>
+<body>
+
+<!-- PANTALLA DE LOGIN FIREBASE -->
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png"
+       style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px"
+       alt="DACE" onerror="this.style.display='none'">
+  <div style="color:white;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:4px">DACE ARECIBO</div>
+  <div style="color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;text-align:center;margin-bottom:36px">Sistema de Coordinación — NPPR</div>
+
+  <div style="width:100%;max-width:320px">
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Correo Electrónico</label>
+      <input type="email" id="login_email" value="agteaponte@gmail.com"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="correo@gmail.com">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Contraseña</label>
+      <input type="password" id="login_pass"
+             style="width:100%;padding:14px;border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;font-size:16px;background:rgba(255,255,255,0.08);color:white;outline:none"
+             placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') loginFirebase()">
+    </div>
+    <button onclick="loginFirebase()"
+            style="width:100%;padding:17px;background:var(--gold);color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
+      🔐 ACCEDER
+    </button>
+    <div id="login_error" style="color:#fca5a5;font-size:12px;font-weight:700;text-align:center;margin-top:14px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- PANTALLA DE ACCESO PIN -->
+<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
+       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>🏛️</div>'">
+  <div class="lock-title">DACE Arecibo</div>
+  <div class="lock-sub">Policía de Puerto Rico</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2<sub>ABC</sub></button>
+    <button class="pin-key" onclick="pinPress('3')">3<sub>DEF</sub></button>
+    <button class="pin-key" onclick="pinPress('4')">4<sub>GHI</sub></button>
+    <button class="pin-key" onclick="pinPress('5')">5<sub>JKL</sub></button>
+    <button class="pin-key" onclick="pinPress('6')">6<sub>MNO</sub></button>
+    <button class="pin-key" onclick="pinPress('7')">7<sub>PQRS</sub></button>
+    <button class="pin-key" onclick="pinPress('8')">8<sub>TUV</sub></button>
+    <button class="pin-key" onclick="pinPress('9')">9<sub>WXYZ</sub></button>
+    <button class="pin-key zero" onclick="pinPress('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="lock-msg" id="lockMsg">Introduce tu PIN de acceso</div>
+</div>
+
+<!-- CABECERA -->
+<header class="app-header">
+  <img src="./Logo.png" class="header-logo" alt="DACE"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>🏛️</div>'">
+  <div class="header-text">
+    <h1>DACE ARECIBO</h1>
+    <div class="sub">Policía de Puerto Rico</div>
+    <div class="oficial">Agte. Jose Aponte Cancel · Placa 31093</div>
+    <div class="oficial">Coordinador Auxiliar DACE Arecibo</div>
+  </div>
+  <img src="./policia.png" class="header-logo" alt="PPR"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>⚖️</div>'">
+</header>
+
+<!-- BARRA ESTADO FIREBASE -->
+<div class="firebase-bar">
+  <div class="fb-dot" id="fbDot"></div>
+  <span id="fbText">Conectando con Firebase...</span>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+
+  <!-- PANEL -->
+  <div id="inicio" class="tab-page active">
+    <div class="page-title">📊 Panel General</div>
+    <div class="stats-grid">
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
+      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">—</div><div class="stat-label">Registro Maestro</div></div>
+    </div>
+    <div class="feed-title">Actividad Reciente</div>
+    <div id="feedArea"><div class="loading-state">⏳ Cargando actividad...</div></div>
+    <hr class="sep">
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()">📄 EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- PPR-137.1 SOLICITUD ORDEN DE TRABAJO -->
+  <div id="q137_1" class="tab-page">
+    <div class="page-title">⚖️ PPR-137.1 Orden de Trabajo</div>
+
+    <!-- FORMULARIO OFICIAL -->
+    <div class="ppr-header">
+      <h2>PPR-137.1 — SOLICITUD ORDEN DE TRABAJO</h2>
+      <p>Policía de Puerto Rico — DACE Arecibo</p>
+    </div>
+    <div class="ppr-section">
+      <!-- Identificación -->
+      <div class="ppr-section-title">📋 Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Número de Solicitud</label>
+            <input type="text" id="q1_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q1_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Unidad Solicitante *</label>
+          <select id="q1_unidad">
+            <option value="">— Seleccionar —</option>
+            <option>DACE Arecibo</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area" value="Arecibo" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Director/Supervisor</label>
+            <input type="text" id="q1_director" placeholder="Nombre" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Nombre del Solicitante</label>
+          <input type="text" id="q1_solicitante" placeholder="Nombre completo del solicitante" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Teléfono de Contacto</label>
+          <input type="text" id="q1_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Trabajo Solicitado -->
+      <div class="ppr-section-title">🔧 Trabajo Solicitado</div>
+      <div style="padding:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_carp" style="width:16px;height:16px;accent-color:var(--blue)"> Carpintería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_elec" style="width:16px;height:16px;accent-color:var(--blue)"> Electricidad
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_pint" style="width:16px;height:16px;accent-color:var(--blue)"> Pintura
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_refr" style="width:16px;height:16px;accent-color:var(--blue)"> Refrigeración
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_eban" style="width:16px;height:16px;accent-color:var(--blue)"> Ebanistería
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_limp" style="width:16px;height:16px;accent-color:var(--blue)"> Limpieza
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);text-transform:none;cursor:pointer">
+            <input type="checkbox" id="q1_plom" style="width:16px;height:16px;accent-color:var(--blue)"> Plomería
+          </label>
+        </div>
+        <div class="input-group">
+          <label>Descripción del Servicio Solicitado *</label>
+          <textarea id="q1_desc" rows="5" placeholder="Describa detalladamente el servicio o trabajo requerido..."></textarea>
+        </div>
+
+        <!-- Foto -->
+        <div class="foto-zone" onclick="document.getElementById('q1_foto_input').click()">
+          <span class="foto-icon">📷</span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del problema</p>
+        </div>
+        <input type="file" id="q1_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q1')">
+        <img id="q1_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q1_foto_clear" onclick="clearFoto('q1')">✕ Eliminar foto</button>
+
+        <!-- IA -->
+        <button class="btn-ai" onclick="generarDescripcionIA('q1')" id="q1_ai_btn">
+          ✨ GENERAR DESCRIPCIÓN CON IA
+        </button>
+        <div class="ai-result" id="q1_ai_result">
+          <div class="ai-title">✨ Descripción generada por IA</div>
+          <p id="q1_ai_texto"></p>
+          <button onclick="usarTextoIA('q1')" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar este texto</button>
+        </div>
+      </div>
+
+      <!-- Localización -->
+      <div class="ppr-section-title">📍 Localización Avería o Propiedad</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Sección</label>
+            <input type="text" id="q1_seccion" placeholder="Sección" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>División</label>
+            <input type="text" id="q1_division" placeholder="División" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Distrito/Precinto</label>
+            <input type="text" id="q1_distrito" placeholder="Distrito/Precinto" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Área</label>
+            <input type="text" id="q1_area2" value="Arecibo" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Negociado</label>
+            <input type="text" id="q1_negociado" value="NPPR" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Superintendencia Auxiliar</label>
+            <input type="text" id="q1_super" placeholder="Superintendencia" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatus -->
+      <div class="ppr-section-title">📌 Estatus</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Estatus de la Solicitud</label>
+          <select id="q1_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+            <option value="Archivado">Archivado</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Observaciones / Seguimiento</label>
+          <textarea id="q1_obs" rows="3" placeholder="Notas de seguimiento..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="guardarQ1()">💾 GUARDAR ORDEN DE TRABAJO</button>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q1_total">0</span> órdenes)</div>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')">📄 EXPORTAR ÓRDENES DE TRABAJO A PDF</button>
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q1')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q1_search" placeholder="Buscar por número, solicitante, descripción..." oninput="aplicarFiltros('q1')">
+      <div class="filter-chips" id="q1_chips">
+        <span class="chip active" onclick="toggleChip(this,'q1','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q1','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q1','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip" onclick="toggleChip(this,'q1','estatus','Archivado')" data-val="Archivado">Archivado</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q1_desde" onchange="aplicarFiltros('q1')">
+        <input type="date" id="q1_hasta" onchange="aplicarFiltros('q1')">
+      </div>
+      <div class="filter-count" id="q1_count"></div>
+    </div>
+    <div id="lista_q1"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- PPR-137.3 INSPECCIÓN PREVENTIVA -->
+  <div id="q137_3" class="tab-page">
+    <div class="page-title">🏗️ PPR-137.3 Inspección Preventiva</div>
+
+    <div class="ppr-header">
+      <h2>PPR-137.3 — INSPECCIÓN PREVENTIVA</h2>
+      <p>Policía de Puerto Rico — DACE Arecibo</p>
+    </div>
+
+    <div class="ppr-section">
+      <!-- Encabezado -->
+      <div class="ppr-section-title">📋 Identificación</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Núm. Inspección / Proyecto AEP</label>
+            <input type="text" id="q3_num" placeholder="Auto-generado..." readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="q3_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Precinto / Distrito / Unidad *</label>
+          <select id="q3_lugar">
+            <option value="">— Seleccionar —</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Nombre Director</label>
+            <input type="text" id="q3_director" placeholder="Director de la unidad" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="text" id="q3_tel" placeholder="787-000-0000" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Dirección</label>
+          <input type="text" id="q3_dir" placeholder="Dirección física del cuartel" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Área</label>
+          <input type="text" id="q3_area" value="Arecibo" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Foto General -->
+      <div class="ppr-section-title">📷 Evidencia Fotográfica</div>
+      <div style="padding:14px">
+        <div class="foto-zone" onclick="document.getElementById('q3_foto_input').click()">
+          <span class="foto-icon">📷</span>
+          <p>Toca para tomar foto o seleccionar de galería</p>
+          <p style="font-size:10px;margin-top:4px">Foto general del área inspeccionada</p>
+        </div>
+        <input type="file" id="q3_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('q3')">
+        <img id="q3_foto_preview" class="foto-preview" alt="Vista previa">
+        <button class="btn-foto-clear" id="q3_foto_clear" onclick="clearFoto('q3')">✕ Eliminar foto</button>
+      </div>
+
+      <!-- TABS DE SECCIONES -->
+      <div class="inner-tabs" id="q3_tabs">
+        <div class="inner-tab active" onclick="switchInnerTab('q3','ext')">Exterior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','int')">Interior</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','com')">Comedor</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','adm')">Administ.</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','bib')">Biblioteca</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','aca')">Académico</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ban')">Baños</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','tec')">Techos</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','can')">Cancha</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','seg')">Seguridad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','ele')">Electricidad</div>
+        <div class="inner-tab" onclick="switchInnerTab('q3','dor')">Dormitorios</div>
+      </div>
+
+      <!-- SECCIÓN: EXTERIOR -->
+      <div class="inner-section active" id="q3_sec_ext">
+        <table class="insp-table">
+          <tr><th>Exterior del Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ext',['Portón de entrada','Verja periferal','Estacionamiento (asfalto, líneas, wheel stop, aceras, encintados, Ley ADA)','Parrillas Pluviales','Estación de Basura','Luminarias y Postes','Hidrante','Mangueras','Áreas Verdes','Astas de Banderas','Pintura Exterior','Iluminación Perímetro','Rotulación'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: INTERIOR -->
+      <div class="inner-section" id="q3_sec_int">
+        <table class="insp-table">
+          <tr><th>Interior Edificio</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('int',['Portones','Pasamanos','Rejas','Pintura (lobby, pasillos, rampa, parapetos, plafones)','Áreas verdes - poda y jardinería','Gazebo','Paredes (grietas, empañetado)','Pisos (nivelación, grietas)','Aceras','Rampas','Iluminación','Desagües pluviales','Barandas','Juntas de Expansión'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: COMEDOR -->
+      <div class="inner-section" id="q3_sec_com">
+        <table class="insp-table">
+          <tr><th>Comedor</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('com',['Enchapado de paredes y piso','Campana de Extracción (extractores, sistema supresión)','Plomería (drenajes, llaves desagüe, lavamano)','Trampa de grasa','Walk-in Cooler and Freezer (refrigeración, drenajes)','Calentador de agua','Sistema de Distribución de Gas (tubería, válvula, tanques)','Ventanas (operador, escrín, expanded metal)','Puertas (escrines, herrajes)','Baños (inodoros, lavamanos, urinales, mezcladoras, duchas)','Luminarias'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ADMINISTRACIÓN -->
+      <div class="inner-section" id="q3_sec_adm">
+        <table class="insp-table">
+          <tr><th>Administración</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('adm',['Acondicionador de Aire','Condición de Paredes','Condición de Piso','Condición de baños (extractor, equipo sanitario)','Pintura','Enfriador de Agua','Cumplimiento ADA','Iluminación','Ventanas','Plafón Acústico','Intercom','Sistema de Timbre'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BIBLIOTECA -->
+      <div class="inner-section" id="q3_sec_bib">
+        <table class="insp-table">
+          <tr><th>Biblioteca</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('bib',['Aire Acondicionado','Condición de Paredes','Condición de Pisos','Oficina Bibliotecario - mostrador','Ventanas','Pinturas','Puertas','Luminaria'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ACADÉMICO -->
+      <div class="inner-section" id="q3_sec_aca">
+        <table class="insp-table">
+          <tr><th>Sistemas Académicos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('aca',['Cantidad de Salones','Pizarras','Iluminación','Receptáculos e Interruptores','Puertas','Gabinetes','Abanicos de techos','Ventanas','Condición de Pintura'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: BAÑOS -->
+      <div class="inner-section" id="q3_sec_ban">
+        <table class="insp-table">
+          <tr><th>Baños</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ban',['Enchapado','Particiones','Ventanas','Drenajes','Inodoros','Lavamanos','Urinales','Llaves de Agua','Extractores','Pintura','Cumplimiento Ley ADA (dimensiones, grab bars)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: TECHOS -->
+      <div class="inner-section" id="q3_sec_tec">
+        <table class="insp-table">
+          <tr><th>Techos</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('tec',['Acceso','Escotillas','Drenajes','Limpieza','Empozamientos','Filtraciones','Tratamiento'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: CANCHA -->
+      <div class="inner-section" id="q3_sec_can">
+        <table class="insp-table">
+          <tr><th>Cancha</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('can',['Canastos (tableros, operación)','Portones','Rejas y Barandas','Estructura','Gradas','Iluminación','Condiciones y Pintura Piso','Control de Palomas','Extractores','Baños','Fuentes de Agua','Abanicos','Filtraciones','Drenajes'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: SEGURIDAD -->
+      <div class="inner-section" id="q3_sec_seg">
+        <table class="insp-table">
+          <tr><th>Seguridad</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('seg',['Sistema de Intercomunicador (panel, bocinas)','Sistema de Alarma contra incendios (panel, pull station, detectores, strobes)','Gabinetes de Mangueras Contra Incendios','Extintores','Luces de Salida','Luces de Emergencia','Sistema de Seguridad (panel, sensores, cámaras)'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: ELECTRICIDAD -->
+      <div class="inner-section" id="q3_sec_ele">
+        <table class="insp-table">
+          <tr><th>Electricidad General</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('ele',['Subestación (pintura, rotulación, candados, desyerbo)','Paneles Eléctricos (tapas, cerraduras, identificación)','Distribución Eléctrica (sobrecarga, conductos)','Sistema de Bombeo de Agua Potable','Sistema de Bombeo Sanitario','Planta de Tratamiento','Tanques de Retención de Aguas Usadas','Leaching Field','Sistemas de Energía Renovable','Generador de Emergencia (transfer switch, tanque diesel)','Fuentes de Agua','Cisterna Agua de Lluvia','Aire Acondicionado','Elevadores','Montasillas'])}
+        </table>
+      </div>
+
+      <!-- SECCIÓN: DORMITORIOS -->
+      <div class="inner-section" id="q3_sec_dor">
+        <table class="insp-table">
+          <tr><th>Dormitorios</th><th>Reemplazo</th><th>Reparación</th><th>Buen Estado</th><th>Cant.</th><th>Observaciones</th></tr>
+          ${makeInspRows('dor',['Pintura','Ventanas','Puertas','Linternas','Pisos','Duchas','Aire','Lavamanos'])}
+        </table>
+      </div>
+
+      <!-- OBSERVACIONES GENERALES E IA -->
+      <div class="ppr-section-title">📝 Observaciones Generales e Inteligencia Artificial</div>
+      <div style="padding:14px">
+        <div class="input-group">
+          <label>Observaciones Generales</label>
+          <textarea id="q3_obs_gen" rows="4" placeholder="Observaciones generales de la inspección..."></textarea>
+        </div>
+        <button class="btn-ai" onclick="generarHallazgoIA()" id="q3_ai_btn">
+          ✨ GENERAR HALLAZGO TÉCNICO CON IA
+        </button>
+        <div class="ai-result" id="q3_ai_result">
+          <div class="ai-title">✨ Hallazgo Técnico — Generado por IA</div>
+          <p id="q3_ai_hallazgo" style="margin-bottom:10px"></p>
+          <div class="ai-title" style="margin-top:10px">📋 Orden de Trabajo 137.1 Sugerida</div>
+          <p id="q3_ai_orden"></p>
+          <button onclick="usarHallazgoIA()" style="background:none;border:none;color:#6366f1;font-size:11px;font-weight:800;cursor:pointer;margin-top:8px">↑ Usar estos textos</button>
+        </div>
+        <div class="input-group" style="margin-top:12px">
+          <label>Hallazgos Finales *</label>
+          <textarea id="q3_hallazgos" rows="4" placeholder="Hallazgos de la inspección (puedes usar el texto generado por IA)..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Recomendaciones</label>
+          <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Estatus</label>
+          <select id="q3_estatus">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Completado">Completado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save gold-btn" onclick="guardarQ3()">💾 GUARDAR INSPECCIÓN</button>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">📄 EXPORTAR INSPECCIONES A PDF</button>
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--gold)">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('q3')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="q3_search" placeholder="Buscar por número, lugar, hallazgos..." oninput="aplicarFiltros('q3')">
+      <div class="filter-chips" id="q3_chips">
+        <span class="chip active" onclick="toggleChip(this,'q3','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'q3','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'q3','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'q3','estatus','Completado')" data-val="Completado">Completado</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="q3_desde" onchange="aplicarFiltros('q3')">
+        <input type="date" id="q3_hasta" onchange="aplicarFiltros('q3')">
+      </div>
+      <div class="filter-count" id="q3_count"></div>
+    </div>
+    <div id="lista_q3"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- CASOS ACTIVOS -->
+  <div id="casos" class="tab-page">
+    <div class="page-title">📋 Casos Activos</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Caso</div>
+      <div class="input-group">
+        <label>Número de Caso *</label>
+        <input type="text" id="c_num" placeholder="Ej: CASO-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha Apertura</label><input type="date" id="c_fecha"></div>
+        <div class="input-group">
+          <label>Prioridad</label>
+          <select id="c_prioridad">
+            <option value="Alta">Alta</option>
+            <option value="Media" selected>Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Caso *</label>
+        <textarea id="c_desc" placeholder="Describa el caso con todos los detalles relevantes..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Responsable / Asignado</label>
+        <input type="text" id="c_resp" placeholder="Nombre del agente responsable" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Próxima Acción</label>
+        <input type="text" id="c_accion" placeholder="¿Qué debe hacerse a continuación?" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="c_estatus">
+          <option value="Activo">Activo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Pendiente Resolución">Pendiente Resolución</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+      </div>
+      <button class="btn-save green-btn" onclick="guardarCaso()">💾 GUARDAR CASO</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
+    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')">📄 EXPORTAR CASOS ACTIVOS A PDF</button>
+
+    <!-- FILTROS CASOS -->
+    <div class="filter-box" style="margin-top:12px; border-left-color: var(--green)">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('c')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="c_search" placeholder="Buscar por número, descripción, responsable..." oninput="aplicarFiltros('c')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Activo')" data-val="Activo">Activo</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip" onclick="toggleChip(this,'c','estatus','Pendiente Resolución')" data-val="Pendiente Resolución">Pend. Resolución</span>
+        <span class="chip green" onclick="toggleChip(this,'c','estatus','Cerrado')" data-val="Cerrado">Cerrado</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'c','prioridad','')" data-val="">Prioridad: Todas</span>
+        <span class="chip red" onclick="toggleChip(this,'c','prioridad','Alta')" data-val="Alta">Alta</span>
+        <span class="chip gold" onclick="toggleChip(this,'c','prioridad','Media')" data-val="Media">Media</span>
+        <span class="chip green" onclick="toggleChip(this,'c','prioridad','Baja')" data-val="Baja">Baja</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="c_desde" onchange="aplicarFiltros('c')">
+        <input type="date" id="c_hasta" onchange="aplicarFiltros('c')">
+      </div>
+      <div class="filter-count" id="c_count"></div>
+    </div>
+
+    <div id="lista_casos"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- REGISTRO MAESTRO -->
+  <div id="maestro" class="tab-page">
+    <div class="page-title">📁 Registro Maestro</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Entrada</div>
+      <div class="input-group">
+        <label>Tipo de Actividad</label>
+        <select id="rm_tipo">
+          <option value="Orden de Trabajo 137.1">Orden de Trabajo 137.1</option>
+          <option value="Inspección 137.3">Inspección 137.3</option>
+          <option value="Caso Activo">Caso Activo</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Gestión Administrativa">Gestión Administrativa</option>
+          <option value="Capacitación / Adiestramiento">Capacitación / Adiestramiento</option>
+          <option value="Reunión Oficial">Reunión Oficial</option>
+          <option value="Comunicación Oficial">Comunicación Oficial</option>
+          <option value="Archivo / Documentación">Archivo / Documentación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="rm_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="rm_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Detalle *</label>
+        <textarea id="rm_desc" placeholder="Describa la actividad realizada de forma clara y detallada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notas / Referencias</label>
+        <textarea id="rm_notas" rows="3" placeholder="Notas adicionales, número de documento, referencias..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarMaestro()">💾 GUARDAR ENTRADA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
+    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')">📄 EXPORTAR REGISTRO MAESTRO A PDF</button>
+
+    <!-- FILTROS MAESTRO -->
+    <div class="filter-box" style="margin-top:12px">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('rm')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="rm_search" placeholder="Buscar por tipo, descripción, notas..." oninput="aplicarFiltros('rm')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'rm','tipo','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Orden de Trabajo 137.1')" data-val="Orden de Trabajo 137.1">137.1</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Inspección 137.3')" data-val="Inspección 137.3">137.3</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Gestión Administrativa')" data-val="Gestión Administrativa">Administrativa</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Reunión Oficial')" data-val="Reunión Oficial">Reunión</span>
+        <span class="chip" onclick="toggleChip(this,'rm','tipo','Coordinación Interagencial')" data-val="Coordinación Interagencial">Interagencial</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="rm_desde" onchange="aplicarFiltros('rm')">
+        <input type="date" id="rm_hasta" onchange="aplicarFiltros('rm')">
+      </div>
+      <div class="filter-count" id="rm_count"></div>
+    </div>
+
+    <div id="lista_maestro"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- MANTENIMIENTO -->
+  <div id="mantenimiento" class="tab-page">
+    <div class="page-title">🔧 Mantenimiento</div>
+    <div class="form-card">
+      <div class="form-section-label">Nuevo Trabajo de Mantenimiento</div>
+      <div class="input-group">
+        <label>Dependencia / Lugar *</label>
+        <select id="mt_lugar">
+          <option value="">— Seleccionar —</option>
+          <option>Comandancia Administracion</option>
+          <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+          <option>Prec. 107</option><option>Prec. 207</option>
+          <option>Almacen</option><option>UMA</option><option>Poligono</option>
+          <option>Operaciones Tacticas</option><option>Florida</option>
+          <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+          <option>Morovis</option><option>Transito Manati</option>
+          <option>Drogas Manati</option><option>Transito Arecibo</option>
+          <option>Vehiculos Hurtados</option><option>Maritima</option>
+          <option>Tecnologia</option><option>General</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Departamento / Tipo *</label>
+        <select id="mt_dept">
+          <option value="Refrigeración">Refrigeración / Aire Acondicionado</option>
+          <option value="Electricidad">Electricidad / Generador</option>
+          <option value="Plomería">Plomería / Agua</option>
+          <option value="Estructural">Estructural / Construcción</option>
+          <option value="Fumigación">Fumigación / Exterminación</option>
+          <option value="Combustible">Combustible / Diesel</option>
+          <option value="Equipos">Equipos / Tecnología</option>
+          <option value="Limpieza">Limpieza / Áreas Verdes</option>
+          <option value="Seguridad">Seguridad / Cámaras</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="mt_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="mt_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Descripción del Trabajo *</label>
+        <textarea id="mt_desc" placeholder="Describa el trabajo realizado o la situación reportada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notificado A</label>
+        <input type="text" id="mt_notifico" placeholder="Nombre de quien se notificó" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Método de Notificación</label>
+        <select id="mt_metodo">
+          <option value="Personal">Personal</option>
+          <option value="Teléfono">Teléfono</option>
+          <option value="Correo Electrónico">Correo Electrónico</option>
+          <option value="Radio">Radio</option>
+          <option value="Sistema PADAWAN">Sistema PADAWAN</option>
+          <option value="No Aplica">No Aplica</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="mt_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+          <option value="Requiere Seguimiento">Requiere Seguimiento</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#7c3aed" onclick="guardarMantenimiento()">💾 GUARDAR MANTENIMIENTO</button>
+    </div>
+
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="mt_total">0</span> trabajos)</div>
+    <button class="btn-pdf" style="background:#7c3aed" onclick="exportarPDF('mantenimiento')">📄 EXPORTAR MANTENIMIENTO A PDF</button>
+
+    <!-- FILTROS MANTENIMIENTO -->
+    <div class="filter-box" style="margin-top:12px; border-left-color:#7c3aed">
+      <div class="filter-title">🔍 Buscar y Filtrar
+        <button class="btn-clear-filter" onclick="limpiarFiltros('mt')">✕ Limpiar</button>
+      </div>
+      <input type="text" class="filter-search" id="mt_search" placeholder="Buscar por lugar, descripción, tipo..." oninput="aplicarFiltros('mt')">
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','estatus','')" data-val="">Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','estatus','Pendiente')" data-val="Pendiente">Pendiente</span>
+        <span class="chip gold" onclick="toggleChip(this,'mt','estatus','En Proceso')" data-val="En Proceso">En Proceso</span>
+        <span class="chip green" onclick="toggleChip(this,'mt','estatus','Completado')" data-val="Completado">Completado</span>
+        <span class="chip red" onclick="toggleChip(this,'mt','estatus','Requiere Seguimiento')" data-val="Requiere Seguimiento">Seguimiento</span>
+      </div>
+      <div class="filter-chips">
+        <span class="chip active" onclick="toggleChip(this,'mt','dept','')" data-val="">Tipo: Todos</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Refrigeración')" data-val="Refrigeración">Refrigeración</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Electricidad')" data-val="Electricidad">Electricidad</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Plomería')" data-val="Plomería">Plomería</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Fumigación')" data-val="Fumigación">Fumigación</span>
+        <span class="chip" onclick="toggleChip(this,'mt','dept','Combustible')" data-val="Combustible">Combustible</span>
+      </div>
+      <div class="filter-dates">
+        <input type="date" id="mt_desde" onchange="aplicarFiltros('mt')">
+        <input type="date" id="mt_hasta" onchange="aplicarFiltros('mt')">
+      </div>
+      <div class="filter-count" id="mt_count"></div>
+    </div>
+
+    <div id="lista_mt"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ GENERADORES ══════════ -->
+  <div id="generadores" class="tab-page">
+    <div class="page-title">🔋 Bitácora de Generadores</div>
+
+    <!-- TABS INTERNOS -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-save" id="gen_tab_btn1" onclick="switchGenTab('registro')"
+        style="padding:10px;font-size:11px;background:var(--blue)">⚡ Generador</button>
+      <button class="btn-save" id="gen_tab_btn2" onclick="switchGenTab('historial')"
+        style="padding:10px;font-size:11px;background:var(--muted)">📋 Historial</button>
+      <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('resumen')"
+        style="padding:10px;font-size:11px;background:var(--muted)">📊 Resumen</button>
+    </div>
+
+    <!-- TAB: REGISTRO -->
+    <div id="gen_sec_registro">
+      <div class="ppr-header">
+        <h2>🔋 BITÁCORA DE GENERADOR ELÉCTRICO</h2>
+        <p>DACE Arecibo — Policía de Puerto Rico</p>
+      </div>
+      <div class="ppr-section">
+        <div class="ppr-section-title">⚡ Identificación del Generador</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Dependencia / Cuartel *</label>
+            <select id="gen_lugar">
+              <option value="">— Seleccionar —</option>
+              <option>Comandancia Administracion</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Marca / Modelo</label>
+              <input type="text" id="gen_marca" placeholder="Ej: Generac, Kohler..." autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Capacidad Tanque (gal)</label>
+              <input type="number" id="gen_capacidad" placeholder="Ej: 500" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">📋 Datos de la Entrada</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group"><label>Fecha *</label><input type="date" id="gen_fecha"></div>
+            <div class="input-group"><label>Hora *</label><input type="time" id="gen_hora"></div>
+          </div>
+          <div class="input-group">
+            <label>Tipo de Actividad *</label>
+            <select id="gen_tipo">
+              <option value="Inspección Rutinaria">Inspección Rutinaria</option>
+              <option value="Suplido de Combustible">Suplido de Combustible</option>
+              <option value="Arranque de Prueba">Arranque de Prueba</option>
+              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+              <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
+              <option value="Falla / Avería">Falla / Avería</option>
+              <option value="Operación de Emergencia">Operación de Emergencia</option>
+              <option value="Cambio de Aceite">Cambio de Aceite</option>
+              <option value="Cambio de Filtros">Cambio de Filtros</option>
+              <option value="Prueba de Carga">Prueba de Carga</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">⛽ Niveles de Combustible</div>
+        <div style="padding:14px">
+          <div class="row-2">
+            <div class="input-group">
+              <label>Nivel Antes (%)</label>
+              <input type="number" id="gen_nivel_antes" placeholder="0-100" min="0" max="100">
+            </div>
+            <div class="input-group">
+              <label>Nivel Después (%)</label>
+              <input type="number" id="gen_nivel_despues" placeholder="0-100" min="0" max="100">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Galones Suministrados</label>
+              <input type="number" id="gen_galones" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Litros Suministrados</label>
+              <input type="number" id="gen_litros" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Costo ($)</label>
+              <input type="number" id="gen_costo" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Horas de Operación</label>
+              <input type="number" id="gen_horas" placeholder="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">🔍 Condición y Observaciones</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Condición General</label>
+            <select id="gen_condicion">
+              <option value="Óptimo">✅ Óptimo</option>
+              <option value="Regular">⚠️ Regular</option>
+              <option value="Deficiente">❌ Deficiente</option>
+              <option value="Fuera de Servicio">🚫 Fuera de Servicio</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Descripción / Observaciones *</label>
+            <textarea id="gen_obs" rows="4" placeholder="Describa detalladamente las actividades realizadas, condiciones encontradas, lecturas del panel, etc..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Proveedor / Técnico (si aplica)</label>
+            <input type="text" id="gen_proveedor" placeholder="Nombre del proveedor o técnico" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Número de Boleto / Factura</label>
+            <input type="text" id="gen_boleto" placeholder="Ej: BOL-2026-001" autocomplete="off">
+          </div>
+
+          <!-- Foto -->
+          <div class="foto-zone" onclick="document.getElementById('gen_foto_input').click()">
+            <span class="foto-icon">📷</span>
+            <p>Toca para fotografiar el panel o medidor</p>
+            <p style="font-size:10px;margin-top:4px">Evidencia fotográfica del generador</p>
+          </div>
+          <input type="file" id="gen_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoGen()">
+          <img id="gen_foto_preview" class="foto-preview" alt="Vista previa">
+          <button class="btn-foto-clear" id="gen_foto_clear" onclick="clearFotoGen()">✕ Eliminar foto</button>
+        </div>
+      </div>
+
+      <button class="btn-save" style="background:#15803d" onclick="guardarGenerador()">💾 REGISTRAR EN BITÁCORA</button>
+      <button class="btn-pdf" style="background:#15803d;margin-top:8px" onclick="exportarGeneradoresPDF()">📄 EXPORTAR BITÁCORA PDF</button>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div id="gen_sec_historial" style="display:none">
+      <div class="input-group" style="margin-bottom:10px">
+        <input type="text" class="filter-search" id="gen_search"
+          placeholder="🔍 Buscar por lugar, tipo, observaciones..."
+          oninput="buscarGeneradores()" style="margin-bottom:0">
+      </div>
+      <div class="filter-chips" style="margin-bottom:12px">
+        <span class="chip active" onclick="filtrarGenTipo(this,'')" data-val="">Todos</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Suplido de Combustible')" data-val="Suplido de Combustible">Combustible</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Inspección Rutinaria')" data-val="Inspección Rutinaria">Inspección</span>
+        <span class="chip" onclick="filtrarGenTipo(this,'Mantenimiento Preventivo')" data-val="Mantenimiento Preventivo">Mantenimiento</span>
+        <span class="chip red" onclick="filtrarGenTipo(this,'Falla / Avería')" data-val="Falla / Avería">Falla</span>
+      </div>
+      <div class="list-header">Registros (<span id="gen_total">0</span>)</div>
+      <div id="lista_gen"><div class="loading-state">⏳ Cargando...</div></div>
+    </div>
+
+    <!-- TAB: RESUMEN -->
+    <div id="gen_sec_resumen" style="display:none">
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green">
+          <div class="stat-num" id="gen_rpt_total">—</div>
+          <div class="stat-label">Total Registros</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-num" id="gen_rpt_gal">—</div>
+          <div class="stat-label">Total Galones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="gen_rpt_costo">—</div>
+          <div class="stat-label">Costo Total $</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-num" id="gen_rpt_fallas">—</div>
+          <div class="stat-label">Fallas Registradas</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Consumo por Dependencia</div>
+        <div id="gen_rpt_dep" style="font-size:13px;color:#475569;line-height:2">
+          <div class="loading-state">⏳ Calculando...</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-section-label">Distribución por Tipo de Actividad</div>
+        <div id="gen_rpt_tipo" style="font-size:13px;color:#475569;line-height:2"></div>
+      </div>
+      <button class="btn-save" style="background:#15803d" onclick="calcularResumenGen()">🔄 ACTUALIZAR RESUMEN</button>
+    </div>
+  </div>
+
+  <!-- MÁS -->
+  <div id="mas" class="tab-page">
+    <div class="page-title">⋯ Más Opciones</div>
+    <div class="more-grid">
+      <div class="more-card" onclick="changeTab('casos')">
+        <span class="more-icon">📋</span>
+        <div class="more-title">Casos Activos</div>
+        <div class="more-sub">Seguimiento de casos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('maestro')">
+        <span class="more-icon">📁</span>
+        <div class="more-title">Registro Maestro</div>
+        <div class="more-sub">Log de actividades</div>
+      </div>
+      <div class="more-card" onclick="changeTab('generadores')">
+        <span class="more-icon">🔋</span>
+        <div class="more-title">Generadores</div>
+        <div class="more-sub">Bitácora oficial</div>
+      </div>
+      <div class="more-card" onclick="changeTab('agenda')">
+        <span class="more-icon">📅</span>
+        <div class="more-title">Agenda</div>
+        <div class="more-sub">Tareas y compromisos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('directorio')">
+        <span class="more-icon">👥</span>
+        <div class="more-title">Directorio</div>
+        <div class="more-sub">Personal DACE</div>
+      </div>
+      <div class="more-card" onclick="changeTab('reportes')">
+        <span class="more-icon">📊</span>
+        <div class="more-title">Reportes</div>
+        <div class="more-sub">Estadísticas</div>
+      </div>
+      <div class="more-card" onclick="changeTab('archivo')">
+        <span class="more-icon">🗃️</span>
+        <div class="more-title">Archivo DACE</div>
+        <div class="more-sub">Documentos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('jedi')">
+        <span class="more-icon">🖥️</span>
+        <div class="more-title">JEDI / ASG</div>
+        <div class="more-sub">Solicitudes de equipos</div>
+      </div>
+      <div class="more-card" onclick="changeTab('cisternas')">
+        <span class="more-icon">💧</span>
+        <div class="more-title">Cisternas</div>
+        <div class="more-sub">Control de agua</div>
+      </div>
+      <div class="more-card" onclick="changeTab('config')">
+        <span class="more-icon">⚙️</span>
+        <div class="more-title">Configuración</div>
+        <div class="more-sub">Sistema v8.0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ JEDI / ASG ══════════ -->
+  <div id="jedi" class="tab-page">
+    <div class="page-title">🖥️ Solicitudes JEDI / ASG</div>
+
+    <div class="ppr-header">
+      <h2>REGISTRO DE SOLICITUDES JEDI / ASG</h2>
+      <p>DACE Arecibo — Área de Apoyo Operativo</p>
+    </div>
+
+    <div class="ppr-section">
+      <div class="ppr-section-title">📋 Nueva Solicitud</div>
+      <div style="padding:14px">
+        <div class="row-2">
+          <div class="input-group">
+            <label>Número de Solicitud</label>
+            <input type="text" id="jedi_num" placeholder="Ej: JEDI-2026-001" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Fecha *</label>
+            <input type="date" id="jedi_fecha">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Hora de Radicación</label>
+          <input type="time" id="jedi_hora">
+        </div>
+        <div class="input-group">
+          <label>Dependencia / Unidad Solicitante *</label>
+          <select id="jedi_unidad">
+            <option value="">— Seleccionar —</option>
+            <option>Comandancia Administracion</option>
+            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+            <option>Prec. 107</option><option>Prec. 207</option>
+            <option>Almacen</option><option>UMA</option><option>Poligono</option>
+            <option>Operaciones Tacticas</option><option>Florida</option>
+            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+            <option>Morovis</option><option>Transito Arecibo</option>
+            <option>Vehiculos Hurtados</option><option>Maritima</option>
+            <option>General / Área Arecibo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Método de Adquisición</label>
+          <select id="jedi_tipo">
+            <option value="Contra Contrato">Contra Contrato</option>
+            <option value="Regular">Regular</option>
+            <option value="Emergencia">Emergencia</option>
+            <option value="Sole Source">Sole Source</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Descripción del Equipo / Necesidad *</label>
+          <textarea id="jedi_desc" rows="4" placeholder="Describa detalladamente el equipo o necesidad solicitada..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Justificación</label>
+          <textarea id="jedi_just" rows="3" placeholder="Justifique la necesidad operacional..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Estatus</label>
+          <select id="jedi_estatus">
+            <option value="En autorización de OGP">En autorización de OGP</option>
+            <option value="En Aprobación Inicial">En Aprobación Inicial</option>
+            <option value="En asignación de Presupuesto">En asignación de Presupuesto</option>
+            <option value="En proceso de compra">En proceso de compra</option>
+            <option value="Orden de cargos a contrato concluido">Orden de cargos a contrato concluido</option>
+            <option value="Cancelado">Cancelado</option>
+            <option value="Completado">Completado</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="input-group">
+            <label>Fecha de Respuesta / Actualización</label>
+            <input type="date" id="jedi_fecha_resp">
+          </div>
+          <div class="input-group">
+            <label>Número de Requisición ASG</label>
+            <input type="text" id="jedi_ref_asg" placeholder="Ej: 26P-NPPR-00936" autocomplete="off">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Observaciones</label>
+          <textarea id="jedi_obs" rows="3" placeholder="Notas adicionales, seguimiento, contactos..."></textarea>
+        </div>
+
+        <!-- Foto screenshot -->
+        <div class="foto-zone" onclick="document.getElementById('jedi_foto_input').click()">
+          <span class="foto-icon">📷</span>
+          <p>Toca para agregar screenshot de JEDI/ASG</p>
+          <p style="font-size:10px;margin-top:4px">Evidencia de la solicitud en el sistema</p>
+        </div>
+        <input type="file" id="jedi_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoJedi()">
+        <img id="jedi_foto_preview" class="foto-preview" alt="Screenshot JEDI">
+        <button class="btn-foto-clear" id="jedi_foto_clear" onclick="clearFotoJedi()">✕ Eliminar foto</button>
+      </div>
+    </div>
+
+    <button class="btn-save" style="background:#1d4ed8" onclick="guardarJedi()">💾 REGISTRAR SOLICITUD JEDI</button>
+    <button class="btn-pdf" style="background:#1d4ed8;margin-top:8px" onclick="exportarJediPDF()">📄 EXPORTAR SOLICITUDES PDF</button>
+
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="jedi_search"
+        placeholder="🔍 Buscar por número, dependencia, descripción..."
+        oninput="buscarJedi()" style="margin-bottom:0">
+    </div>
+    <div class="filter-chips" style="margin-bottom:12px">
+      <span class="chip active" onclick="filtrarJediEstatus(this,'')" data-val="">Todos</span>
+      <span class="chip gold" onclick="filtrarJediEstatus(this,'En autorización de OGP')" data-val="En autorización de OGP">OGP</span>
+      <span class="chip" onclick="filtrarJediEstatus(this,'En Aprobación Inicial')" data-val="En Aprobación Inicial">Aprobación</span>
+      <span class="chip" onclick="filtrarJediEstatus(this,'En asignación de Presupuesto')" data-val="En asignación de Presupuesto">Presupuesto</span>
+      <span class="chip green" onclick="filtrarJediEstatus(this,'Orden de cargos a contrato concluido')" data-val="Orden de cargos a contrato concluido">Concluido</span>
+      <span class="chip red" onclick="filtrarJediEstatus(this,'Cancelado')" data-val="Cancelado">Cancelado</span>
+    </div>
+    <div class="list-header">Solicitudes (<span id="jedi_total">0</span>)</div>
+    <div id="lista_jedi"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ AGENDA ══════════ -->
+  <div id="agenda" class="tab-page">
+    <div class="page-title">📅 Agenda</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Tarea / Compromiso</div>
+      <div class="input-group">
+        <label>Título *</label>
+        <input type="text" id="ag_titulo" placeholder="Ej: Inspección Cuartel Camuy" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="ag_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="ag_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Tipo</label>
+        <select id="ag_tipo">
+          <option value="Inspección">Inspección</option>
+          <option value="Reunión">Reunión</option>
+          <option value="Entrega de Documentos">Entrega de Documentos</option>
+          <option value="Seguimiento de Caso">Seguimiento de Caso</option>
+          <option value="Coordinación Interagencial">Coordinación Interagencial</option>
+          <option value="Capacitación">Capacitación</option>
+          <option value="Mantenimiento Programado">Mantenimiento Programado</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Notas</label>
+        <textarea id="ag_desc" rows="3" placeholder="Detalles del compromiso..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Prioridad</label>
+        <select id="ag_prioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media" selected>Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <button class="btn-save" style="background:#0369a1" onclick="guardarAgenda()">💾 GUARDAR TAREA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Tareas (<span id="ag_total">0</span>)</div>
+    <div id="lista_agenda"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ DIRECTORIO ══════════ -->
+  <div id="directorio" class="tab-page">
+    <div class="page-title">👥 Directorio DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Agregar Personal</div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Nombre Completo *</label>
+          <input type="text" id="dir_nombre" placeholder="Apellido, Nombre" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Placa / ID</label>
+          <input type="text" id="dir_placa" placeholder="Ej: 31093" autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Rango / Clasificación</label>
+        <select id="dir_rango">
+          <option value="Agente">Agente</option>
+          <option value="Sargento">Sargento</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
+          <option value="Comandante">Comandante</option>
+          <option value="Civil">Civil / Administrativo</option>
+          <option value="Contratista">Contratista</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Unidad / Dependencia</label>
+        <select id="dir_unidad">
+          <option value="DACE Arecibo">DACE Arecibo</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="General / Otra">General / Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Teléfono</label>
+          <input type="text" id="dir_tel" placeholder="787-000-0000" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Extensión</label>
+          <input type="text" id="dir_ext" placeholder="Ext." autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <input type="text" id="dir_email" placeholder="correo@nppr.pr.gov" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Notas</label>
+        <textarea id="dir_notas" rows="2" placeholder="Información adicional..."></textarea>
+      </div>
+      <button class="btn-save" style="background:#0f766e" onclick="guardarDirectorio()">💾 GUARDAR CONTACTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="dir_search" placeholder="🔍 Buscar por nombre, placa, unidad..." oninput="buscarDirectorio()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Contactos (<span id="dir_total">0</span>)</div>
+    <div id="lista_dir"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ REPORTES ══════════ -->
+  <div id="reportes" class="tab-page">
+    <div class="page-title">📊 Reportes</div>
+
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-num" id="rpt_q1">—</div><div class="stat-label">Órdenes de Trabajo 137.1</div></div>
+      <div class="stat-card gold"><div class="stat-num" id="rpt_q3">—</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green"><div class="stat-num" id="rpt_casos">—</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"><div class="stat-num" id="rpt_mt">—</div><div class="stat-label">Mantenimientos</div></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Órdenes de Trabajo 137.1</div>
+      <div id="rpt_q1_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Estatus — Inspecciones 137.3</div>
+      <div id="rpt_q3_estatus" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Distribución por Tipo — Mantenimiento</div>
+      <div id="rpt_mt_tipo" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-label">Top 5 Dependencias — Mantenimiento</div>
+      <div id="rpt_mt_dep" style="font-size:13px; color:#475569; line-height:2"></div>
+    </div>
+
+    <button class="btn-save" onclick="generarReportes()" style="margin-top:4px">🔄 ACTUALIZAR REPORTES</button>
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()" style="margin-top:8px">📄 EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- ══════════ ARCHIVO DACE ══════════ -->
+  <div id="archivo" class="tab-page">
+    <div class="page-title">🗃️ Archivo DACE</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Documento</div>
+      <div class="input-group">
+        <label>Nombre del Documento *</label>
+        <input type="text" id="arc_nombre" placeholder="Ej: PPR-137.1 Cuartel Camuy Mar 2026" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Categoría</label>
+        <select id="arc_cat">
+          <option value="PPR-137.1">PPR-137.1 Orden de Trabajo</option>
+          <option value="PPR-137.3">PPR-137.3 Inspección</option>
+          <option value="Correspondencia">Correspondencia Oficial</option>
+          <option value="Memorando">Memorando</option>
+          <option value="Solicitud">Solicitud / Requisición</option>
+          <option value="Informe">Informe</option>
+          <option value="Certificación">Certificación</option>
+          <option value="Orden de Trabajo">Orden de Trabajo</option>
+          <option value="PADAWAN">PADAWAN / JEDI</option>
+          <option value="Legal">Documento Legal</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Dependencia Relacionada</label>
+        <select id="arc_dep">
+          <option value="General">General</option>
+          <option value="Comandancia">Comandancia</option>
+          <option value="Quebradillas">Quebradillas</option>
+          <option value="Camuy">Camuy</option>
+          <option value="Hatillo">Hatillo</option>
+          <option value="Barceloneta">Barceloneta</option>
+          <option value="Manati">Manati</option>
+          <option value="Ciales">Ciales</option>
+          <option value="Morovis">Morovis</option>
+          <option value="Almacen">Almacén</option>
+          <option value="Poligono">Polígono</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="arc_fecha"></div>
+        <div class="input-group">
+          <label>Año</label>
+          <select id="arc_anio">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Descripción / Referencia</label>
+        <textarea id="arc_desc" rows="3" placeholder="Descripción del documento o referencia..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Número de Referencia / Radicado</label>
+        <input type="text" id="arc_ref" placeholder="Ej: SAOC-CA-2-DACE-1-94" autocomplete="off">
+      </div>
+      <button class="btn-save" style="background:#b45309" onclick="guardarArchivo()">💾 REGISTRAR DOCUMENTO</button>
+    </div>
+    <hr class="sep">
+    <div class="input-group" style="margin-bottom:10px">
+      <input type="text" class="filter-search" id="arc_search" placeholder="🔍 Buscar documento..." oninput="buscarArchivo()" style="margin-bottom:0">
+    </div>
+    <div class="list-header">Documentos (<span id="arc_total">0</span>)</div>
+    <div id="lista_arc"><div class="loading-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- ══════════ CISTERNAS ══════════ -->
+  <div id="cisternas" class="tab-page">
+    <div class="page-title">💧 Cisternas</div>
+      <div class="ppr-header" style="border-radius:14px 14px 0 0">
+        <h2>💧 BITÁCORA DE CISTERNAS</h2>
+        <p>DACE Arecibo — Control de Agua</p>
+      </div>
+      <div class="ppr-section" style="border-radius:0 0 14px 14px;margin-bottom:14px">
+        <div class="ppr-section-title">🏗️ Nueva Entrada</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Dependencia / Cuartel *</label>
+            <select id="cis_lugar">
+              <option value="">— Seleccionar —</option>
+              <option>Comandancia Administracion</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group"><label>Fecha *</label><input type="date" id="cis_fecha"></div>
+            <div class="input-group"><label>Hora</label><input type="time" id="cis_hora"></div>
+          </div>
+          <div class="input-group">
+            <label>Tipo de Actividad</label>
+            <select id="cis_tipo">
+              <option value="Inspección Rutinaria">Inspección Rutinaria</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Llenado">Llenado de Cisterna</option>
+              <option value="Reparación">Reparación</option>
+              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+              <option value="Falla / Avería">Falla / Avería</option>
+              <option value="Inspección Sanitaria">Inspección Sanitaria</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Capacidad Total (galones)</label>
+              <input type="number" id="cis_capacidad" placeholder="Ej: 10000" min="0">
+            </div>
+            <div class="input-group">
+              <label>Nivel Actual (%)</label>
+              <input type="number" id="cis_nivel" placeholder="0-100" min="0" max="100">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Estado Operacional</label>
+            <select id="cis_operacional">
+              <option value="Operacional">✅ Operacional</option>
+              <option value="Operacional con Limitaciones">⚠️ Operacional con Limitaciones</option>
+              <option value="No Operacional">❌ No Operacional</option>
+              <option value="En Mantenimiento">🔧 En Mantenimiento</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Condición del Agua</label>
+            <select id="cis_condicion_agua">
+              <option value="Buena">Buena</option>
+              <option value="Regular">Regular</option>
+              <option value="Requiere Tratamiento">Requiere Tratamiento</option>
+              <option value="No Potable">No Potable</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Condición General</label>
+            <select id="cis_condicion">
+              <option value="Óptima">✅ Óptima</option>
+              <option value="Regular">⚠️ Regular</option>
+              <option value="Deficiente">❌ Deficiente</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Observaciones *</label>
+            <textarea id="cis_obs" rows="4" placeholder="Describa el estado de la cisterna, trabajos realizados, lecturas, etc..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Técnico / Personal</label>
+            <input type="text" id="cis_tecnico" placeholder="Nombre del técnico o personal" autocomplete="off">
+          </div>
+          <div class="foto-zone" onclick="document.getElementById('cis_foto_input').click()">
+            <span class="foto-icon">📷</span>
+            <p>Toca para fotografiar la cisterna</p>
+            <p style="font-size:10px;margin-top:4px">Evidencia fotográfica</p>
+          </div>
+          <input type="file" id="cis_foto_input" accept="image/*" capture="environment" style="display:none" onchange="previewFotoCisterna()">
+          <img id="cis_foto_preview" class="foto-preview" alt="Cisterna">
+          <button class="btn-foto-clear" id="cis_foto_clear" onclick="clearFotoCisterna()">✕ Eliminar foto</button>
+        </div>
+      </div>
+      <button class="btn-save" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)" onclick="guardarCisterna()">💾 REGISTRAR CISTERNA</button>
+      <hr class="sep">
+      <div class="list-header">Registros (<span id="cis_total">0</span>)</div>
+      <div id="lista_cis"><div class="loading-state">⏳ Cargando...</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ CONFIGURACIÓN ══════════ -->
+  <div id="config" class="tab-page">
+    <div class="page-title">⚙️ Configuración</div>
+    <div class="info-card">
+      <div class="info-title">Estado del Sistema</div>
+      <p><strong>Versión:</strong> DACE Arecibo v8.0</p>
+      <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
+      <p><strong>Sincronización:</strong> Tiempo real (iPhone ↔ PC)</p>
+      <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel · 31093</p>
+      <p><strong>Unidad:</strong> DACE Arecibo — NPPR</p>
+      <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Módulos Activos</div>
+      <p>✅ Panel General</p>
+      <p>✅ Órdenes de Trabajo PPR-137.1</p>
+      <p>✅ Inspecciones PPR-137.3</p>
+      <p>✅ Casos Activos</p>
+      <p>✅ Mantenimiento</p>
+      <p>✅ Registro Maestro</p>
+      <p>✅ Agenda</p>
+      <p>✅ Directorio Personal</p>
+      <p>✅ Reportes Estadísticos</p>
+      <p>✅ Archivo DACE</p>
+      <p>✅ Exportar PDF</p>
+      <p>✅ Filtros y Búsqueda</p>
+      <p>✅ Sincronización Firebase</p>
+      <p>✅ Protección PIN</p>
+    </div>
+    <div class="info-card" style="margin-top:12px">
+      <div class="info-title">Acciones</div>
+      <button class="btn-save" style="margin-bottom:10px" onclick="generarReportes();showToast('✅ Estadísticas actualizadas','#166534')">🔄 Actualizar Estadísticas</button>
+      <button class="btn-save" style="background:#dc2626" onclick="cerrarSesion()">🔒 Cerrar Sesión / Bloquear</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- NAVEGACIÓN -->
+<nav class="nav-bar">
+  <button id="btn-inicio"        class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">📊</span>PANEL</button>
+  <button id="btn-q137_1"        class="nav-btn"        onclick="changeTab('q137_1')"><span class="nav-icon">⚖️</span>137.1</button>
+  <button id="btn-q137_3"        class="nav-btn"        onclick="changeTab('q137_3')"><span class="nav-icon">🏗️</span>137.3</button>
+  <button id="btn-mantenimiento" class="nav-btn"        onclick="changeTab('mantenimiento')"><span class="nav-icon">🔧</span>MANT.</button>
+  <button id="btn-mas"           class="nav-btn"        onclick="changeTab('mas')"><span class="nav-icon">⋯</span>MÁS</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+
 /* ═══ SISTEMA DE FILTROS ═══ */
 
 // Cache de datos completos para filtrar localmente
 const _cache = { q1:[], q3:[], c:[], rm:[], mt:[] };
-let _guardando = false;
 // Estado de filtros activos
 const _filtros = {
   q1:  { texto:'', estatus:'', desde:'', hasta:'' },
@@ -21,10 +1782,8 @@ function toggleChip(el, modulo, campo, valor) {
   aplicarFiltros(modulo);
 }
 
-function obtenerDatosFiltrados(modulo) {
+function aplicarFiltros(modulo) {
   const f   = _filtros[modulo];
-  if (!f) return _cache[modulo] || [];
-
   const txt = (document.getElementById(modulo + '_search')?.value || '').toLowerCase().trim();
   const des = document.getElementById(modulo + '_desde')?.value || '';
   const has = document.getElementById(modulo + '_hasta')?.value || '';
@@ -33,7 +1792,7 @@ function obtenerDatosFiltrados(modulo) {
   f.desde = des;
   f.hasta = has;
 
-  let datos = _cache[modulo] || [];
+  let datos = _cache[modulo];
 
   // Filtro texto
   if (txt) {
@@ -66,6 +1825,7 @@ function obtenerDatosFiltrados(modulo) {
           const [a, b, c] = parts;
           // Si el año está al final
           if (c.length === 4) fechaNorm = `${c}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
+          else fechaNorm = rawFecha; // fallback
         }
       }
       if (des && fechaNorm < des) return false;
@@ -73,12 +1833,6 @@ function obtenerDatosFiltrados(modulo) {
       return true;
     });
   }
-
-  return datos;
-}
-
-function aplicarFiltros(modulo) {
-  const datos = obtenerDatosFiltrados(modulo);
 
   // Renderizar resultados filtrados
   const configs = {
@@ -90,7 +1844,6 @@ function aplicarFiltros(modulo) {
   };
 
   const cfg = configs[modulo];
-  if (!cfg) return;
   const el  = document.getElementById(cfg.container);
   const cnt = document.getElementById(cfg.count);
 
@@ -150,7 +1903,7 @@ function item_Mt_data(d) {
     ${d.notificadoA ? `<p class="record-body"><strong>Notificado:</strong> ${d.notificadoA} · ${d.metodo||''}</p>` : ''}
     <div class="record-foot">
       <span class="badge ${estatusColor[d.estatus]||'b-pending'}">${d.estatus||'—'}</span>
-      <button class="btn-edit" onclick="editarMantenimiento('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+      <button class="btn-edit" onclick="editarMantenimiento('${d._id}')">✏️ Editar</button>
       <button class="btn-del" onclick="eliminar('dace_mantenimiento','${d._id}','Mantenimiento')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -170,7 +1923,7 @@ function item_Q1_data(d) {
     ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-edit" onclick="editarQ1('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+      <button class="btn-edit" onclick="editarQ1('${d._id}')">✏️ Editar</button>
       <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Orden')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -188,7 +1941,7 @@ function item_Q3_data(d) {
     ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
-      <button class="btn-edit" onclick="editarQ3('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+      <button class="btn-edit" onclick="editarQ3('${d._id}')">✏️ Editar</button>
       <button class="btn-del" onclick="eliminar('dace_q137_3','${d._id}','Inspección')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -206,7 +1959,7 @@ function item_Caso_data(d) {
     ${d.accion      ? `<p class="record-body"><strong>Próxima acción:</strong> ${d.accion}</p>` : ''}
     <div class="record-foot">
       ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
-      <button class="btn-edit" onclick="editarCaso('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+      <button class="btn-edit" onclick="editarCaso('${d._id}')">✏️ Editar</button>
       <button class="btn-del" onclick="eliminar('dace_casos','${d._id}','Caso')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -221,7 +1974,7 @@ function item_Maestro_data(d) {
     <p class="record-body">${d.descripcion||''}</p>
     ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
     <div class="record-foot">
-      <button class="btn-edit" onclick="editarMaestro('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+      <button class="btn-edit" onclick="editarMaestro('${d._id}')">✏️ Editar</button>
       <button class="btn-del" onclick="eliminar('dace_maestro','${d._id}','Entrada')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -266,12 +2019,10 @@ function clearFotoGen() {
 }
 
 async function guardarGenerador() {
-  if (_guardando) return;
   const lugar = document.getElementById('gen_lugar')?.value;
   const obs   = v('gen_obs');
   if (!lugar || !obs) { showToast('⚠️ Dependencia y observaciones son requeridas', '#92400e'); return; }
 
-  _guardando = true;
   showToast('<i class="ph-fill ph-hourglass"></i> Registrando en bitácora...', '#0a192f');
   try {
     const docRef  = db.collection('dace_generadores').doc();
@@ -305,12 +2056,6 @@ async function guardarGenerador() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'Bitácora Generador',
-      `Suministro/Actividad en ${lugar}: ${v('gen_tipo')} - Condición: ${v('gen_condicion')}`,
-      `Marca: ${v('gen_marca')} · Galones: ${v('gen_galones')} · Costo: $${v('gen_costo')} · Obs: ${obs}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Entrada registrada en bitácora', '#166534');
     ['gen_marca','gen_obs','gen_proveedor','gen_boleto',
      'gen_galones','gen_litros','gen_costo','gen_horas',
@@ -318,7 +2063,7 @@ async function guardarGenerador() {
     set('gen_lugar',''); set('gen_condicion','Óptimo');
     set('gen_fecha', hoy()); set('gen_hora', ahora());
     clearFotoGen();
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 function buscarGeneradores() {
@@ -342,7 +2087,7 @@ function renderGeneradores(docs) {
     el.innerHTML = '<div class="empty-state"><span class="empty-icon">🔋</span><p>No hay registros en la bitácora</p></div>';
     return;
   }
-  const condIcon = { 'Óptimo':'<i class="ph-bold ph-check"></i>', 'Regular':'<i class="ph-bold ph-warning"></i>', 'Deficiente':'<i class="ph-bold ph-x"></i>', 'Fuera de Servicio':'<i class="ph-bold ph-prohibit"></i>' };
+  const condIcon = { 'Óptimo':'<i class="ph-bold ph-check"></i>', 'Regular':'⚠️', 'Deficiente':'<i class="ph-bold ph-x"></i>', 'Fuera de Servicio':'🚫' };
   const tipoColor = {
     'Suplido de Combustible':'#15803d',
     'Falla / Avería':'#dc2626',
@@ -358,8 +2103,8 @@ function renderGeneradores(docs) {
         <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
       </div>
       <p class="record-body"><strong>${d.tipo||''}</strong> ${condIcon[d.condicion]||''}</p>
-      ${d.nivelAntes!=null ? `<p class="record-body"><i class="ph-fill ph-gas-pump"></i> Nivel: <strong>${d.nivelAntes}%</strong> → <strong>${d.nivelDespues||'—'}%</strong>${d.galones ? ` · ${d.galones} gal` : ''}${d.costo ? ` · $${d.costo}` : ''}</p>` : ''}
-      ${d.horas ? `<p class="record-body"><i class="ph-bold ph-timer"></i> Horas operación: ${d.horas}</p>` : ''}
+      ${d.nivelAntes!=null ? `<p class="record-body">⛽ Nivel: <strong>${d.nivelAntes}%</strong> → <strong>${d.nivelDespues||'—'}%</strong>${d.galones ? ` · ${d.galones} gal` : ''}${d.costo ? ` · $${d.costo}` : ''}</p>` : ''}
+      ${d.horas ? `<p class="record-body">⏱ Horas operación: ${d.horas}</p>` : ''}
       <p class="record-body">${d.observaciones||''}</p>
       ${d.proveedor ? `<p class="record-body"><strong>Proveedor:</strong> ${d.proveedor}${d.boleto?' · '+d.boleto:''}</p>` : ''}
       ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:150px;object-fit:cover">` : ''}
@@ -481,10 +2226,8 @@ async function exportarGeneradoresPDF() {
 let _agendaCache = [];
 
 async function guardarAgenda() {
-  if (_guardando) return;
   const titulo = v('ag_titulo'), fecha = v('ag_fecha');
   if (!titulo || !fecha) { showToast('⚠️ Título y fecha son requeridos', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_agenda').add({
       titulo, fecha, hora: v('ag_hora'),
@@ -493,24 +2236,17 @@ async function guardarAgenda() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Agenda / Tarea',
-      `Nueva tarea programada: ${titulo} (${v('ag_tipo')})`,
-      `Fecha: ${fecha} · Prioridad: ${v('ag_prioridad')} · Desc: ${v('ag_desc')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Tarea guardada', '#166534');
     limpiar(['ag_titulo','ag_desc']);
     set('ag_fecha', hoy()); set('ag_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function renderAgenda(docs) {
   const hoyStr = hoy();
   const el = document.getElementById('lista_agenda');
   if (!docs.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon"><i class="ph-fill ph-calendar"></i></span><p>No hay tareas registradas</p></div>';
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">📅</span><p>No hay tareas registradas</p></div>';
     return;
   }
   // Ordenar por fecha
@@ -531,7 +2267,7 @@ function renderAgenda(docs) {
         <span class="badge ${prioMap[d.prioridad]||'b-media'}">${d.prioridad||''}</span>
         ${vencida ? '<span class="badge b-alta">VENCIDA</span>' : ''}
         ${hoy_ ? '<span class="badge b-process">HOY</span>' : ''}
-        <button class="btn-del" onclick="completarTarea('${d._id}','${d.estatus}')">${d.estatus==='Completado'?'<i class="ph-bold ph-arrow-u-up-left"></i> Reabrir':'<i class="ph-bold ph-check"></i> Completar'}</button>
+        <button class="btn-del" onclick="completarTarea('${d._id}','${d.estatus}')">${d.estatus==='Completado'?'↩️ Reabrir':'<i class="ph-bold ph-check"></i> Completar'}</button>
         <button class="btn-del" onclick="eliminar('dace_agenda','${d._id}','Tarea')"><i class="ph-bold ph-trash"></i></button>
       </div>
     </div>`;
@@ -542,7 +2278,7 @@ async function completarTarea(id, estatusActual) {
   const nuevoEstatus = estatusActual === 'Completado' ? 'Pendiente' : 'Completado';
   try {
     await db.collection('dace_agenda').doc(id).update({ estatus: nuevoEstatus });
-    showToast(nuevoEstatus === 'Completado' ? '<i class="ph-bold ph-check"></i> Tarea completada' : '<i class="ph-bold ph-arrow-u-up-left"></i> Tarea reabierta', '#166534');
+    showToast(nuevoEstatus === 'Completado' ? '<i class="ph-bold ph-check"></i> Tarea completada' : '↩️ Tarea reabierta', '#166534');
   } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
@@ -550,10 +2286,8 @@ async function completarTarea(id, estatusActual) {
 let _dirCache = [];
 
 async function guardarDirectorio() {
-  if (_guardando) return;
   const nombre = v('dir_nombre');
   if (!nombre) { showToast('⚠️ El nombre es requerido', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_directorio').add({
       nombre, placa: v('dir_placa'), rango: v('dir_rango'),
@@ -563,16 +2297,9 @@ async function guardarDirectorio() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Directorio Personal',
-      `Contacto añadido: ${nombre} (${v('dir_rango')})`,
-      `Unidad: ${v('dir_unidad')} · Tel: ${v('dir_tel')} · Email: ${v('dir_email')} · Notas: ${v('dir_notas')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Contacto guardado', '#166534');
     limpiar(['dir_nombre','dir_placa','dir_tel','dir_ext','dir_email','dir_notas']);
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarDirectorio() {
@@ -584,7 +2311,7 @@ function buscarDirectorio() {
 function renderDirectorio(docs) {
   const el = document.getElementById('lista_dir');
   if (!docs.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon"><i class="ph-fill ph-users"></i></span><p>No hay contactos registrados</p></div>';
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">👥</span><p>No hay contactos registrados</p></div>';
     return;
   }
   el.innerHTML = docs.map(d => `
@@ -594,8 +2321,8 @@ function renderDirectorio(docs) {
         <span class="record-ts">${d.placa||''}</span>
       </div>
       <p class="record-body"><strong>${d.rango||''}</strong> · ${d.unidad||''}</p>
-      ${d.telefono ? `<p class="record-body"><i class="ph-fill ph-phone"></i> ${d.telefono}${d.extension?' ext.'+d.extension:''}</p>` : ''}
-      ${d.email    ? `<p class="record-body"><i class="ph-fill ph-envelope"></i> ${d.email}</p>` : ''}
+      ${d.telefono ? `<p class="record-body">📞 ${d.telefono}${d.extension?' ext.'+d.extension:''}</p>` : ''}
+      ${d.email    ? `<p class="record-body">✉️ ${d.email}</p>` : ''}
       ${d.notas    ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
       <div class="record-foot">
         <button class="btn-del" onclick="eliminar('dace_directorio','${d._id}','Contacto')"><i class="ph-bold ph-trash"></i> Eliminar</button>
@@ -647,10 +2374,8 @@ async function generarReportes() {
 let _arcCache = [];
 
 async function guardarArchivo() {
-  if (_guardando) return;
   const nombre = v('arc_nombre');
   if (!nombre) { showToast('⚠️ El nombre del documento es requerido', '#92400e'); return; }
-  _guardando = true;
   try {
     await db.collection('dace_archivo').add({
       nombre, categoria: v('arc_cat'), dependencia: v('arc_dep'),
@@ -659,17 +2384,10 @@ async function guardarArchivo() {
       usuario: 'Agte. Aponte Cancel · 31093',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    await registrarEnMaestroAuto(
-      'Archivo DACE',
-      `Documento registrado: ${nombre} (${v('arc_cat')})`,
-      `Dependencia: ${v('arc_dep')} · Año: ${v('arc_anio')} · Referencia: ${v('arc_ref')} · Desc: ${v('arc_desc')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Documento registrado', '#166534');
     limpiar(['arc_nombre','arc_desc','arc_ref']);
     set('arc_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarArchivo() {
@@ -681,7 +2399,7 @@ function buscarArchivo() {
 function renderArchivo(docs) {
   const el = document.getElementById('lista_arc');
   if (!docs.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon"><i class="ph-fill ph-archive"></i></span><p>No hay documentos registrados</p></div>';
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🗃️</span><p>No hay documentos registrados</p></div>';
     return;
   }
   el.innerHTML = docs.map(d => `
@@ -691,7 +2409,7 @@ function renderArchivo(docs) {
         <span class="record-ts">${d.anio||''}</span>
       </div>
       <p class="record-body"><strong>${d.categoria||''}</strong> · ${d.dependencia||''}</p>
-      ${d.fecha       ? `<p class="record-body"><i class="ph-fill ph-calendar"></i> ${d.fecha}</p>` : ''}
+      ${d.fecha       ? `<p class="record-body">📅 ${d.fecha}</p>` : ''}
       ${d.referencia  ? `<p class="record-body">Ref: <strong>${d.referencia}</strong></p>` : ''}
       ${d.descripcion ? `<p class="record-body" style="color:#475569">${d.descripcion}</p>` : ''}
       <div class="record-foot">
@@ -730,12 +2448,10 @@ function clearFotoJedi() {
 }
 
 async function guardarJedi() {
-  if (_guardando) return;
   const unidad = document.getElementById('jedi_unidad')?.value;
   const desc   = v('jedi_desc');
   if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridas', '#92400e'); return; }
 
-  _guardando = true;
   showToast('<i class="ph-fill ph-hourglass"></i> Registrando solicitud...', '#0a192f');
   try {
     const docRef  = db.collection('dace_jedi').doc();
@@ -766,18 +2482,12 @@ async function guardarJedi() {
       createdAt:    firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'PADAWAN / JEDI',
-      `Solicitud JEDI registrada: ${v('jedi_num') || '—'} (${unidad})`,
-      `Estatus: ${v('jedi_estatus')} · Equipo: ${desc} · Ref ASG: ${v('jedi_ref_asg')}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Solicitud JEDI registrada', '#166534');
     limpiar(['jedi_num','jedi_desc','jedi_just','jedi_obs','jedi_ref_asg','jedi_fecha_resp']);
     set('jedi_unidad',''); set('jedi_estatus','Pendiente');
     set('jedi_fecha', hoy()); set('jedi_hora', ahora());
     clearFotoJedi();
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function buscarJedi() {
@@ -798,7 +2508,7 @@ function filtrarJediEstatus(el, estatus) {
 function renderJedi(docs) {
   const el = document.getElementById('lista_jedi');
   if (!docs.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon"><i class="ph-fill ph-desktop"></i></span><p>No hay solicitudes registradas</p></div>';
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🖥️</span><p>No hay solicitudes registradas</p></div>';
     return;
   }
   const colorEstatus = {
@@ -813,8 +2523,8 @@ function renderJedi(docs) {
   const iconEstatus = {
     'En autorización de OGP':              '<i class="ph-fill ph-hourglass"></i>',
     'En Aprobación Inicial':               '<i class="ph-fill ph-clipboard-text"></i>',
-    'En asignación de Presupuesto':        '<i class="ph-fill ph-coin"></i>',
-    'En proceso de compra':                '<i class="ph-bold ph-arrows-clockwise"></i>',
+    'En asignación de Presupuesto':        '💰',
+    'En proceso de compra':                '🔄',
     'Orden de cargos a contrato concluido':'<i class="ph-bold ph-check"></i>',
     'Cancelado':                           '<i class="ph-bold ph-x"></i>',
     'Completado':                          '<i class="ph-bold ph-check"></i>'
@@ -838,12 +2548,12 @@ function renderJedi(docs) {
         <span class="badge" style="background:${colorEstatus[d.estatus]||'#1d4ed8'}20;color:${colorEstatus[d.estatus]||'#1d4ed8'};border:1px solid ${colorEstatus[d.estatus]||'#1d4ed8'}40">
           ${iconEstatus[d.estatus]||''} ${d.estatus||''}
         </span>
-        ${diasAbierto !== null ? `<span style="font-size:11px;font-weight:800;color:${colorDias}"><i class="ph-fill ph-calendar"></i> ${diasAbierto} días</span>` : ''}
+        ${diasAbierto !== null ? `<span style="font-size:11px;font-weight:800;color:${colorDias}">📅 ${diasAbierto} días</span>` : ''}
         ${d.fechaRespuesta ? `<span style="font-size:10px;color:#64748b">Actualizado: ${d.fechaRespuesta}</span>` : ''}
       </div>
       ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:200px;object-fit:contain;background:#f8fafc">` : ''}
       <div class="record-foot" style="margin-top:8px">
-        <button class="btn-edit" onclick="editarJedi('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+        <button class="btn-edit" onclick="editarJedi('${d._id}')">✏️ Editar</button>
         <button class="btn-del" onclick="eliminar('dace_jedi','${d._id}','Solicitud JEDI')"><i class="ph-bold ph-trash"></i></button>
       </div>
     </div>`}).join('');
@@ -1178,11 +2888,9 @@ function usarHallazgoIA() {
 
 /* ═══ GUARDAR: 137.1 (con soporte edición) ═══ */
 async function guardarQ1() {
-  if (_guardando) return;
   const unidad = document.getElementById('q1_unidad')?.value;
   const desc   = v('q1_desc');
   if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
-  _guardando = true;
 
   const trabajos = [];
   if (document.getElementById('q1_carp')?.checked) trabajos.push('Carpintería');
@@ -1207,11 +2915,6 @@ async function guardarQ1() {
   try {
     if (_editando.col === 'dace_q137_1' && _editando.id) {
       await db.collection('dace_q137_1').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'PPR-137.1 (Edición)',
-        `Orden de Trabajo actualizada: ${datos.numero || _editando.id}`,
-        `Unidad: ${unidad} · Trabajos: ${trabajos.join(', ')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Orden actualizada correctamente', '#166534');
       _editando = { col: null, id: null };
       const btn = document.querySelector('#q137_1 .btn-save');
@@ -1226,11 +2929,6 @@ async function guardarQ1() {
       const fotoUrl = await subirFoto('q1', docRef.id);
       datos.fotoUrl = fotoUrl || null;
       await docRef.set(datos);
-      await registrarEnMaestroAuto(
-        'PPR-137.1',
-        `Nueva Orden de Trabajo creada: ${datos.numero}`,
-        `Unidad: ${unidad} · Trabajos: ${trabajos.join(', ')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Orden ' + datos.numero + ' guardada', '#166534');
     }
     limpiar(['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito']);
@@ -1240,7 +2938,7 @@ async function guardarQ1() {
     clearFoto('q1');
     document.getElementById('q1_ai_result').classList.remove('visible');
     set('q1_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 /* ═══ GUARDAR: 137.3 (con soporte edición) ═══ */
@@ -1280,11 +2978,9 @@ function recopilarInspeccion() {
 
 /* ═══ GUARDAR: 137.3 (actualizado) ═══ */
 async function guardarQ3() {
-  if (_guardando) return;
   const lugar = document.getElementById('q3_lugar')?.value;
   const hall  = v('q3_hallazgos');
   if (!lugar || !hall) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
-  _guardando = true;
 
   showToast('<i class="ph-fill ph-hourglass"></i> Guardando inspección...', '#0a192f');
   try {
@@ -1310,19 +3006,13 @@ async function guardarQ3() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    await registrarEnMaestroAuto(
-      'PPR-137.3',
-      `Nueva Inspección creada: ${numAuto}`,
-      `Lugar: ${lugar} · Hallazgos: ${hall} · Recomendaciones: ${v('q3_rec')}`
-    );
-
     showToast(`<i class="ph-bold ph-check"></i> Inspección ${numAuto} guardada y sincronizada`, '#166534');
     limpiar(['q3_director','q3_tel','q3_dir','q3_obs_gen','q3_hallazgos','q3_rec']);
     set('q3_lugar',''); set('q3_estatus','Pendiente'); set('q3_fecha', hoy());
     clearFoto('q3');
     document.getElementById('q3_ai_result').classList.remove('visible');
     document.getElementById('q3_num').placeholder = `INS-137.3-${anio}-${String(total+1).padStart(3,'0')}`;
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
 /* ═══ HELPER: CARGAR IMAGEN DESDE URL PARA PDF ═══ */
@@ -1347,7 +3037,6 @@ function pdfHeader(doc, titulo) {
   const azul  = [10, 25, 47];
   const gold  = [197, 160, 89];
   const W     = doc.internal.pageSize.getWidth();
-  const ts    = new Date().toLocaleString('es-PR');
 
   // Fondo encabezado
   doc.setFillColor(...azul);
@@ -1379,6 +3068,7 @@ function pdfHeader(doc, titulo) {
   doc.setTextColor(180, 180, 180);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
+  const ts = new Date().toLocaleString('es-PR');
   doc.text(`Generado: ${ts}  |  Agte. Aponte Cancel · Placa 31093`, W / 2, 37, { align: 'center' });
 
   return 45; // y de inicio del contenido
@@ -1408,318 +3098,349 @@ async function exportarPDF(modulo) {
   const azul  = [10, 25, 47];
   const gold  = [197, 160, 89];
 
-  let titulo, y;
-
-  const keyMap = { q137_1: 'q1', q137_3: 'q3', casos: 'c', maestro: 'rm', mantenimiento: 'mt' };
-  const key = keyMap[modulo] || modulo;
-  const items = obtenerDatosFiltrados(key);
-
-  if (!items || items.length === 0) {
-    showToast('<i class="ph-bold ph-x"></i> No hay registros para exportar', '#92400e');
-    return;
-  }
-
-  // Confirmar si incluir imágenes para no congelar el navegador en reportes grandes
-  let incluirFotos = false;
-  const tieneFotos = items.some(d => d.fotoUrl);
-  if (tieneFotos) {
-    incluirFotos = confirm(
-      `El reporte contiene ${items.length} registro(s).\n\n` +
-      `¿Deseas incluir las fotos de evidencia fotográfica en el PDF?\n` +
-      `(Nota: Si exportas muchos registros con fotos, la generación tardará más tiempo y podría congelar el navegador).`
-    );
-  }
+  let titulo, snap, y;
 
   try {
     if (modulo === 'q137_1') {
       titulo = 'Registro de Órdenes de Trabajo PPR-137.1';
+      snap   = await db.collection('dace_q137_1').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay órdenes registradas.', W/2, y+10, {align:'center'});
+      } else {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(240, 244, 248);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...azul);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Solicitante', d.solicitante],
-          ['Unidad', d.unidad],
-          ['Tipos de Trabajo', d.trabajos?.join(', ')],
-          ['Descripción', d.descripcion],
-          ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
-          ['Estatus', d.estatus],
-          ['Observaciones', d.observaciones],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(240, 244, 248);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(...azul);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        if (d.fotoUrl && incluirFotos) {
-          try {
-            y = checkPage(doc, y, 65);
+          const campos = [
+            ['Solicitante', d.solicitante],
+            ['Unidad', d.unidad],
+            ['Tipos de Trabajo', d.trabajos?.join(', ')],
+            ['Descripción', d.descripcion],
+            ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
+            ['Estatus', d.estatus],
+            ['Observaciones', d.observaciones],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
             doc.setTextColor(...azul);
             doc.setFontSize(7);
             doc.setFont('helvetica','bold');
-            doc.text('Evidencia Fotográfica:', 13, y);
-            y += 4;
-            const imgData = await cargarImagenComoBase64(d.fotoUrl);
-            if (imgData) {
-              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
-              y += 58;
-            }
-          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
-        }
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
 
-        y = pdfLinea(doc, y+2, W);
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(...azul);
+              doc.setFontSize(7);
+              doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
+
+          y = pdfLinea(doc, y+2, W);
+        }
       }
     }
 
     else if (modulo === 'q137_3') {
       titulo = 'Registro de Inspecciones PPR-137.3';
+      snap   = await db.collection('dace_q137_3').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay inspecciones registradas.', W/2, y+10, {align:'center'});
+      } else {
+        for (let i = 0; i < snap.docs.length; i++) {
+          const docSnap = snap.docs[i];
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(255, 249, 235);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(92, 70, 10);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Lugar/Unidad', d.lugar],
-          ['Director', d.director],
-          ['Dirección', d.direccion],
-          ['Obs. Generales', d.observacionesGenerales],
-          ['Hallazgos', d.hallazgos],
-          ['Recomendaciones', d.recomendaciones],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(255, 249, 235);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(92, 70, 10);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        if (d.inspeccion) {
-          const secNombres = {
-            ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
-            bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
-            can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
-          };
-          Object.keys(d.inspeccion).forEach(sec => {
-            const secItems = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
-            if (secItems.length === 0) return;
-            y = checkPage(doc, y, 12);
-            doc.setFillColor(255,245,220);
-            doc.rect(13, y-2, W-26, 6, 'F');
-            doc.setTextColor(92,70,10);
-            doc.setFontSize(7); doc.setFont('helvetica','bold');
-            doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
-            y += 8;
-            secItems.forEach(it => {
-              y = checkPage(doc, y, 7);
-              doc.setFont('helvetica','normal');
-              doc.setTextColor(60,60,60);
-              const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
-              const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
-              const lines = doc.splitTextToSize(txt, W-30);
-              doc.text(lines, 16, y);
-              y += (lines.length * 4) + 1;
-            });
+          const campos = [
+            ['Lugar/Unidad', d.lugar],
+            ['Director', d.director],
+            ['Dirección', d.direccion],
+            ['Obs. Generales', d.observacionesGenerales],
+            ['Hallazgos', d.hallazgos],
+            ['Recomendaciones', d.recomendaciones],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(92, 70, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
           });
-        }
 
-        if (d.fotoUrl && incluirFotos) {
-          try {
-            y = checkPage(doc, y, 65);
-            doc.setTextColor(92,70,10);
-            doc.setFontSize(7); doc.setFont('helvetica','bold');
-            doc.text('Evidencia Fotográfica:', 13, y);
-            y += 4;
-            const imgData = await cargarImagenComoBase64(d.fotoUrl);
-            if (imgData) {
-              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
-              y += 58;
-            }
-          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
-        }
+          if (d.inspeccion) {
+            const secNombres = {
+              ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
+              bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
+              can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
+            };
+            Object.keys(d.inspeccion).forEach(sec => {
+              const items = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
+              if (items.length === 0) return;
+              y = checkPage(doc, y, 12);
+              doc.setFillColor(255,245,220);
+              doc.rect(13, y-2, W-26, 6, 'F');
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
+              y += 8;
+              items.forEach(it => {
+                y = checkPage(doc, y, 7);
+                doc.setFont('helvetica','normal');
+                doc.setTextColor(60,60,60);
+                const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
+                const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
+                const lines = doc.splitTextToSize(txt, W-30);
+                doc.text(lines, 16, y);
+                y += (lines.length * 4) + 1;
+              });
+            });
+          }
 
-        y = pdfLinea(doc, y+2, W);
+          if (d.fotoUrl) {
+            try {
+              y = checkPage(doc, y, 65);
+              doc.setTextColor(92,70,10);
+              doc.setFontSize(7); doc.setFont('helvetica','bold');
+              doc.text('Evidencia Fotográfica:', 13, y);
+              y += 4;
+              const imgData = await cargarImagenComoBase64(d.fotoUrl);
+              if (imgData) {
+                doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+                y += 58;
+              }
+            } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+          }
+
+          y = pdfLinea(doc, y+2, W);
+        }
       }
     }
 
     else if (modulo === 'casos') {
       titulo = 'Registro de Casos Activos';
+      snap   = await db.collection('dace_casos').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay casos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
-        doc.setFillColor(245, 245, 245);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...prioColor);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.numero||'—'}  [${d.prioridad||''}]`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Descripción', d.descripcion],
-          ['Responsable', d.responsable],
-          ['Próxima Acción', d.accion],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
-          doc.setTextColor(...azul);
-          doc.setFontSize(7);
+          const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...prioColor);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.numero||'—'}  [${d.prioridad||''}]`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+2, W);
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Responsable', d.responsable],
+            ['Próxima Acción', d.accion],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
       }
     }
 
     else if (modulo === 'maestro') {
       titulo = 'Registro Maestro de Actividades';
+      snap   = await db.collection('dace_maestro').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 30);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay entradas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 30);
 
-        doc.setFillColor(245, 245, 245);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(...azul);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.tipo||'—'}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        if (d.descripcion) {
-          y = checkPage(doc, y, 10);
-          doc.setTextColor(60,60,60);
-          doc.setFontSize(8);
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.tipo||'—'}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          const lines = doc.splitTextToSize(d.descripcion, W - 25);
-          doc.text(lines, 13, y);
-          y += (lines.length * 4) + 2;
-        }
-        if (d.notas) {
-          y = checkPage(doc, y, 8);
-          doc.setTextColor(130,130,130);
+          doc.setTextColor(100,100,100);
           doc.setFontSize(7);
-          const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
-          doc.text(lines, 13, y);
-          y += (lines.length * 4) + 2;
-        }
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+1, W);
+          if (d.descripcion) {
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(60,60,60);
+            doc.setFontSize(8);
+            doc.setFont('helvetica','normal');
+            const lines = doc.splitTextToSize(d.descripcion, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+          if (d.notas) {
+            y = checkPage(doc, y, 8);
+            doc.setTextColor(130,130,130);
+            doc.setFontSize(7);
+            const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+
+          y = pdfLinea(doc, y+1, W);
+        });
       }
     }
 
     else if (modulo === 'mantenimiento') {
       titulo = 'Registro de Trabajos de Mantenimiento';
+      snap   = await db.collection('dace_mantenimiento').orderBy('createdAt','desc').get();
       y      = pdfHeader(doc, titulo);
 
-      for (let i = 0; i < items.length; i++) {
-        const d = items[i];
-        y = checkPage(doc, y, 40);
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay trabajos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
 
-        doc.setFillColor(245, 240, 255);
-        doc.rect(10, y, W-20, 7, 'F');
-        doc.setTextColor(124, 58, 237);
-        doc.setFontSize(9);
-        doc.setFont('helvetica','bold');
-        doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.departamento||''}`, 13, y+5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(100,100,100);
-        doc.setFontSize(7);
-        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
-        y += 10;
-
-        const campos = [
-          ['Descripción', d.descripcion],
-          ['Notificado A', d.notificadoA],
-          ['Método', d.metodo],
-          ['Estatus', d.estatus],
-        ];
-        campos.forEach(([label, val]) => {
-          if (!val) return;
-          y = checkPage(doc, y, 10);
+          doc.setFillColor(245, 240, 255);
+          doc.rect(10, y, W-20, 7, 'F');
           doc.setTextColor(124, 58, 237);
-          doc.setFontSize(7);
+          doc.setFontSize(9);
           doc.setFont('helvetica','bold');
-          doc.text(label + ':', 13, y);
+          doc.text(`#${i+1}  ${d.lugar||'—'}  ·  ${d.departamento||''}`, 13, y+5);
           doc.setFont('helvetica','normal');
-          doc.setTextColor(60,60,60);
-          const lines = doc.splitTextToSize(val, W - 55);
-          doc.text(lines, 45, y);
-          y += (lines.length * 4) + 2;
-        });
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
 
-        y = pdfLinea(doc, y+2, W);
+          const campos = [
+            ['Descripción', d.descripcion],
+            ['Notificado A', d.notificadoA],
+            ['Método', d.metodo],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(124, 58, 237);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
       }
+    }
+
+    // Pie de página en todas las páginas
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPags; p++) {
+      doc.setPage(p);
+      doc.setFillColor(...azul);
+      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+      doc.setTextColor(150,150,150);
+      doc.setFontSize(7);
+      doc.setFont('helvetica','normal');
+      doc.text(`DACE Arecibo — NPPR — Documento oficial  |  Página ${p} de ${totalPags}`,
+        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
     }
 
     // Agregar firma en última página de 137.1 y 137.3
     if (modulo === 'q137_1' || modulo === 'q137_3') {
       const lastPage = doc.internal.getNumberOfPages();
       doc.setPage(lastPage);
+      const H = doc.internal.pageSize.getHeight();
       y = checkPage(doc, y, 35);
 
       // Línea de firma
@@ -1754,50 +3475,20 @@ async function exportarPDF(modulo) {
       doc.text(new Date().toLocaleDateString('es-PR',{day:'2-digit',month:'long',year:'numeric'}), 115, y+30);
     }
 
-    // Pie de página en todas las páginas (dibujado al final para asegurar la página de firma si esta overflows)
-    const totalPags = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPags; p++) {
-      doc.setPage(p);
-      doc.setFillColor(...azul);
-      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
-      doc.setTextColor(150,150,150);
-      doc.setFontSize(7);
-      doc.setFont('helvetica','normal');
-      doc.text(`DACE Arecibo — NPPR — Documento oficial  |  Página ${p} de ${totalPags}`,
-        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
-    }
-
     // Nombre del archivo
     const nombres = {
       q137_1: 'PPR-137.1_Incidentes',
       q137_3: 'PPR-137.3_Inspecciones',
       casos:  'Casos_Activos',
-      maestro:'Registro_Maestro',
-      mantenimiento: 'Registro_Mantenimiento'
+      maestro:'Registro_Maestro'
     };
     const fecha = new Date().toISOString().split('T')[0];
-    doc.save(`DACE_Arecibo_${nombres[modulo]||modulo}_${fecha}.pdf`);
+    doc.save(`DACE_Arecibo_${nombres[modulo]}_${fecha}.pdf`);
     showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
 
   } catch(e) {
     showToast('<i class="ph-bold ph-x"></i> Error al generar PDF: ' + e.message, '#dc2626');
     console.error(e);
-  }
-}
-
-async function registrarEnMaestroAuto(tipo, descripcion, notas = '') {
-  try {
-    await db.collection('dace_maestro').add({
-      tipo,
-      fecha: hoy(),
-      hora: ahora(),
-      descripcion,
-      notas,
-      usuario: 'Sistema · Sincronización',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(e) {
-    console.error('Error auto-sincronizando al Registro Maestro:', e);
   }
 }
 
@@ -1847,20 +3538,6 @@ async function exportarPanelPDF() {
       y += 15;
     });
 
-    const sortRecientes = (docs) => {
-      return [...docs].sort((a,b) => {
-        const t1 = a.data().createdAt?.seconds || 0;
-        const t2 = b.data().createdAt?.seconds || 0;
-        return t2 - t1;
-      }).slice(0, 5);
-    };
-
-    const q1Recientes = sortRecientes(s1.docs);
-    const q3Recientes = sortRecientes(s2.docs);
-    const casosRecientes = sortRecientes(s3.docs);
-    const rmRecientes = sortRecientes(s4.docs);
-
-    // 1. INCIDENTES 137.1
     y += 5;
     doc.setTextColor(...azul);
     doc.setFontSize(9);
@@ -1868,36 +3545,25 @@ async function exportarPanelPDF() {
     doc.text('ACTIVIDAD RECIENTE — INCIDENTES 137.1', 10, y);
     y += 5;
 
-    if (!q1Recientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de incidentes.', 13, y+4);
-      y += 10;
-    } else {
-      q1Recientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(245,248,252);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(...azul); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Estatus: ${d.estatus || '—'}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.unidad || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    s1.docs.slice(0,5).forEach((docSnap, i) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(245,248,252);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(...azul);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      const desc = limpiarDesc(d.descripcion||'', 80);
+      doc.text(desc, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
 
-    // 2. INSPECCIONES 137.3
     y += 3;
     doc.setTextColor(...azul);
     doc.setFontSize(9);
@@ -1905,131 +3571,42 @@ async function exportarPanelPDF() {
     doc.text('ACTIVIDAD RECIENTE — INSPECCIONES 137.3', 10, y);
     y += 5;
 
-    if (!q3Recientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de inspecciones.', 13, y+4);
-      y += 10;
-    } else {
-      q3Recientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(255,251,235);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(92,70,10); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const lugarTipo = limpiarDesc(`${d.lugar || ''} · ${d.tipo || ''}`, 70);
-        doc.text(lugarTipo, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Estatus: ${d.estatus || '—'}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.director || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    s2.docs.slice(0,5).forEach((docSnap) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(255,251,235);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(92,70,10);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'—'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      doc.text(`${d.lugar||''} · ${d.tipo||''}`, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
 
-    // 3. CASOS ACTIVOS
-    y += 3;
-    doc.setTextColor(...azul);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('ACTIVIDAD RECIENTE — CASOS ACTIVOS', 10, y);
-    y += 5;
-
-    if (!casosRecientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros de casos activos.', 13, y+4);
-      y += 10;
-    } else {
-      casosRecientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(240,253,244);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(21,128,61); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.numero || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(d.fecha || '—', 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Prioridad: ${d.prioridad || ''} · Estatus: ${d.estatus || ''}`, 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.responsable || '', 30), W-13, y+5, {align:'right'});
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
-
-    // 4. REGISTRO MAESTRO
-    y += 3;
-    doc.setTextColor(...azul);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('ACTIVIDAD RECIENTE — REGISTRO MAESTRO', 10, y);
-    y += 5;
-
-    if (!rmRecientes.length) {
-      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,150,150);
-      doc.text('No hay registros en el maestro.', 13, y+4);
-      y += 10;
-    } else {
-      rmRecientes.forEach((docSnap) => {
-        const d = docSnap.data();
-        y = checkPage(doc, y, 16);
-        doc.setFillColor(254,242,242);
-        doc.rect(10, y, W-20, 13, 'F');
-        
-        doc.setTextColor(153,27,27); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text(d.tipo || '—', 13, y+5);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-        doc.text(`${d.fecha || ''} ${d.hora || ''}`, 13, y+10);
-        
-        doc.setTextColor(60,60,60);
-        const desc = limpiarDesc(d.descripcion || '', 70);
-        doc.text(desc, 55, y+5);
-        doc.text(limpiarDesc(d.notas || '', 70), 55, y+10);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(limpiarDesc(d.usuario || '', 30), W-13, y+10, {align:'right'});
-        y += 16;
-      });
-    }
+    // Pie de página
+    doc.setFillColor(...azul);
+    doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+    doc.setTextColor(150,150,150);
+    doc.setFontSize(7);
+    doc.text('DACE Arecibo — NPPR — Documento oficial',
+      W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
 
     // Firma en reporte general
-    y = checkPage(doc, y, 35);
     try {
-      doc.addImage(FIRMA_B64, 'PNG', 10, y+5, 70, 14);
+      doc.addImage(FIRMA_B64, 'PNG', 10, doc.internal.pageSize.getHeight()-52, 70, 14);
     } catch(e) {}
     doc.setDrawColor(...azul); doc.setLineWidth(0.5);
-    doc.line(10, y+22, 85, y+22);
+    doc.line(10, doc.internal.pageSize.getHeight()-38, 85, doc.internal.pageSize.getHeight()-38);
     doc.setTextColor(...azul); doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('Agte. Jose C. Aponte Cancel · Placa 31093', 10, y+26);
+    doc.text('Agte. Jose C. Aponte Cancel · Placa 31093', 10, doc.internal.pageSize.getHeight()-34);
     doc.setFont('helvetica','normal'); doc.setTextColor(100,100,100);
-    doc.text('Coordinador Auxiliar DACE Arecibo', 10, y+30);
-
-    // Dibujar pie de página en todas las hojas creadas
-    const totalPags = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPags; p++) {
-      doc.setPage(p);
-      doc.setFillColor(...azul);
-      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
-      doc.setTextColor(150,150,150);
-      doc.setFontSize(7);
-      doc.setFont('helvetica','normal');
-      doc.text(`DACE Arecibo — NPPR — Reporte General del Sistema  |  Página ${p} de ${totalPags}`,
-        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
-    }
+    doc.text('Coordinador Auxiliar DACE Arecibo', 10, doc.internal.pageSize.getHeight()-30);
 
     const fecha = new Date().toISOString().split('T')[0];
     doc.save(`DACE_Arecibo_Reporte_General_${fecha}.pdf`);
@@ -2634,10 +4211,8 @@ async function editarMaestro(id) {
 
 /* ═══ GUARDAR: CASOS (con soporte edición) ═══ */
 async function guardarCaso() {
-  if (_guardando) return;
   const num = v('c_num'), desc = v('c_desc');
   if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
     descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
@@ -2646,37 +4221,25 @@ async function guardarCaso() {
   try {
     if (_editando.col === 'dace_casos' && _editando.id) {
       await db.collection('dace_casos').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'Caso Activo (Edición)',
-        `Caso actualizado: ${num || _editando.id}`,
-        `Estatus: ${v('c_estatus')} · Responsable: ${v('c_resp')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Caso actualizado', '#166534');
       _editando = { col: null, id: null };
       const btn = document.querySelector('#casos .btn-save');
       if(btn) { btn.style.background=''; btn.innerHTML='💾 GUARDAR CASO'; }
     } else {
-      if (!num) { showToast('⚠️ Número es requerido', '#92400e'); _guardando = false; return; }
+      if (!num) { showToast('⚠️ Número es requerido', '#92400e'); return; }
       datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('dace_casos').add(datos);
-      await registrarEnMaestroAuto(
-        'Caso Activo',
-        `Caso registrado: ${num}`,
-        `Prioridad: ${v('c_prioridad')} · Responsable: ${v('c_resp')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Caso guardado y sincronizado', '#166534');
     }
     limpiar(['c_num','c_desc','c_resp','c_accion']);
     set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ GUARDAR: MANTENIMIENTO (con soporte edición) ═══ */
 async function guardarMantenimiento() {
-  if (_guardando) return;
   const lugar = v('mt_lugar'), desc = v('mt_desc');
   if (!lugar || !desc) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     lugar, departamento: v('mt_dept'),
     fecha: v('mt_fecha'), hora: v('mt_hora'),
@@ -2687,35 +4250,23 @@ async function guardarMantenimiento() {
   try {
     if (_editando.col === 'dace_mantenimiento' && _editando.id) {
       await db.collection('dace_mantenimiento').doc(_editando.id).update(datos);
-      await registrarEnMaestroAuto(
-        'Mantenimiento (Edición)',
-        `Trabajo de Mantenimiento actualizado en ${lugar} (${v('mt_dept')})`,
-        `Estatus: ${v('mt_estatus')} · Notificado A: ${v('mt_notifico')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Mantenimiento actualizado', '#166534');
       _editando = { col: null, id: null };
     } else {
       datos.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('dace_mantenimiento').add(datos);
-      await registrarEnMaestroAuto(
-        'Mantenimiento',
-        `Nuevo Trabajo de Mantenimiento registrado en ${lugar} (${v('mt_dept')})`,
-        `Estatus: ${v('mt_estatus')} · Notificado A: ${v('mt_notifico')} · Desc: ${desc}`
-      );
       showToast('<i class="ph-bold ph-check"></i> Mantenimiento guardado y sincronizado', '#166534');
     }
     limpiar(['mt_desc','mt_notifico']);
     set('mt_lugar',''); set('mt_estatus','Pendiente');
     set('mt_fecha', hoy()); set('mt_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ GUARDAR: MAESTRO (con soporte edición) ═══ */
 async function guardarMaestro() {
-  if (_guardando) return;
   const desc = v('rm_desc');
   if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
-  _guardando = true;
   const datos = {
     tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
     descripcion: desc, notas: v('rm_notas'),
@@ -2735,7 +4286,7 @@ async function guardarMaestro() {
     }
     limpiar(['rm_desc','rm_notas']);
     set('rm_fecha', hoy()); set('rm_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 /* ═══ ELIMINAR ═══ */
@@ -2914,14 +4465,12 @@ async function imprimirIndividualPDF(col, id) {
 
 /* ═══ CISTERNAS DEL ÁREA ═══ */
 async function guardarCisterna() {
-  if (_guardando) return;
   const lugar = v('cis_lugar');
   const obs = v('cis_obs');
   let estatus = '';
   document.getElementsByName('cis_estatus').forEach(r => { if(r.checked) estatus = r.value; });
   
   if (!lugar) { showToast('⚠️ El lugar es requerido', '#92400e'); return; }
-  _guardando = true;
   
   const datos = {
     lugar, estatus, observaciones: obs,
@@ -2932,17 +4481,10 @@ async function guardarCisterna() {
   
   try {
     await db.collection('dace_cisternas').add(datos);
-
-    await registrarEnMaestroAuto(
-      'Bitácora Cisterna',
-      `Actividad en Cisterna de ${lugar}`,
-      `Estatus/Condición: ${estatus} · Observaciones: ${obs}`
-    );
-
     showToast('<i class="ph-bold ph-check"></i> Cisterna registrada', '#166534');
     set('cis_lugar', ''); set('cis_obs', '');
     set('cis_fecha', hoy()); set('cis_hora', ahora());
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); } finally { _guardando = false; }
+  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); }
 }
 
 function cargarCisternas() {
@@ -3045,235 +4587,6 @@ function imprimirCisternaPDF(id, tipo) {
     showToast('<i class="ph-bold ph-check"></i> PDF Guardado', '#166534');
   }).catch(e => showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'));
 }
-
-async function importarConversacionesChatGPT() {
-  const input = document.getElementById('import_chat_input');
-  const statusEl = document.getElementById('import_chat_status');
-  if (!input || !input.files || !input.files[0]) return;
-
-  const file = input.files[0];
-  statusEl.textContent = '⏳ Leyendo archivo...';
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const chats = JSON.parse(e.target.result);
-      if (!Array.isArray(chats)) {
-        throw new Error('El archivo no tiene el formato oficial de exportación de ChatGPT.');
-      }
-
-      statusEl.textContent = '🔍 Buscando coincidencias DACE...';
-      let importados = 0;
-
-      // Palabras clave para filtrar (incluyendo las nuevas provistas por el usuario)
-      const keywords = [
-        'dace', 'arecibo', 'ppr-137', 'cisterna', 'generador', 'inspeccion', 
-        'cuartel', 'record', 'trabajos', 'informacion', 'planta fisica', 
-        'reservas de agua'
-      ];
-
-      for (const chat of chats) {
-        const title = chat.title || 'Chat sin título';
-        const titleLower = title.toLowerCase();
-        
-        let chatText = '';
-        if (chat.mapping) {
-          Object.values(chat.mapping).forEach(node => {
-            const message = node.message;
-            if (message && message.content && message.content.parts) {
-              message.content.parts.forEach(part => {
-                if (typeof part === 'string') {
-                  chatText += ' ' + part;
-                }
-              });
-            }
-          });
-        }
-        const textLower = chatText.toLowerCase();
-
-        // Verificar si coincide con palabras clave
-        const coincide = keywords.some(kw => titleLower.includes(kw) || textLower.includes(kw));
-
-        if (coincide) {
-          // Extraer fecha/hora del chat
-          const createTime = chat.create_time;
-          let fechaStr = hoy();
-          let horaStr = ahora();
-          if (createTime) {
-            const date = new Date(createTime * 1000);
-            fechaStr = date.toISOString().split('T')[0];
-            horaStr = date.toTimeString().split(' ')[0].substring(0, 5);
-          }
-
-          // Resumir mensajes
-          let mensajesLimpios = '';
-          if (chat.mapping) {
-            const nodes = Object.values(chat.mapping)
-              .filter(node => node.message && node.message.content && node.message.content.parts)
-              .sort((a, b) => (a.message.create_time || 0) - (b.message.create_time || 0));
-
-            nodes.forEach(node => {
-              const role = node.message.author?.role === 'user' ? 'Usuario' : 'ChatGPT';
-              const part = node.message.content.parts[0];
-              if (typeof part === 'string' && part.trim()) {
-                mensajesLimpios += `[${role}]: ${part.substring(0, 400)}${part.length > 400 ? '...' : ''}\n\n`;
-              }
-            });
-          }
-
-          // Limitar a un tamaño seguro de Firestore
-          mensajesLimpios = mensajesLimpios.substring(0, 3000);
-
-          // Guardar en dace_maestro
-          await db.collection('dace_maestro').add({
-            tipo: 'Importación ChatGPT',
-            fecha: fechaStr,
-            hora: horaStr,
-            descripcion: `Chat: ${title}`,
-            notas: mensajesLimpios || 'Sin contenido de texto extraíble.',
-            usuario: 'Importador ChatGPT',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          importados++;
-        }
-      }
-
-      statusEl.textContent = `✅ Importados ${importados} chats con éxito`;
-      showToast(`✅ Se importaron ${importados} conversaciones sobre DACE Arecibo`, '#166534');
-      if (typeof cargarMaestro === 'function') cargarMaestro();
-      
-    } catch(err) {
-      statusEl.textContent = '❌ Error al importar';
-      showToast('❌ Error: ' + err.message, '#dc2626');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-}
-
-/* --- EXPORTAR A WINDOW (MODULARIZACION) --- */
-window.generarDescripcionIA = generarDescripcionIA;
-window.importarConversacionesChatGPT = importarConversacionesChatGPT;
-window.trunc = trunc;
-window.imprimirIndividualPDF = imprimirIndividualPDF;
-window.mostrarPinSiNecesario = mostrarPinSiNecesario;
-window.moduloTabId = moduloTabId;
-window.renderFeed = renderFeed;
-window.guardarGenerador = guardarGenerador;
-window.clearFotoGen = clearFotoGen;
-window.guardarAgenda = guardarAgenda;
-window.eliminar = eliminar;
-window.showToast = showToast;
-window.cerrarSesion = cerrarSesion;
-window.item_Maestro_data = item_Maestro_data;
-window.cargarCisternas = cargarCisternas;
-window.usarHallazgoIA = usarHallazgoIA;
-window.previewFoto = previewFoto;
-window.limpiarFiltros = limpiarFiltros;
-window.checkPage = checkPage;
-window.editarQ1 = editarQ1;
-window.v = v;
-window.toggleChip = toggleChip;
-window.cancelarEdicion = cancelarEdicion;
-window.renderAgenda = renderAgenda;
-window.recopilarInspeccion = recopilarInspeccion;
-window.item_Q1 = item_Q1;
-window.pdfHeaderSingle = pdfHeaderSingle;
-window.guardarArchivo = guardarArchivo;
-window.renderLista = renderLista;
-window.exportarGeneradoresPDF = exportarGeneradoresPDF;
-window.item_Q3_data = item_Q3_data;
-window.guardarCisterna = guardarCisterna;
-window.buscarJedi = buscarJedi;
-window.cargarImagenComoBase64 = cargarImagenComoBase64;
-window.bPrio = bPrio;
-window.item_Q1_data = item_Q1_data;
-window.guardarQ3 = guardarQ3;
-window.actualizarDots = actualizarDots;
-window.hoy = hoy;
-window.initListeners = initListeners;
-window.bEstatus = bEstatus;
-window.guardarMantenimiento = guardarMantenimiento;
-window.setFbStatus = setFbStatus;
-window.buscarArchivo = buscarArchivo;
-window.guardarCaso = guardarCaso;
-window.renderDirectorio = renderDirectorio;
-window.item_Q3 = item_Q3;
-window.prefill = prefill;
-window.renderArchivo = renderArchivo;
-window.previewFotoGen = previewFotoGen;
-window.editarMaestro = editarMaestro;
-window.filtrarJediEstatus = filtrarJediEstatus;
-window.imprimirCisternaPDF = imprimirCisternaPDF;
-window.makeInspRows = makeInspRows;
-window.item_Caso = item_Caso;
-window.set = set;
-window.aplicarFiltros = aplicarFiltros;
-window.calcularResumenGen = calcularResumenGen;
-window.verificarPin = verificarPin;
-window.buscarDirectorio = buscarDirectorio;
-window.subirFoto = subirFoto;
-window.guardarMaestro = guardarMaestro;
-window.previewFotoJedi = previewFotoJedi;
-window.usarTextoIA = usarTextoIA;
-window.editarCaso = editarCaso;
-window.changeTab = changeTab;
-window.item_Mt_data = item_Mt_data;
-window.filtrarGenTipo = filtrarGenTipo;
-window.guardarDirectorio = guardarDirectorio;
-window.guardarJedi = guardarJedi;
-window.renderGeneradores = renderGeneradores;
-window.guardarQ1 = guardarQ1;
-window.exportarJediPDF = exportarJediPDF;
-window.item_Caso_data = item_Caso_data;
-window.limpiar = limpiar;
-window.buscarGeneradores = buscarGeneradores;
-window.editarJedi = editarJedi;
-window.cargarTrabajosRealizados = cargarTrabajosRealizados;
-window.pinDel = pinDel;
-window.limpiarDesc = limpiarDesc;
-window.pdfLinea = pdfLinea;
-window.editarMantenimiento = editarMantenimiento;
-window.clearFotoJedi = clearFotoJedi;
-window.llamarGemini = llamarGemini;
-window.generarHallazgoIA = generarHallazgoIA;
-window.exportarPanelPDF = exportarPanelPDF;
-window.exportarPDF = exportarPDF;
-window.switchGenTab = switchGenTab;
-window.feedRow = feedRow;
-window.renderJedi = renderJedi;
-window.completarTarea = completarTarea;
-window.item_Maestro = item_Maestro;
-window.generarReportes = generarReportes;
-window.loginFirebase = loginFirebase;
-window.editarQ3 = editarQ3;
-window.switchInnerTab = switchInnerTab;
-window.pdfHeader = pdfHeader;
-window.modoEdicion = modoEdicion;
-window.clearFoto = clearFoto;
-window.ahora = ahora;
-window.pinPress = pinPress;
-if (typeof _cache !== 'undefined') window._cache = _cache;
-if (typeof _filtros !== 'undefined') window._filtros = _filtros;
-if (typeof _genCache !== 'undefined') window._genCache = _genCache;
-if (typeof _genFotoData !== 'undefined') window._genFotoData = _genFotoData;
-if (typeof _genFiltroTipo !== 'undefined') window._genFiltroTipo = _genFiltroTipo;
-if (typeof _agendaCache !== 'undefined') window._agendaCache = _agendaCache;
-if (typeof _dirCache !== 'undefined') window._dirCache = _dirCache;
-if (typeof _arcCache !== 'undefined') window._arcCache = _arcCache;
-if (typeof _jediCache !== 'undefined') window._jediCache = _jediCache;
-if (typeof _jediFotoData !== 'undefined') window._jediFotoData = _jediFotoData;
-if (typeof _jediFilterEstatus !== 'undefined') window._jediFilterEstatus = _jediFilterEstatus;
-if (typeof FIRMA_B64 !== 'undefined') window.FIRMA_B64 = FIRMA_B64;
-if (typeof _fotoData !== 'undefined') window._fotoData = _fotoData;
-if (typeof authReady !== 'undefined') window.authReady = authReady;
-if (typeof PIN_CORRECTO !== 'undefined') window.PIN_CORRECTO = PIN_CORRECTO;
-if (typeof SESSION_KEY !== 'undefined') window.SESSION_KEY = SESSION_KEY;
-if (typeof pinActual !== 'undefined') window.pinActual = pinActual;
-if (typeof firebaseConfig !== 'undefined') window.firebaseConfig = firebaseConfig;
-if (typeof feedCache !== 'undefined') window.feedCache = feedCache;
-if (typeof _editando !== 'undefined') window._editando = _editando;
-if (typeof db !== 'undefined') window.db = db;
-if (typeof auth !== 'undefined') window.auth = auth;
-if (typeof storage !== 'undefined') window.storage = storage;
-if (typeof fbFunctions !== 'undefined') window.fbFunctions = fbFunctions;
+</script>
+</body>
+</html>
