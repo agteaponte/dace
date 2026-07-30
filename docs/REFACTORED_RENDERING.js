@@ -559,6 +559,42 @@ function aplicarFiltros(modulo) {
       ? `${total} registro(s) total`
       : `${datos.length} de ${total} registro(s)`;
   }
+
+  // Resaltar términos de búsqueda si existen
+  if (txt && txt.length >= 2) {
+    resaltarBusquedaHTML(cfg.container, txt);
+  }
+}
+
+/**
+ * Resalta las coincidencias de búsqueda en un contenedor de forma segura
+ * @param {string} containerId - ID del contenedor HTML
+ * @param {string} query - Término a buscar
+ */
+function resaltarBusquedaHTML(containerId, query) {
+  const container = document.getElementById(containerId);
+  if (!container || !query) return;
+
+  const queryEscaped = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(`(${queryEscaped})`, 'gi');
+
+  const walkTextNodes = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.nodeValue;
+      if (regex.test(text)) {
+        const span = document.createElement('span');
+        span.innerHTML = text.replace(regex, '<mark class="search-highlight">$1</mark>');
+        node.parentNode.replaceChild(span, node);
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.nodeName !== 'MARK' && node.nodeName !== 'BUTTON' && node.nodeName !== 'A') {
+      const children = Array.from(node.childNodes);
+      for (let child of children) {
+        walkTextNodes(child);
+      }
+    }
+  };
+
+  walkTextNodes(container);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -483,7 +483,10 @@ let _agendaCache = [];
 async function guardarAgenda() {
   if (_guardando) return;
   const titulo = v('ag_titulo'), fecha = v('ag_fecha');
-  if (!titulo || !fecha) { showToast('⚠️ Título y fecha son requeridos', '#92400e'); return; }
+  let isValid = true;
+  if (!titulo) { resaltarValidacion('ag_titulo', false); isValid = false; } else { resaltarValidacion('ag_titulo', true); }
+  if (!fecha) { resaltarValidacion('ag_fecha', false); isValid = false; } else { resaltarValidacion('ag_fecha', true); }
+  if (!isValid) { showToast('⚠️ Título y fecha son requeridos', '#92400e'); return; }
   _guardando = true;
   try {
     await db.collection('dace_agenda').add({
@@ -1181,7 +1184,10 @@ async function guardarQ1() {
   if (_guardando) return;
   const unidad = document.getElementById('q1_unidad')?.value;
   const desc   = v('q1_desc');
-  if (!unidad || !desc) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
+  let isValid = true;
+  if (!unidad) { resaltarValidacion('q1_unidad', false); isValid = false; } else { resaltarValidacion('q1_unidad', true); }
+  if (!desc) { resaltarValidacion('q1_desc', false); isValid = false; } else { resaltarValidacion('q1_desc', true); }
+  if (!isValid) { showToast('⚠️ Unidad y descripción son requeridos', '#92400e'); return; }
   _guardando = true;
 
   const trabajos = [];
@@ -1283,7 +1289,10 @@ async function guardarQ3() {
   if (_guardando) return;
   const lugar = document.getElementById('q3_lugar')?.value;
   const hall  = v('q3_hallazgos');
-  if (!lugar || !hall) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
+  let isValid = true;
+  if (!lugar) { resaltarValidacion('q3_lugar', false); isValid = false; } else { resaltarValidacion('q3_lugar', true); }
+  if (!hall) { resaltarValidacion('q3_hallazgos', false); isValid = false; } else { resaltarValidacion('q3_hallazgos', true); }
+  if (!isValid) { showToast('⚠️ Lugar y hallazgos son requeridos', '#92400e'); return; }
   _guardando = true;
 
   showToast('<i class="ph-fill ph-hourglass"></i> Guardando inspección...', '#0a192f');
@@ -2203,15 +2212,129 @@ function changeTab(id) {
   window.scrollTo(0, 0);
 }
 
-/* ── TOAST ── */
+/* ── TOAST PREMIUM CON BARRA DE PROGRESO ── */
 let _tTimer;
 function showToast(msg, bg) {
   const t = document.getElementById('toast');
-  t.innerHTML = msg;
-  t.style.background = bg || '#1d1d1f';
+  const txt = document.getElementById('toast-text') || t;
+  txt.innerHTML = msg;
+  t.style.background = bg || 'var(--navy)';
+  
+  const prog = document.getElementById('toast-progress');
+  if (prog) {
+    prog.style.width = '100%';
+    prog.style.transition = 'none';
+    prog.offsetHeight; // trigger reflow
+    prog.style.transition = 'width 3.2s linear';
+    prog.style.width = '0%';
+  }
+  
   clearTimeout(_tTimer);
   t.classList.add('show');
   _tTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ── ADMINISTRADOR DE TEMAS (DÍA / NOCHE) ── */
+function applyTheme(mode) {
+  const body = document.body;
+  if (mode === 'auto') {
+    const hour = new Date().getHours();
+    const isDay = hour >= 6 && hour < 18;
+    if (isDay) {
+      body.classList.remove('theme-night');
+      body.classList.add('theme-day');
+    } else {
+      body.classList.remove('theme-day');
+      body.classList.add('theme-night');
+    }
+  } else if (mode === 'day') {
+    body.classList.remove('theme-night');
+    body.classList.add('theme-day');
+  } else if (mode === 'night') {
+    body.classList.remove('theme-day');
+    body.classList.add('theme-night');
+  }
+}
+
+function changeThemeMode(mode) {
+  localStorage.setItem('theme_preference', mode);
+  applyTheme(mode);
+  showToast(`✅ Tema cambiado a: ${mode === 'auto' ? 'Automático' : mode === 'day' ? 'Día (Claro)' : 'Noche (Oscuro)'}`, '#166534');
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme_preference') || 'auto';
+  const select = document.getElementById('theme_select');
+  if (select) select.value = saved;
+  applyTheme(saved);
+  
+  setInterval(() => {
+    const current = localStorage.getItem('theme_preference') || 'auto';
+    if (current === 'auto') {
+      applyTheme('auto');
+    }
+  }, 60000); // verify auto theme every minute
+}
+
+/* ── ACCIONES BOTÓN ACCIÓN FLOTANTE (FAB) MÓVIL ── */
+function toggleFabMenu(event) {
+  if (event) event.stopPropagation();
+  const btn = document.getElementById('fabBtn');
+  const menu = document.getElementById('fabMenu');
+  if (btn && menu) {
+    btn.classList.toggle('open');
+    menu.classList.toggle('show');
+  }
+}
+
+function closeFabMenu() {
+  const btn = document.getElementById('fabBtn');
+  const menu = document.getElementById('fabMenu');
+  if (btn && menu) {
+    btn.classList.remove('open');
+    menu.classList.remove('show');
+  }
+}
+
+// Cierra el FAB si se hace clic fuera
+document.addEventListener('click', () => {
+  closeFabMenu();
+});
+
+function fabAction(tabId) {
+  closeFabMenu();
+  changeTab(tabId);
+  // Auto scroll a los campos de inserción correspondientes
+  setTimeout(() => {
+    let focusInputId = '';
+    if (tabId === 'q137_1') focusInputId = 'q1_solicitante';
+    else if (tabId === 'q137_3') focusInputId = 'q3_lugar';
+    else if (tabId === 'casos') focusInputId = 'c_descripcion';
+    else if (tabId === 'mantenimiento') focusInputId = 'mt_lugar';
+    
+    if (focusInputId) {
+      const el = document.getElementById(focusInputId);
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, 200);
+}
+
+/* ── VALIDACIÓN VISUAL EN FORMULARIOS ── */
+function resaltarValidacion(elId, esValido) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!esValido) {
+    el.classList.add('input-invalid');
+    el.classList.remove('input-valid');
+    setTimeout(() => el.classList.remove('input-invalid'), 600);
+  } else {
+    el.classList.remove('input-invalid');
+    el.classList.add('input-valid');
+    setTimeout(() => el.classList.remove('input-valid'), 2000);
+  }
 }
 
 /* ── FECHA / HORA ── */
@@ -2260,7 +2383,7 @@ function initListeners() {
       document.getElementById('q1_total').textContent = snap.size;
       _cache.q1 = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('q1');
-      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('<i class="ph-fill ph-scales"></i>', d.data().numero||'Incidente', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`));
+      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('<i class="ph-fill ph-scales"></i>', d.data().numero||'Incidente', `137.1 · ${d.data().fecha||''} · ${d.data().estatus||''}`, 'q137_1', d.data().numero || d.id));
       renderFeed();
     }, e => console.error('137.1:', e));
 
@@ -2272,7 +2395,7 @@ function initListeners() {
       document.getElementById('q3_total').textContent = snap.size;
       _cache.q3 = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('q3');
-      feedCache.q3 = snap.docs.slice(0,3).map(d => feedRow('🏗️', d.data().numero||'Inspección', `137.3 · ${d.data().lugar||''} · ${d.data().estatus||''}`));
+      feedCache.q3 = snap.docs.slice(0,3).map(d => feedRow('🏗️', d.data().numero||'Inspección', `137.3 · ${d.data().lugar||''} · ${d.data().estatus||''}`, 'q137_3', d.data().numero || d.id));
       renderFeed();
     }, e => console.error('137.3:', e));
 
@@ -2284,7 +2407,7 @@ function initListeners() {
       document.getElementById('c_total').textContent = snap.size;
       _cache.c = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('c');
-      feedCache.casos = snap.docs.slice(0,3).map(d => feedRow('<i class="ph-fill ph-clipboard-text"></i>', d.data().numero||'Caso', trunc(d.data().descripcion||'', 55)));
+      feedCache.casos = snap.docs.slice(0,3).map(d => feedRow('<i class="ph-fill ph-clipboard-text"></i>', d.data().numero||'Caso', trunc(d.data().descripcion||'', 55), 'casos', d.data().numero || d.id));
       renderFeed();
     }, e => console.error('casos:', e));
 
@@ -2296,7 +2419,7 @@ function initListeners() {
       document.getElementById('rm_total').textContent = snap.size;
       _cache.rm = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('rm');
-      feedCache.maestro = snap.docs.slice(0,2).map(d => feedRow('📁', d.data().tipo||'Entrada', trunc(d.data().descripcion||'', 55)));
+      feedCache.maestro = snap.docs.slice(0,2).map(d => feedRow('📁', d.data().tipo||'Entrada', trunc(d.data().descripcion||'', 55), 'maestro', d.data().tipo || d.id));
       renderFeed();
     }, e => console.error('maestro:', e));
 
@@ -2307,7 +2430,7 @@ function initListeners() {
       document.getElementById('mt_total').textContent = snap.size;
       _cache.mt = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
       aplicarFiltros('mt');
-      feedCache.mt = snap.docs.slice(0,2).map(d => feedRow('<i class="ph-fill ph-wrench"></i>', d.data().lugar||'Mantenimiento', trunc(d.data().descripcion||'', 55)));
+      feedCache.mt = snap.docs.slice(0,2).map(d => feedRow('<i class="ph-fill ph-wrench"></i>', d.data().lugar||'Mantenimiento', trunc(d.data().descripcion||'', 55), 'mantenimiento', d.data().lugar || d.id));
       renderFeed();
     }, e => console.error('mantenimiento:', e));
 
@@ -2372,7 +2495,7 @@ function initListeners() {
 }
 
 /* ── FEED RECIENTE ── */
-function feedRow(icon, title, sub) { return { icon, title, sub }; }
+function feedRow(icon, title, sub, targetTab, searchQuery) { return { icon, title, sub, targetTab, searchQuery }; }
 function trunc(s, n) { return s.length > n ? s.substring(0, n) + '…' : s; }
 
 function renderFeed() {
@@ -2383,7 +2506,7 @@ function renderFeed() {
     return;
   }
   el.innerHTML = all.map(r => `
-    <div class="activity-item">
+    <div class="activity-item" onclick="irARegistro('${r.targetTab || ''}', '${r.searchQuery || ''}')">
       <span class="activity-icon">${r.icon}</span>
       <div class="activity-info">
         <strong>${r.title}</strong>
@@ -2391,6 +2514,46 @@ function renderFeed() {
       </div>
     </div>`).join('');
 }
+
+/* ── NAVEGACIÓN INTELIGENTE DESDE FEED ── */
+function irARegistro(targetTab, searchQuery) {
+  if (!targetTab) return;
+  
+  let moduloKey = '';
+  let searchInputId = '';
+  if (targetTab === 'q137_1') { searchInputId = 'q1_search'; moduloKey = 'q1'; }
+  else if (targetTab === 'q137_3') { searchInputId = 'q3_search'; moduloKey = 'q3'; }
+  else if (targetTab === 'casos') { searchInputId = 'c_search'; moduloKey = 'c'; }
+  else if (targetTab === 'maestro') { searchInputId = 'rm_search'; moduloKey = 'rm'; }
+  else if (targetTab === 'mantenimiento') { searchInputId = 'mt_search'; moduloKey = 'mt'; }
+  
+  if (moduloKey && typeof _filtros !== 'undefined' && _filtros[moduloKey]) {
+    _filtros[moduloKey] = { texto: '', desde: '', hasta: '' };
+    
+    const desdeEl = document.getElementById(moduloKey + '_desde');
+    const hastaEl = document.getElementById(moduloKey + '_hasta');
+    if (desdeEl) desdeEl.value = '';
+    if (hastaEl) hastaEl.value = '';
+    
+    const tabContainer = document.getElementById(targetTab);
+    if (tabContainer) {
+      tabContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    }
+  }
+  
+  changeTab(targetTab);
+  
+  if (searchInputId && searchQuery) {
+    const input = document.getElementById(searchInputId);
+    if (input) {
+      input.value = searchQuery;
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros(moduloKey);
+      }
+    }
+  }
+}
+window.irARegistro = irARegistro;
 
 /* ── RENDER GENÉRICO ── */
 function renderLista(cid, docs, fn) {
@@ -2636,7 +2799,15 @@ async function editarMaestro(id) {
 async function guardarCaso() {
   if (_guardando) return;
   const num = v('c_num'), desc = v('c_desc');
-  if (!desc) { showToast('⚠️ La descripción es requerida', '#92400e'); return; }
+  let isValid = true;
+  if (!desc) { resaltarValidacion('c_desc', false); isValid = false; } else { resaltarValidacion('c_desc', true); }
+  const esEdicion = _editando.col === 'dace_casos' && _editando.id;
+  if (!num && !esEdicion) { resaltarValidacion('c_num', false); isValid = false; } else if (num) { resaltarValidacion('c_num', true); }
+  if (!isValid) {
+    if (!desc) showToast('⚠️ La descripción es requerida', '#92400e');
+    else showToast('⚠️ Número es requerido', '#92400e');
+    return;
+  }
   _guardando = true;
   const datos = {
     numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
@@ -2675,7 +2846,10 @@ async function guardarCaso() {
 async function guardarMantenimiento() {
   if (_guardando) return;
   const lugar = v('mt_lugar'), desc = v('mt_desc');
-  if (!lugar || !desc) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
+  let isValid = true;
+  if (!lugar) { resaltarValidacion('mt_lugar', false); isValid = false; } else { resaltarValidacion('mt_lugar', true); }
+  if (!desc) { resaltarValidacion('mt_desc', false); isValid = false; } else { resaltarValidacion('mt_desc', true); }
+  if (!isValid) { showToast('⚠️ Lugar y descripción son requeridos', '#92400e'); return; }
   _guardando = true;
   const datos = {
     lugar, departamento: v('mt_dept'),
@@ -3277,3 +3451,9 @@ if (typeof db !== 'undefined') window.db = db;
 if (typeof auth !== 'undefined') window.auth = auth;
 if (typeof storage !== 'undefined') window.storage = storage;
 if (typeof fbFunctions !== 'undefined') window.fbFunctions = fbFunctions;
+
+window.changeThemeMode = changeThemeMode;
+window.toggleFabMenu = toggleFabMenu;
+window.fabAction = fabAction;
+window.resaltarValidacion = resaltarValidacion;
+initTheme();
