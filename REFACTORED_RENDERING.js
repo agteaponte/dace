@@ -205,6 +205,13 @@ function item_Q1_data(d) {
   const footer = createSafeElement('div', '', { 'class': 'record-foot' });
   footer.appendChild(bEstatus(d.estatus));
 
+  const btnPrint = createSafeButton(
+    '🖨️ Imprimir',
+    'btn-edit',
+    () => imprimirPPR137_1(d._id)
+  );
+  btnPrint.style.color = '#0ea5e9';
+
   const btnEdit = createSafeButton(
     '✏️ Editar',
     'btn-edit',
@@ -217,6 +224,7 @@ function item_Q1_data(d) {
     () => eliminar('dace_q137_1', d._id, 'Orden')
   );
 
+  footer.appendChild(btnPrint);
   footer.appendChild(btnEdit);
   footer.appendChild(btnDel);
 
