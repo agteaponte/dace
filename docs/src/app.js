@@ -501,9 +501,6 @@ async function exportarGeneradoresPDF() {
   } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
 }
 
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
-}
-
 /* ═══ INSPECCIONES GENERADOR ELÉCTRICO PPR-312.2 ═══ */
 let _insp312Cache = [];
 let _editando312 = { id: null };
