@@ -170,6 +170,7 @@ function item_Q1_data(d) {
     ${d.fotoUrl ? `<img src="${d.fotoUrl}" style="width:100%;border-radius:8px;margin-top:8px;max-height:140px;object-fit:cover">` : ''}
     <div class="record-foot">
       ${bEstatus(d.estatus)}
+      <button class="btn-edit" style="color:#0ea5e9;" onclick="imprimirPPR137_1('${d._id}')"><i class="ph-bold ph-printer"></i> Imprimir</button>
       <button class="btn-edit" onclick="editarQ1('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
       <button class="btn-pdf-single" onclick="exportarPDF_Q1_Single_By_Id('${d._id}')"><i class="ph-bold ph-file-pdf"></i> PDF Oficial</button>
       <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Orden')"><i class="ph-bold ph-trash"></i></button>
@@ -3665,7 +3666,313 @@ function pdfHeaderSingle(doc, titulo) {
   return 45;
 }
 
+async function imprimirPPR137_1(id) {
+  showToast('<i class="ph-bold ph-printer"></i> Generando Formulario PPR-137.1...', '#16a34a');
+  try {
+    const snap = await db.collection('dace_q137_1').doc(id).get();
+    if(!snap.exists) {
+      showToast('<i class="ph-bold ph-x"></i> Registro no encontrado', '#dc2626');
+      return;
+    }
+    const d = snap.data();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+
+    // 1. CARGAR LOGO
+    const logoBase64 = await cargarImagenComoBase64('./policia.png');
+    if(logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 12, 10, 22, 22);
+    }
+
+    // 2. ENCABEZADO OFICIAL (Centro)
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('ESTADO LIBRE ASOCIADO DE PUERTO RICO', 108, 13, { align: 'center' });
+    doc.text('NEGOCIADO DE LA POLICÍA DE PUERTO RICO', 108, 17, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('DIVISIÓN DE ADMINISTRACIÓN DE CONTROL DE EDIFICIOS (DACE)', 108, 21, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text('SOLICITUD DE ORDEN DE TRABAJO', 108, 26, { align: 'center' });
+
+    // 3. CAJITA PPR-137.1 (Derecha)
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.rect(155, 10, 48, 18);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('FORMULARIO', 179, 15, { align: 'center' });
+    doc.setFontSize(13);
+    doc.text('PPR-137.1', 179, 21, { align: 'center' });
+    doc.setFontSize(7);
+    doc.text('Efectivo: 15 de agosto de 2018', 179, 26, { align: 'center' });
+
+    // Línea divisoria superior
+    doc.setLineWidth(0.8);
+    doc.line(12, 32, W - 12, 32);
+
+    // 4. SECCIÓN I - IDENTIFICACIÓN DE LA SOLICITUD
+    let y = 37;
+    doc.setFillColor(230, 230, 230);
+    doc.rect(12, y, W - 24, 6, 'F');
+    doc.rect(12, y, W - 24, 6, 'D');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('I. IDENTIFICACIÓN DE LA SOLICITUD', 15, y + 4.5);
+    y += 6;
+
+    // Grid Sección I
+    doc.setLineWidth(0.3);
+    // Fila 1
+    doc.rect(12, y, 65, 10);
+    doc.rect(77, y, 65, 10);
+    doc.rect(142, y, 61.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. NÚMERO DE SOLICITUD:', 14, y + 3);
+    doc.text('2. FECHA DE SOLICITUD (DD/MM/AAAA):', 79, y + 3);
+    doc.text('3. HORA:', 144, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.numero || '—', 14, y + 7.5);
+    doc.text(d.fecha ? d.fecha.split('-').reverse().join('/') : '—', 79, y + 7.5);
+    doc.text(d.hora || '—', 144, y + 7.5);
+    y += 10;
+
+    // Fila 2
+    doc.rect(12, y, 130, 10);
+    doc.rect(142, y, 61.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('4. UNIDAD SOLICITANTE:', 14, y + 3);
+    doc.text('5. ÁREA POLICIAL:', 144, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.unidad || '—', 14, y + 7.5);
+    doc.text(d.area || 'Arecibo', 144, y + 7.5);
+    y += 10;
+
+    // Fila 3
+    doc.rect(12, y, 130, 10);
+    doc.rect(142, y, 61.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('6. DIRECTOR / SUPERVISOR DE LA UNIDAD:', 14, y + 3);
+    doc.text('7. TELÉFONO DE CONTACTO:', 144, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.director || '—', 14, y + 7.5);
+    doc.text(d.tel || '—', 144, y + 7.5);
+    y += 10;
+
+    // Fila 4
+    doc.rect(12, y, W - 24, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('8. NOMBRE DEL SOLICITANTE (SI ES DISTINTO AL SUPERVISOR):', 14, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.solicitante || '—', 14, y + 7.5);
+    y += 15;
+
+    // 5. SECCIÓN II - TRABAJO SOLICITADO (CHECKBOXES)
+    doc.setFillColor(230, 230, 230);
+    doc.rect(12, y, W - 24, 6, 'F');
+    doc.rect(12, y, W - 24, 6, 'D');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('II. TIPO DE TRABAJO SOLICITADO', 15, y + 4.5);
+    y += 6;
+
+    // Caja de checkboxes
+    doc.rect(12, y, W - 24, 20);
+    doc.setFontSize(8);
+
+    // Tipos de trabajo
+    const trabajos = d.trabajos || [];
+    const carp = trabajos.includes('Carpintería') || d.carp;
+    const elec = trabajos.includes('Electricidad') || d.elec;
+    const pint = trabajos.includes('Pintura') || d.pint;
+    const refr = trabajos.includes('Refrigeración') || d.refr;
+    const eban = trabajos.includes('Ebanistería') || d.eban;
+    const limp = trabajos.includes('Limpieza') || d.limp;
+    const plom = trabajos.includes('Plomería') || d.plom;
+
+    // Dibujar checks [] Carpintería, etc.
+    const drawCheckbox = (label, checked, xCoord, yCoord) => {
+      doc.rect(xCoord, yCoord - 2.5, 3.5, 3.5);
+      if(checked) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('X', xCoord + 0.8, yCoord + 0.2);
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.text(label, xCoord + 5, yCoord);
+    };
+
+    drawCheckbox('Carpintería', carp, 16, y + 6);
+    drawCheckbox('Electricidad', elec, 64, y + 6);
+    drawCheckbox('Pintura', pint, 112, y + 6);
+    drawCheckbox('Refrigeración', refr, 160, y + 6);
+
+    drawCheckbox('Ebanistería', eban, 16, y + 14);
+    drawCheckbox('Limpieza', limp, 64, y + 14);
+    drawCheckbox('Plomería', plom, 112, y + 14);
+    y += 20 + 5;
+
+    // 6. SECCIÓN III - DESCRIPCIÓN DEL SERVICIO
+    doc.setFillColor(230, 230, 230);
+    doc.rect(12, y, W - 24, 6, 'F');
+    doc.rect(12, y, W - 24, 6, 'D');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('III. DESCRIPCIÓN DETALLADA DEL SERVICIO SOLICITADO', 15, y + 4.5);
+    y += 6;
+
+    // Caja de descripción
+    doc.rect(12, y, W - 24, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    const linesDesc = doc.splitTextToSize(d.descripcion || '—', W - 30);
+    doc.text(linesDesc, 15, y + 5);
+    y += 45 + 5;
+
+    // 7. SECCIÓN IV - LOCALIZACIÓN DE LA AVERÍA O PROPIEDAD
+    doc.setFillColor(230, 230, 230);
+    doc.rect(12, y, W - 24, 6, 'F');
+    doc.rect(12, y, W - 24, 6, 'D');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('IV. LOCALIZACIÓN DE LA AVERÍA O PROPIEDAD', 15, y + 4.5);
+    y += 6;
+
+    // Grid Sección IV
+    // Fila 1
+    doc.rect(12, y, 96, 10);
+    doc.rect(108, y, 95.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. SECCIÓN:', 14, y + 3);
+    doc.text('2. DIVISIÓN:', 110, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.seccion || '—', 14, y + 7.5);
+    doc.text(d.division || '—', 110, y + 7.5);
+    y += 10;
+
+    // Fila 2
+    doc.rect(12, y, 96, 10);
+    doc.rect(108, y, 95.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('3. DISTRITO / PRECINTO / UNIDAD:', 14, y + 3);
+    doc.text('4. ÁREA:', 110, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.distrito || '—', 14, y + 7.5);
+    doc.text(d.area2 || 'Arecibo', 110, y + 7.5);
+    y += 10;
+
+    // Fila 3
+    doc.rect(12, y, 96, 10);
+    doc.rect(108, y, 95.9, 10);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('5. NEGOCIADO:', 14, y + 3);
+    doc.text('6. SUPERINTENDENCIA AUXILIAR:', 110, y + 3);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.negociado || 'NPPR', 14, y + 7.5);
+    doc.text(d.super || '—', 110, y + 7.5);
+    y += 10 + 5;
+
+    // 8. SECCIÓN V - AUTORIZACIÓN (USO OFICIAL)
+    doc.setFillColor(230, 230, 230);
+    doc.rect(12, y, W - 24, 6, 'F');
+    doc.rect(12, y, W - 24, 6, 'D');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('V. USO OFICIAL Y AUTORIZACIÓN (DIV. DE INFRAESTRUCTURA)', 15, y + 4.5);
+    y += 6;
+
+    // Caja Autorización
+    doc.rect(12, y, W - 24, 30);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ESTATUS DE LA ACCIÓN:', 14, y + 4);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(d.estatus || 'Pendiente', 14, y + 9);
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OBSERVACIONES DE AUTORIZACIÓN:', 80, y + 4);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    const linesObs = doc.splitTextToSize(d.observaciones || 'Sin notas de seguimiento aún.', W - 96);
+    doc.text(linesObs, 80, y + 9);
+
+    // Firmas al pie de la caja
+    y += 30 + 10;
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    
+    // Líneas de firma
+    doc.line(15, y, 70, y);
+    doc.line(80, y, 135, y);
+    doc.line(145, y, 200, y);
+
+    doc.text('Firma del Solicitante', 15, y + 3.5);
+    doc.text('Firma Director / Supervisor', 80, y + 3.5);
+    doc.text('Firma Administrador DACE', 145, y + 3.5);
+
+    // 9. IMAGEN DE EVIDENCIA (Si existe, va en la segunda página)
+    if (d.fotoUrl) {
+      doc.addPage();
+      let y2 = pdfHeaderSingle(doc, 'Evidencia Fotográfica de la Avería');
+      
+      doc.setFillColor(240, 244, 248);
+      doc.rect(10, y2, W - 20, 7, 'F');
+      doc.setTextColor(10, 25, 47);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Solicitud #${d.numero || id.substring(0, 6)}`, 13, y2 + 5);
+      y2 += 12;
+
+      try {
+        const evBase64 = await cargarImagenComoBase64(d.fotoUrl);
+        if (evBase64) {
+          doc.addImage(evBase64, 'JPEG', 15, y2, W - 30, H - y2 - 20);
+        } else {
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(100, 100, 100);
+          doc.text('[Error al cargar la imagen de evidencia fotográfica]', 15, y2 + 10);
+        }
+      } catch (eImg) {
+        console.warn('Foto no disponible en PDF:', eImg);
+      }
+    }
+
+    doc.save(`Formulario_PPR-137.1_${d.numero || id.substring(0,6)}.pdf`);
+    showToast('<i class="ph-bold ph-check"></i> Formulario PPR-137.1 Guardado', '#166534');
+  } catch (e) {
+    showToast('<i class="ph-bold ph-x"></i> Error al generar formulario: ' + e.message, '#dc2626');
+    console.error(e);
+  }
+}
+
 async function imprimirIndividualPDF(col, id) {
+  if (col === 'dace_q137_1') {
+    return imprimirPPR137_1(id);
+  }
   showToast('<i class="ph-bold ph-printer"></i> Generando PDF del trabajo...', '#16a34a');
   try {
     const snap = await db.collection(col).doc(id).get();
@@ -3995,6 +4302,7 @@ window.generarDescripcionIA = generarDescripcionIA;
 window.importarConversacionesChatGPT = importarConversacionesChatGPT;
 window.trunc = trunc;
 window.imprimirIndividualPDF = imprimirIndividualPDF;
+window.imprimirPPR137_1 = imprimirPPR137_1;
 window.mostrarPinSiNecesario = mostrarPinSiNecesario;
 window.moduloTabId = moduloTabId;
 window.renderFeed = renderFeed;
