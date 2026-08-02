@@ -172,7 +172,6 @@ function item_Q1_data(d) {
       ${bEstatus(d.estatus)}
       <button class="btn-edit" style="color:#0ea5e9;" onclick="imprimirPPR137_1('${d._id}')"><i class="ph-bold ph-printer"></i> Imprimir</button>
       <button class="btn-edit" onclick="editarQ1('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
-      <button class="btn-pdf-single" onclick="exportarPDF_Q1_Single_By_Id('${d._id}')"><i class="ph-bold ph-file-pdf"></i> PDF Oficial</button>
       <button class="btn-del" onclick="eliminar('dace_q137_1','${d._id}','Orden')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -191,7 +190,6 @@ function item_Q3_data(d) {
     <div class="record-foot">
       ${bEstatus(d.estatus)}
       <button class="btn-edit" onclick="editarQ3('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
-      <button class="btn-pdf-single" onclick="imprimirIndividualPDF('dace_q137_3','${d._id}')"><i class="ph-bold ph-file-pdf"></i> PDF Oficial</button>
       <button class="btn-del" onclick="eliminar('dace_q137_3','${d._id}','Inspección')"><i class="ph-bold ph-trash"></i></button>
     </div>
   </div>`;
@@ -235,34 +233,13 @@ let _genCache = [];
 let _genFotoData = null;
 let _genFiltroTipo = '';
 
-const COORDS_312_2 = {
-  lugar: [26, 144],
-  propiedad: [164, 144],
-  mes: [464, 144],
-  director: [26, 407],
-  fechaDirector: [422, 407],
-  tabla_x: [26, 140, 253, 366, 480],
-  tabla_start_y: 178.0,
-  tabla_step_y: 22.1
-};
-
 function switchGenTab(tab) {
-  ['registro','historial','ppr_registro','ppr_historial','resumen'].forEach(t => {
-    const sec = document.getElementById(`gen_sec_${t}`);
-    if (sec) sec.style.display = t === tab ? 'block' : 'none';
+  ['registro','historial','resumen'].forEach(t => {
+    document.getElementById(`gen_sec_${t}`).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById(`gen_tab_btn${['registro','historial','resumen'].indexOf(t)+1}`);
+    if(btn) btn.style.background = t === tab ? 'var(--blue)' : '#94a3b8';
   });
-  
-  for (let i = 1; i <= 5; i++) {
-    const btn = document.getElementById(`gen_tab_btn${i}`);
-    if (btn) btn.style.background = '#94a3b8';
-  }
-  
-  const tabIndex = ['registro','historial','ppr_registro','ppr_historial','resumen'].indexOf(tab);
-  const activeBtn = document.getElementById(`gen_tab_btn${tabIndex + 1}`);
-  if (activeBtn) activeBtn.style.background = 'var(--blue)';
-  
   if (tab === 'resumen') calcularResumenGen();
-  if (tab === 'ppr_historial') cargarInsp312_2();
 }
 
 function previewFotoGen() {
@@ -499,311 +476,6 @@ async function exportarGeneradoresPDF() {
     doc.save(`DACE_Arecibo_Bitacora_Generadores_${fecha}.pdf`);
     showToast('<i class="ph-bold ph-check"></i> Bitácora PDF generada', '#166534');
   } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
-}
-
-  } catch(e) { showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'); console.error(e); }
-}
-
-/* ═══ INSPECCIONES GENERADOR ELÉCTRICO PPR-312.2 ═══ */
-let _insp312Cache = [];
-let _editando312 = { id: null };
-
-async function guardarInsp312_2() {
-  if (_guardando) return;
-  const lugar = document.getElementById('gen_312_lugar')?.value;
-  const propiedad = v('gen_312_propiedad');
-  const mes = document.getElementById('gen_312_mes')?.value;
-  
-  if (!lugar || !propiedad || !mes) {
-    showToast('⚠️ Distrito, propiedad y mes son requeridos', '#92400e');
-    return;
-  }
-  
-  _guardando = true;
-  showToast('<i class="ph-fill ph-hourglass"></i> Guardando inspección...', '#0a192f');
-  
-  // Recopilar tabla de bitácora mensual (10 filas)
-  const tabla = [];
-  for (let i = 0; i < 10; i++) {
-    const fecha = v(`gen_312_fecha_${i}`);
-    const prendida = v(`gen_312_prendida_${i}`);
-    const apagada = v(`gen_312_apagada_${i}`);
-    const operador = v(`gen_312_operador_${i}`);
-    const observaciones = v(`gen_312_obs_${i}`);
-    
-    // Si la fila tiene al menos algún dato, se registra
-    if (fecha || prendida || apagada || operador || observaciones) {
-      tabla.push({ fecha, prendida, apagada, operador, observaciones });
-    }
-  }
-  
-  const datos = {
-    lugar,
-    propiedad,
-    mes,
-    director: v('gen_312_director'),
-    fechaDirector: v('gen_312_fecha_firma'),
-    tabla,
-    usuario: 'Agte. Aponte Cancel · 31093',
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  
-  try {
-    if (_editando312.id) {
-      await db.collection('dace_insp_generadores').doc(_editando312.id).update(datos);
-      await registrarEnMaestroAuto(
-        'PPR-312.2 (Edición)',
-        `Inspección Generador editada: Propiedad ${propiedad} · Mes: ${mes}`,
-        `Dependencia: ${lugar} · Registros de encendido: ${tabla.length}`
-      );
-      showToast('<i class="ph-bold ph-check"></i> Inspección actualizada correctamente', '#166534');
-      _editando312 = { id: null };
-      const btn = document.querySelector('#gen_sec_ppr_registro .btn-save');
-      if (btn) btn.innerHTML = '💾 REGISTRAR INSPECCIÓN PPR-312.2';
-    } else {
-      const docRef = db.collection('dace_insp_generadores').doc();
-      await docRef.set(datos);
-      await registrarEnMaestroAuto(
-        'PPR-312.2',
-        `Nueva Inspección Generador registrada: Propiedad ${propiedad} · Mes: ${mes}`,
-        `Dependencia: ${lugar} · Registros de encendido: ${tabla.length}`
-      );
-      showToast('<i class="ph-bold ph-check"></i> Inspección guardada', '#166534');
-    }
-    
-    // Limpiar formulario
-    set('gen_312_lugar', '');
-    set('gen_312_propiedad', '');
-    set('gen_312_mes', '');
-    set('gen_312_director', '');
-    set('gen_312_fecha_firma', '');
-    for (let i = 0; i < 10; i++) {
-      set(`gen_312_fecha_${i}`, '');
-      set(`gen_312_prendida_${i}`, '');
-      set(`gen_312_apagada_${i}`, '');
-      set(`gen_312_operador_${i}`, '');
-      set(`gen_312_obs_${i}`, '');
-    }
-    switchGenTab('ppr_historial');
-  } catch(e) {
-    showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626');
-    console.error(e);
-  } finally {
-    _guardando = false;
-  }
-}
-
-function buscarInsp312_2() {
-  const txt = (document.getElementById('gen_312_search')?.value || '').toLowerCase();
-  let datos = _insp312Cache;
-  if (txt) {
-    datos = datos.filter(d => 
-      (d.lugar||'').toLowerCase().includes(txt) ||
-      (d.mes||'').toLowerCase().includes(txt) ||
-      (d.director||'').toLowerCase().includes(txt) ||
-      (d.propiedad||'').toLowerCase().includes(txt)
-    );
-  }
-  renderInsp312_2(datos);
-}
-
-function renderInsp312_2(docs) {
-  const el = document.getElementById('lista_insp_312');
-  if (!el) return;
-  document.getElementById('gen_312_total').textContent = docs.length;
-  
-  if (!docs.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon">📝</span><p>No hay inspecciones PPR-312.2 registradas</p></div>';
-    return;
-  }
-  
-  el.innerHTML = docs.map(d => `
-    <div class="record-item" style="border-left-color: var(--blue);">
-      <div class="record-head">
-        <span class="record-id">${d.lugar||'—'}</span>
-        <span class="record-ts">Mes: <strong>${d.mes||'—'}</strong></span>
-      </div>
-      <p class="record-body"><strong>Propiedad Planta:</strong> ${d.propiedad||'—'}</p>
-      ${d.director ? `<p class="record-body"><strong>Director:</strong> ${d.director}</p>` : ''}
-      <p class="record-body"><i class="ph-bold ph-list-numbers"></i> Registros de encendido: <strong>${d.tabla?.length || 0} de 10</strong></p>
-      <div class="record-foot">
-        <button class="btn-edit" onclick="editarInsp312_2('${d._id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
-        <button class="btn-pdf-single" onclick="exportarPDF_312_2_Single_By_Id('${d._id}')"><i class="ph-bold ph-file-pdf"></i> PDF Oficial</button>
-        <button class="btn-del" onclick="eliminarInsp312_2('${d._id}')"><i class="ph-bold ph-trash"></i> Eliminar</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function editarInsp312_2(id) {
-  const d = _insp312Cache.find(x => x._id === id);
-  if (!d) return;
-  _editando312 = { id };
-  
-  set('gen_312_lugar', d.lugar || '');
-  set('gen_312_propiedad', d.propiedad || '');
-  set('gen_312_mes', d.mes || '');
-  set('gen_312_director', d.director || '');
-  set('gen_312_fecha_firma', d.fechaDirector || '');
-  
-  // Limpiar primero la tabla
-  for (let i = 0; i < 10; i++) {
-    set(`gen_312_fecha_${i}`, '');
-    set(`gen_312_prendida_${i}`, '');
-    set(`gen_312_apagada_${i}`, '');
-    set(`gen_312_operador_${i}`, '');
-    set(`gen_312_obs_${i}`, '');
-  }
-  
-  // Rellenar filas existentes
-  if (d.tabla) {
-    d.tabla.forEach((it, i) => {
-      if (i >= 10) return;
-      set(`gen_312_fecha_${i}`, it.fecha || '');
-      set(`gen_312_prendida_${i}`, it.prendida || '');
-      set(`gen_312_apagada_${i}`, it.apagada || '');
-      set(`gen_312_operador_${i}`, it.operador || '');
-      set(`gen_312_obs_${i}`, it.observaciones || '');
-    });
-  }
-  
-  const btn = document.querySelector('#gen_sec_ppr_registro .btn-save');
-  if (btn) btn.innerHTML = '💾 GUARDAR CAMBIOS PPR-312.2';
-  switchGenTab('ppr_registro');
-}
-
-async function eliminarInsp312_2(id) {
-  if (!confirm('¿Estás seguro de que deseas eliminar esta inspección PPR-312.2?')) return;
-  try {
-    await db.collection('dace_insp_generadores').doc(id).delete();
-    showToast('<i class="ph-bold ph-trash"></i> Inspección eliminada', '#166534');
-  } catch(e) {
-    showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626');
-  }
-}
-
-async function cargarInsp312_2() {
-  try {
-    const snap = await db.collection('dace_insp_generadores').orderBy('createdAt','desc').get();
-    _insp312Cache = snap.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
-    renderInsp312_2(_insp312Cache);
-  } catch(e) {
-    console.error('Error al cargar inspecciones 312.2:', e);
-  }
-}
-
-// Inicialización de la tabla interactiva 312.2 y clonación de dependencias
-document.addEventListener('DOMContentLoaded', () => {
-  const tbody = document.getElementById('tabla_rows_312');
-  if (tbody) {
-    let html = '';
-    for (let i = 0; i < 10; i++) {
-      html += `
-        <tr style="border-bottom:1px solid #e2e8f0;">
-          <td style="padding:6px; font-weight:bold; color:#64748b; font-size:12px;">${i+1}</td>
-          <td style="padding:4px;"><input type="date" id="gen_312_fecha_${i}" style="width:100%; padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; background:white;"></td>
-          <td style="padding:4px;"><input type="time" id="gen_312_prendida_${i}" style="width:100%; padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; background:white;"></td>
-          <td style="padding:4px;"><input type="time" id="gen_312_apagada_${i}" style="width:100%; padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; background:white;"></td>
-          <td style="padding:4px;"><input type="text" id="gen_312_operador_${i}" placeholder="Nombre..." style="width:100%; padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; background:white;" autocomplete="off"></td>
-          <td style="padding:4px;"><input type="text" id="gen_312_obs_${i}" placeholder="Notas..." style="width:100%; padding:4px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; background:white;" autocomplete="off"></td>
-        </tr>
-      `;
-    }
-    tbody.innerHTML = html;
-  }
-  
-  // Clonar comandancias
-  setTimeout(() => {
-    const selOrig = document.getElementById('gen_lugar');
-    const selDest = document.getElementById('gen_312_lugar');
-    if (selOrig && selDest && selDest.options.length <= 1) {
-      selDest.innerHTML = selOrig.innerHTML;
-    }
-  }, 1000);
-});
-
-// Lógica de Renderizado en PDF PPR-312.2 con pdf-lib y 12pt Bold
-async function renderSingle312PageWithPdfLib(pdfDoc, d) {
-  const { rgb, StandardFonts } = PDFLib;
-  const pages = pdfDoc.getPages();
-  const page = pages[0];
-  const height = page.getHeight();
-  
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const textColor = rgb(0.04, 0.1, 0.18); // Tinta azul marino oscuro
-  
-  const write = (text, [x, top_y], defaultSize = 12, maxWidth = null) => {
-    if (text === undefined || text === null || text === '') return;
-    let size = defaultSize;
-    if (maxWidth) {
-      const textWidth = fontBold.widthOfTextAtSize(String(text), defaultSize);
-      if (textWidth > maxWidth) {
-        size = Math.max(6.0, defaultSize * (maxWidth / textWidth));
-      }
-    }
-    page.drawText(String(text), {
-      x: x,
-      y: height - top_y + 3.0, // centrado vertical
-      size: size,
-      font: fontBold,
-      color: textColor
-    });
-  };
-  
-  // 1. Escribir Cabecera
-  write(d.lugar, COORDS_312_2.lugar, 12, 135);
-  write(d.propiedad, COORDS_312_2.propiedad, 12, 295);
-  write(d.mes, COORDS_312_2.mes, 12, 125);
-  
-  // 2. Escribir Tabla de Bitácora (Hasta 10 filas)
-  if (d.tabla && Array.isArray(d.tabla)) {
-    d.tabla.forEach((row, i) => {
-      if (i >= 10) return;
-      const top_y = COORDS_312_2.tabla_start_y + (i * COORDS_312_2.tabla_step_y);
-      
-      write(row.fecha, [COORDS_312_2.tabla_x[0], top_y], 12, 100);
-      write(row.prendida, [COORDS_312_2.tabla_x[1], top_y], 12, 100);
-      write(row.apagada, [COORDS_312_2.tabla_x[2], top_y], 12, 100);
-      write(row.operador, [COORDS_312_2.tabla_x[3], top_y], 12, 100);
-      write(row.observaciones, [COORDS_312_2.tabla_x[4], top_y], 12, 100);
-    });
-  }
-  
-  // 3. Escribir Firmas al pie
-  write(d.director, COORDS_312_2.director, 12, 380);
-  write(d.fechaDirector, COORDS_312_2.fechaDirector, 12, 155);
-}
-
-async function exportarPDF_312_2_Single(d) {
-  showToast('<i class="ph-fill ph-hourglass"></i> Generando PDF Oficial...', '#0a192f');
-  try {
-    const { PDFDocument } = PDFLib;
-    const arrayBuffer = base64ToArrayBuffer(PDF_312_2);
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    
-    await renderSingle312PageWithPdfLib(pdfDoc, d);
-    
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `INSP-312.2-${d.propiedad || 'generador'}-${d.mes || 'mes'}.pdf`;
-    link.click();
-    
-    showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
-  } catch (error) {
-    console.error('Error generando PDF:', error);
-    showToast('<i class="ph-bold ph-x"></i> Error generando PDF', '#dc2626');
-  }
-}
-
-async function exportarPDF_312_2_Single_By_Id(id) {
-  const d = _insp312Cache.find(x => x._id === id);
-  if (!d) {
-    showToast('⚠️ Registro no encontrado', '#dc2626');
-    return;
-  }
-  await exportarPDF_312_2_Single(d);
 }
 
 /* ═══ AGENDA ═══ */
@@ -1534,13 +1206,6 @@ async function guardarQ1() {
     telefono: v('q1_tel'), trabajos, descripcion: desc,
     seccion: v('q1_seccion'), division: v('q1_division'),
     distrito: v('q1_distrito'), negociado: v('q1_negociado'),
-    area2: v('q1_area2'), super: v('q1_super'),
-    adminAutorizado: v('q1_admin_autorizado'),
-    adminFecha: v('q1_admin_fecha'),
-    adminAutorizaA: v('q1_admin_autoriza_a'),
-    adminViajarA: v('q1_admin_viajar_a'),
-    adminTablilla: v('q1_admin_tablilla'),
-    adminAcompanante: v('q1_admin_acompanante'),
     estatus: v('q1_estatus'), observaciones: v('q1_obs'),
     usuario: 'Agte. Aponte Cancel · 31093'
   };
@@ -1575,15 +1240,7 @@ async function guardarQ1() {
       );
       showToast('<i class="ph-bold ph-check"></i> Orden ' + datos.numero + ' guardada', '#166534');
     }
-    limpiar([
-      'q1_solicitante', 'q1_tel', 'q1_desc', 'q1_obs', 'q1_director', 
-      'q1_seccion', 'q1_division', 'q1_distrito', 'q1_super',
-      'q1_admin_autorizado', 'q1_admin_fecha', 'q1_admin_autoriza_a', 
-      'q1_admin_viajar_a', 'q1_admin_tablilla', 'q1_admin_acompanante'
-    ]);
-    set('q1_area', 'Arecibo');
-    set('q1_area2', 'Arecibo');
-    set('q1_negociado', 'NPPR');
+    limpiar(['q1_solicitante','q1_tel','q1_desc','q1_obs','q1_director','q1_seccion','q1_division','q1_distrito']);
     ['q1_carp','q1_elec','q1_pint','q1_refr','q1_eban','q1_limp','q1_plom'].forEach(id => {
       const el = document.getElementById(id); if(el) el.checked = false;
     });
@@ -1695,50 +1352,6 @@ async function cargarImagenComoBase64(url) {
   }
 }
 
-function base64ToArrayBuffer(base64) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-const COORDS_137_1 = {
-  numero: [475, 130.1],
-  unidad: [45, 183.0],
-  area: [215, 183.0],
-  director: [330, 183.0],
-  fecha: [45, 210.5],
-  trabajos: {
-    'Carpintería': [46.0, 228.5],
-    'Electricidad': [138.7, 228.5],
-    'Pintura': [219.4, 228.5],
-    'Refrigeración': [276.1, 228.5],
-    'Ebanistería': [369.6, 228.5],
-    'Limpieza': [459.0, 228.5],
-    'Plomería': [46.0, 244.1]
-  },
-  descripcion: [45, 298.0],
-  seccion: [45, 532.0],
-  division: [173, 532.0],
-  distrito: [300, 532.0],
-  area_loc: [431, 532.0],
-  negociado: [45, 561.5],
-  superintendencia: [300, 561.5],
-  firma: [45, 591.0],
-  telefono: [380, 591.0],
-  autorizado: [45, 642.0],
-  fecha_aut: [423, 642.0],
-  viajar_a_nombre: [45, 671.5],
-  viajar_a_lugar: [344, 671.5],
-  tablilla: [45, 701.0],
-  acompanante: [300, 701.0]
-};
-
-const COORDS_137_3 = {"ext": [[1, 246.4], [1, 262.4], [1, 277.9], [1, 389.4], [1, 405.5], [1, 421.5], [1, 437.5], [1, 453.5], [1, 469.7], [1, 485.8], [1, 501.9], [1, 517.9], [1, 533.9]], "int": [[1, 579.2], [1, 595.3], [1, 611.3], [1, 374.6], [1, 469.7], [1, 738.9], [1, 754.5], [1, 782.6], [1, 333.2], [1, 668.5], [1, 517.9], [1, 859.4], [1, 875.4], [1, 891.6]], "com": [[2, 57.1], [2, 85.2], [2, 127.1], [2, 183.3], [2, 198.9], [2, 241.3], [2, 270.6], [2, 367.7], [2, 423.4], [2, 451.5], [2, 521.5]], "adm": [[2, 784.8], [2, 57.1], [2, 70.9], [2, 451.5], [2, 637.3], [2, 653.5], [2, 669.5], [2, 685.5], [2, 367.7], [2, 717.7], [2, 733.7], [2, 749.9]], "bib": [[2, 784.8], [2, 57.1], [2, 70.9], [2, 832.5], [2, 367.7], [2, 872.5], [2, 423.4], [2, 521.5]], "aca": [[3, 79.4], [3, 95.4], [3, 111.5], [3, 127.7], [3, 143.6], [3, 159.7], [3, 175.9], [3, 191.8], [3, 208.0]], "ban": [[3, 242.8], [3, 258.8], [3, 191.8], [3, 291.0], [3, 307.1], [3, 323.2], [3, 339.2], [3, 355.4], [3, 371.3], [3, 208.0], [3, 403.0]], "tec": [[3, 455.1], [3, 471.2], [3, 291.0], [3, 503.3], [3, 519.4], [3, 535.4], [3, 551.5]], "can": [[3, 586.0], [3, 619.1], [3, 635.4], [3, 651.2], [3, 667.3], [3, 111.5], [3, 699.6], [3, 715.7], [3, 371.3], [3, 224.9], [3, 763.8], [3, 175.9], [3, 535.4], [3, 291.0]], "seg": [[3, 846.5], [3, 892.9], [3, 944.0], [4, 38.6], [4, 54.8], [4, 70.9], [4, 86.4]], "ele": [[4, 128.8], [4, 161.5], [4, 194.2], [4, 226.8], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6]], "dor": [[4, 142.0], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6], [4, 240.6]]};
-
 /* ═══ EXPORTAR PDF ═══ */
 function pdfHeader(doc, titulo) {
   const azul  = [10, 25, 47];
@@ -1759,7 +1372,7 @@ function pdfHeader(doc, titulo) {
   // Subtítulo
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('Policía de Puerto Rico', W / 2, 20, { align: 'center' });
+  doc.text('Negociado de la Policía de Puerto Rico', W / 2, 20, { align: 'center' });
 
   // Línea dorada
   doc.setDrawColor(...gold);
@@ -1797,362 +1410,6 @@ function checkPage(doc, y, needed = 20) {
   return y;
 }
 
-/* ── HELPER: RENDERIZAR FICHA OFICIAL PPR-137.1 ── */
-async function renderSingleQ1PageWithPdfLib(pdfDoc, d, incluirFotos) {
-  const { rgb, StandardFonts } = PDFLib;
-  const pages = pdfDoc.getPages();
-  const page = pages[0]; // Plantilla original solo tiene 1 página
-  const height = page.getHeight();
-  
-  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  
-  const textColor = rgb(0.04, 0.1, 0.18); // Color de tinta azul marino oscuro
-  
-  // Helper para escribir texto con autoajuste de tamaño de letra para evitar desbordes (por defecto 12pt Bold)
-  const write = (text, [x, top_y], font = fontBold, defaultSize = 12, maxWidth = null) => {
-    if (text === undefined || text === null || text === '') return;
-    let size = defaultSize;
-    if (maxWidth) {
-      const textWidth = font.widthOfTextAtSize(String(text), defaultSize);
-      if (textWidth > maxWidth) {
-        size = Math.max(5.5, defaultSize * (maxWidth / textWidth));
-      }
-    }
-    page.drawText(String(text), {
-      x: x,
-      y: height - top_y + 3.0, // Subir ligeramente para centrar en las cajas
-      size: size,
-      font: font,
-      color: textColor
-    });
-  };
-
-  // Escribir campos simples
-  write(d.numero, COORDS_137_1.numero, fontBold, 12, 80);
-  write(d.unidad, COORDS_137_1.unidad, fontBold, 12, 150);
-  write(d.area, COORDS_137_1.area, fontBold, 12, 100);
-  write(d.director, COORDS_137_1.director, fontBold, 12, 230);
-  write(d.fecha, COORDS_137_1.fecha, fontBold, 12, 150);
-  
-  // Trabajos solicitados (checkboxes)
-  const works = d.trabajos || [];
-  Object.keys(COORDS_137_1.trabajos).forEach(name => {
-    if (works.includes(name)) {
-      const [cx, ctop] = COORDS_137_1.trabajos[name];
-      // Dibujar una X
-      page.drawText('X', {
-        x: cx + 2.0, // Desplazar un poco a la derecha para centrar en el cuadro
-        y: height - ctop - 5.5, // Bajar un poco más para centrar verticalmente
-        size: 11,
-        font: fontBold,
-        color: rgb(0.8, 0.1, 0.1) // Check en rojo para que destaque
-      });
-    }
-  });
-  
-  // Descripción Servicio Solicitado (multilinea)
-  if (d.descripcion) {
-    const descText = String(d.descripcion);
-    const words = descText.split(' ');
-    let lines = [];
-    let currentLine = '';
-    words.forEach(w => {
-      const testLine = currentLine ? currentLine + ' ' + w : w;
-      const width = fontBold.widthOfTextAtSize(testLine, 12);
-      if (width > 520) {
-        lines.push(currentLine);
-        currentLine = w;
-      } else {
-        currentLine = testLine;
-      }
-    });
-    if (currentLine) lines.push(currentLine);
-    
-    // Escribir líneas
-    let startY = COORDS_137_1.descripcion[1];
-    lines.slice(0, 12).forEach((line, idx) => {
-      write(line, [COORDS_137_1.descripcion[0], startY + (idx * 14.5)], fontBold, 12);
-    });
-  }
-  
-  // Localización
-  write(d.seccion, COORDS_137_1.seccion, fontBold, 12, 115);
-  write(d.division, COORDS_137_1.division, fontBold, 12, 115);
-  write(d.distrito, COORDS_137_1.distrito, fontBold, 12, 115);
-  write(d.area2 || d.area_loc, COORDS_137_1.area_loc, fontBold, 12, 135);
-  write(d.negociado, COORDS_137_1.negociado, fontBold, 12, 235);
-  write(d.super, COORDS_137_1.superintendencia, fontBold, 12, 265);
-  write(d.solicitante, COORDS_137_1.firma, fontBold, 12, 355);
-  write(d.telefono, COORDS_137_1.telefono, fontBold, 12, 145);
-  
-  // Para uso oficial
-  write(d.adminAutorizado, COORDS_137_1.autorizado, fontBold, 12, 355);
-  write(d.adminFecha, COORDS_137_1.fecha_aut, fontBold, 12, 145);
-  write(d.adminAutorizaA, COORDS_137_1.viajar_a_nombre, fontBold, 12, 280);
-  write(d.adminViajarA, COORDS_137_1.viajar_a_lugar, fontBold, 12, 220);
-  write(d.adminTablilla, COORDS_137_1.tablilla, fontBold, 12, 235);
-  write(d.adminAcompanante, COORDS_137_1.acompanante, fontBold, 12, 265);
-  
-  // Evidencia fotográfica (Si existe, va en una página añadida al final)
-  if (d.fotoUrl && incluirFotos) {
-    try {
-      const imgData = await cargarImagenComoBase64(d.fotoUrl);
-      if (imgData) {
-        const newPage = pdfDoc.addPage([612, 792]);
-        const { width: pW, height: pH } = newPage.getSize();
-        
-        newPage.drawRectangle({
-          x: 0,
-          y: pH - 30,
-          width: pW,
-          height: 30,
-          color: rgb(0.04, 0.1, 0.18)
-        });
-        
-        newPage.drawText('ANEXO: EVIDENCIA FOTOGRÁFICA', {
-          x: pW / 2 - 100,
-          y: pH - 20,
-          size: 11,
-          font: fontBold,
-          color: rgb(1, 1, 1)
-        });
-        
-        let embeddedImage;
-        if (imgData.startsWith('data:image/png')) {
-          embeddedImage = await pdfDoc.embedPng(imgData);
-        } else {
-          embeddedImage = await pdfDoc.embedJpg(imgData);
-        }
-        
-        const dims = embeddedImage.scale(0.5);
-        const imgW = pW - 60;
-        const imgH = (dims.height / dims.width) * imgW;
-        
-        newPage.drawImage(embeddedImage, {
-          x: 30,
-          y: pH - 50 - imgH,
-          width: imgW,
-          height: imgH
-        });
-      }
-    } catch (e) {
-      console.warn('No se pudo añadir la foto al PDF anexo con pdf-lib:', e);
-    }
-  }
-}
-
-/* ── EXPORTAR PDF INDIVIDUAL DE PPR-137.1 ── */
-async function exportarPDF_Q1_Single(d) {
-  showToast('<i class="ph-fill ph-hourglass"></i> Generando PDF Oficial...', '#0a192f');
-  
-  let incluirFotos = false;
-  if (d.fotoUrl) {
-    incluirFotos = confirm('¿Deseas incluir la evidencia fotográfica en el PDF?');
-  }
-  
-  try {
-    const { PDFDocument } = PDFLib;
-    const arrayBuffer = base64ToArrayBuffer(PDF_137_1);
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    
-    await renderSingleQ1PageWithPdfLib(pdfDoc, d, incluirFotos);
-    
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `SOL-137.1-${d.numero || 'sin-numero'}.pdf`;
-    link.click();
-    
-    showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
-  } catch (error) {
-    console.error('Error generando PDF:', error);
-    showToast('<i class="ph-bold ph-x"></i> Error generando PDF', '#dc2626');
-  }
-}
-
-async function renderSingleQ3PageWithPdfLib(pdfDoc, d, incluirFotos) {
-  const { rgb, StandardFonts } = PDFLib;
-  const pages = pdfDoc.getPages();
-  const height = pages[0].getHeight(); // Todas las páginas tienen la misma altura de 1008
-  
-  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const textColor = rgb(0.04, 0.1, 0.18); // Tinta azul marino oscuro
-  
-  const writeOnPage = (pageNum, text, x, top_y, font = fontBold, defaultSize = 12, maxWidth = null) => {
-    if (text === undefined || text === null || text === '') return;
-    let size = defaultSize;
-    if (maxWidth) {
-      const textWidth = font.widthOfTextAtSize(String(text), defaultSize);
-      if (textWidth > maxWidth) {
-        size = Math.max(5.5, defaultSize * (maxWidth / textWidth));
-      }
-    }
-    const page = pages[pageNum - 1];
-    page.drawText(String(text), {
-      x: x,
-      y: height - top_y - 7.5, // Centrado vertical en la celda
-      size: size,
-      font: font,
-      color: textColor
-    });
-  };
-  
-  // 1. Cabecera (Página 1)
-  writeOnPage(1, d.numero, 30, 148, fontBold, 12, 160);
-  writeOnPage(1, d.lugar, 222, 148, fontBold, 12, 160);
-  writeOnPage(1, d.area || 'Arecibo', 402, 148, fontBold, 12, 160);
-  writeOnPage(1, d.director, 30, 177, fontBold, 12, 350);
-  writeOnPage(1, d.telefono, 402, 177, fontBold, 12, 160);
-  writeOnPage(1, d.direccion, 30, 206, fontBold, 12, 350);
-  writeOnPage(1, d.fecha, 402, 206, fontBold, 12, 160);
-  
-  // 2. Rellenar las Secciones de la Inspección
-  if (d.inspeccion) {
-    Object.keys(COORDS_137_3).forEach(sec => {
-      const secData = d.inspeccion[sec];
-      if (!secData || !Array.isArray(secData)) return;
-      
-      secData.forEach((it, idx) => {
-        const coord = COORDS_137_3[sec][idx];
-        if (!coord) return;
-        const [pNum, top_y] = coord;
-        
-        // Determinar coordenadas X de checkboxes
-        // Buen Estado = 'E', Reparación = 'R', Reemplazo = 'P'
-        let checkX = null;
-        if (it.estado === 'E' || it.estado === 'B' || it.estado === 'Buen Estado') {
-          checkX = 320;
-        } else if (it.estado === 'R' || it.estado === 'Reparación') {
-          checkX = 269;
-        } else if (it.estado === 'P' || it.estado === 'Reemplazo') {
-          checkX = 218;
-        }
-        
-        if (checkX) {
-          const page = pages[pNum - 1];
-          page.drawText('X', {
-            x: checkX,
-            y: height - top_y - 8.5, // centrado vertical en checkbox ☐
-            size: 11,
-            font: fontBold,
-            color: rgb(0.8, 0.1, 0.1) // Rojo para destacar
-          });
-        }
-        
-        // Escribir cantidad
-        if (it.cantidad) {
-          writeOnPage(pNum, it.cantidad, 356, top_y, fontBold, 12, 55);
-        }
-        
-        // Escribir observaciones
-        if (it.observaciones) {
-          writeOnPage(pNum, it.observaciones, 424, top_y, fontBold, 11, 150);
-        }
-      });
-    });
-  }
-  
-  // 3. Observaciones Generales (Página 4)
-  const obsGen = [
-    d.observacionesGenerales,
-    d.hallazgos ? `Hallazgos: ${d.hallazgos}` : '',
-    d.recomendaciones ? `Recomendaciones: ${d.recomendaciones}` : '',
-    d.medidas ? `Medidas Tomadas: ${d.medidas}` : ''
-  ].filter(Boolean).join('\n');
-  
-  if (obsGen) {
-    const lines = obsGen.split('\n');
-    let startY = 645;
-    lines.forEach((line, idx) => {
-      const words = line.split(' ');
-      let currentLine = '';
-      words.forEach(w => {
-        const testLine = currentLine ? currentLine + ' ' + w : w;
-        const width = fontRegular.widthOfTextAtSize(testLine, 8);
-        if (width > 520) {
-          writeOnPage(4, currentLine, 30, startY, fontRegular, 8);
-          startY += 10;
-          currentLine = w;
-        } else {
-          currentLine = testLine;
-        }
-      });
-      if (currentLine) {
-        writeOnPage(4, currentLine, 30, startY, fontRegular, 8);
-        startY += 12;
-      }
-    });
-  }
-  
-  // 4. Firmas (Página 4)
-  writeOnPage(4, d.supervisor, 30, 770, fontBold, 8.5);
-  writeOnPage(4, 'Coordinador DACE', 30, 799);
-  writeOnPage(4, d.fecha, 312, 799);
-  
-  // 5. Evidencia fotográfica (Si existe, se añade al final de las 4 páginas)
-  if (d.fotoUrl && incluirFotos) {
-    try {
-      const imgData = await cargarImagenComoBase64(d.fotoUrl);
-      if (imgData) {
-        const newPage = pdfDoc.addPage([612, 1008]);
-        const { width: pW, height: pH } = newPage.getSize();
-        
-        newPage.drawRectangle({
-          x: 0,
-          y: pH - 30,
-          width: pW,
-          height: 30,
-          color: rgb(0.04, 0.1, 0.18)
-        });
-        
-        newPage.drawText('ANEXO: EVIDENCIA FOTOGRÁFICA', {
-          x: pW / 2 - 100,
-          y: pH - 20,
-          size: 11,
-          font: fontBold,
-          color: rgb(1, 1, 1)
-        });
-        
-        let embeddedImage;
-        if (imgData.startsWith('data:image/png')) {
-          embeddedImage = await pdfDoc.embedPng(imgData);
-        } else {
-          embeddedImage = await pdfDoc.embedJpg(imgData);
-        }
-        
-        const dims = embeddedImage.scale(0.5);
-        const imgW = pW - 60;
-        const imgH = (dims.height / dims.width) * imgW;
-        
-        newPage.drawImage(embeddedImage, {
-          x: 30,
-          y: pH - 50 - imgH,
-          width: imgW,
-          height: imgH
-        });
-      }
-    } catch (e) {
-      console.warn('No se pudo añadir la foto al PDF anexo de Q3:', e);
-    }
-  }
-}
-
-async function exportarPDF_Q1_Single_By_Id(id) {
-  if (typeof _cache === 'undefined' || !_cache.q1) {
-    showToast('⚠️ Datos no cargados en caché', '#dc2626');
-    return;
-  }
-  const d = _cache.q1.find(x => x._id === id);
-  if (!d) {
-    showToast('⚠️ Registro no encontrado', '#dc2626');
-    return;
-  }
-  await exportarPDF_Q1_Single(d);
-}
-
 async function exportarPDF(modulo) {
   showToast('<i class="ph-fill ph-hourglass"></i> Generando PDF...', '#0a192f');
   const { jsPDF } = window.jspdf;
@@ -2185,53 +1442,157 @@ async function exportarPDF(modulo) {
 
   try {
     if (modulo === 'q137_1') {
-      const { PDFDocument } = PDFLib;
-      const mergedPdf = await PDFDocument.create();
-      
+      titulo = 'Registro de Órdenes de Trabajo PPR-137.1';
+      y      = pdfHeader(doc, titulo);
+
       for (let i = 0; i < items.length; i++) {
-        const templateBuffer = base64ToArrayBuffer(PDF_137_1);
-        const tempPdf = await PDFDocument.load(templateBuffer);
-        await renderSingleQ1PageWithPdfLib(tempPdf, items[i], incluirFotos);
-        
-        const copiedPages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
-        copiedPages.forEach(p => mergedPdf.addPage(p));
+        const d = items[i];
+        y = checkPage(doc, y, 40);
+
+        doc.setFillColor(240, 244, 248);
+        doc.rect(10, y, W-20, 7, 'F');
+        doc.setTextColor(...azul);
+        doc.setFontSize(9);
+        doc.setFont('helvetica','bold');
+        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(100,100,100);
+        doc.setFontSize(7);
+        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+        y += 10;
+
+        const campos = [
+          ['Solicitante', d.solicitante],
+          ['Unidad', d.unidad],
+          ['Tipos de Trabajo', d.trabajos?.join(', ')],
+          ['Descripción', d.descripcion],
+          ['Localización', [d.seccion, d.division, d.distrito].filter(Boolean).join(' · ')],
+          ['Estatus', d.estatus],
+          ['Observaciones', d.observaciones],
+        ];
+        campos.forEach(([label, val]) => {
+          if (!val) return;
+          y = checkPage(doc, y, 10);
+          doc.setTextColor(...azul);
+          doc.setFontSize(7);
+          doc.setFont('helvetica','bold');
+          doc.text(label + ':', 13, y);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(60,60,60);
+          const lines = doc.splitTextToSize(val, W - 55);
+          doc.text(lines, 45, y);
+          y += (lines.length * 4) + 2;
+        });
+
+        if (d.fotoUrl && incluirFotos) {
+          try {
+            y = checkPage(doc, y, 65);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text('Evidencia Fotográfica:', 13, y);
+            y += 4;
+            const imgData = await cargarImagenComoBase64(d.fotoUrl);
+            if (imgData) {
+              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+              y += 58;
+            }
+          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+        }
+
+        y = pdfLinea(doc, y+2, W);
       }
-      
-      const pdfBytes = await mergedPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      const fechaFile = new Date().toISOString().split('T')[0];
-      link.download = `DACE_Arecibo_PPR-137.1_Incidentes_${fechaFile}.pdf`;
-      link.click();
-      
-      showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
-      return;
     }
 
     else if (modulo === 'q137_3') {
-      const { PDFDocument } = PDFLib;
-      const mergedPdf = await PDFDocument.create();
-      
+      titulo = 'Registro de Inspecciones PPR-137.3';
+      y      = pdfHeader(doc, titulo);
+
       for (let i = 0; i < items.length; i++) {
-        const templateBuffer = base64ToArrayBuffer(PDF_137_3);
-        const tempPdf = await PDFDocument.load(templateBuffer);
-        await renderSingleQ3PageWithPdfLib(tempPdf, items[i], incluirFotos);
-        
-        const copiedPages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
-        copiedPages.forEach(p => mergedPdf.addPage(p));
+        const d = items[i];
+        y = checkPage(doc, y, 40);
+
+        doc.setFillColor(255, 249, 235);
+        doc.rect(10, y, W-20, 7, 'F');
+        doc.setTextColor(92, 70, 10);
+        doc.setFontSize(9);
+        doc.setFont('helvetica','bold');
+        doc.text(`#${i+1}  ${d.numero||'—'}`, 13, y+5);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(100,100,100);
+        doc.setFontSize(7);
+        doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+        y += 10;
+
+        const campos = [
+          ['Lugar/Unidad', d.lugar],
+          ['Director', d.director],
+          ['Dirección', d.direccion],
+          ['Obs. Generales', d.observacionesGenerales],
+          ['Hallazgos', d.hallazgos],
+          ['Recomendaciones', d.recomendaciones],
+          ['Estatus', d.estatus],
+        ];
+        campos.forEach(([label, val]) => {
+          if (!val) return;
+          y = checkPage(doc, y, 10);
+          doc.setTextColor(92, 70, 10);
+          doc.setFontSize(7);
+          doc.setFont('helvetica','bold');
+          doc.text(label + ':', 13, y);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(60,60,60);
+          const lines = doc.splitTextToSize(val, W - 55);
+          doc.text(lines, 45, y);
+          y += (lines.length * 4) + 2;
+        });
+
+        if (d.inspeccion) {
+          const secNombres = {
+            ext:'Exterior', int:'Interior', com:'Comedor', adm:'Administración',
+            bib:'Biblioteca', aca:'Académico', ban:'Baños', tec:'Techos',
+            can:'Cancha', seg:'Seguridad', ele:'Electricidad', dor:'Dormitorios'
+          };
+          Object.keys(d.inspeccion).forEach(sec => {
+            const secItems = d.inspeccion[sec].filter(it => it.estado === 'R' || it.estado === 'P');
+            if (secItems.length === 0) return;
+            y = checkPage(doc, y, 12);
+            doc.setFillColor(255,245,220);
+            doc.rect(13, y-2, W-26, 6, 'F');
+            doc.setTextColor(92,70,10);
+            doc.setFontSize(7); doc.setFont('helvetica','bold');
+            doc.text(`▶ ${secNombres[sec]||sec}:`, 14, y+3);
+            y += 8;
+            secItems.forEach(it => {
+              y = checkPage(doc, y, 7);
+              doc.setFont('helvetica','normal');
+              doc.setTextColor(60,60,60);
+              const tipo = it.estado === 'R' ? '[Reemplazo]' : '[Reparación]';
+              const txt  = `${tipo} ${it.item}${it.observaciones?' — '+it.observaciones:''}`;
+              const lines = doc.splitTextToSize(txt, W-30);
+              doc.text(lines, 16, y);
+              y += (lines.length * 4) + 1;
+            });
+          });
+        }
+
+        if (d.fotoUrl && incluirFotos) {
+          try {
+            y = checkPage(doc, y, 65);
+            doc.setTextColor(92,70,10);
+            doc.setFontSize(7); doc.setFont('helvetica','bold');
+            doc.text('Evidencia Fotográfica:', 13, y);
+            y += 4;
+            const imgData = await cargarImagenComoBase64(d.fotoUrl);
+            if (imgData) {
+              doc.addImage(imgData, 'JPEG', 13, y, W-26, 55);
+              y += 58;
+            }
+          } catch(eImg) { console.warn('Foto no disponible en PDF'); }
+        }
+
+        y = pdfLinea(doc, y+2, W);
       }
-      
-      const pdfBytes = await mergedPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      const fechaFile = new Date().toISOString().split('T')[0];
-      link.download = `DACE_Arecibo_PPR-137.3_Inspecciones_${fechaFile}.pdf`;
-      link.click();
-      
-      showToast('<i class="ph-bold ph-check"></i> PDF generado correctamente', '#166534');
-      return;
     }
 
     else if (modulo === 'casos') {
@@ -3110,14 +2471,6 @@ function initListeners() {
       renderGeneradores(_genCache);
     }, e => console.error('generadores:', e));
 
-  /* INSPECCIONES GENERADOR PPR-312.2 */
-  db.collection('dace_insp_generadores')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(snap => {
-      _insp312Cache = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
-      renderInsp312_2(_insp312Cache);
-    }, e => console.error('insp312:', e));
-
   /* JEDI / ASG */
   db.collection('dace_jedi')
     .orderBy('createdAt', 'desc')
@@ -3333,16 +2686,6 @@ async function editarQ1(id) {
       set('q1_seccion', d.seccion||'');
       set('q1_division', d.division||'');
       set('q1_distrito', d.distrito||'');
-      set('q1_area', d.area||'Arecibo');
-      set('q1_area2', d.area2||'Arecibo');
-      set('q1_negociado', d.negociado||'NPPR');
-      set('q1_super', d.super||'');
-      set('q1_admin_autorizado', d.adminAutorizado||'');
-      set('q1_admin_fecha', d.adminFecha||'');
-      set('q1_admin_autoriza_a', d.adminAutorizaA||'');
-      set('q1_admin_viajar_a', d.adminViajarA||'');
-      set('q1_admin_tablilla', d.adminTablilla||'');
-      set('q1_admin_acompanante', d.adminAcompanante||'');
       set('q1_estatus', d.estatus||'Pendiente');
       if (d.unidad) { const el = document.getElementById('q1_unidad'); if(el) el.value = d.unidad; }
       if (d.trabajos) {
@@ -3650,7 +2993,7 @@ function pdfHeaderSingle(doc, titulo) {
   doc.text('DACE ARECIBO', W / 2, 13, { align: 'center' });
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('Policía de Puerto Rico', W / 2, 20, { align: 'center' });
+  doc.text('Negociado de la Policía de Puerto Rico', W / 2, 20, { align: 'center' });
   doc.setDrawColor(...gold);
   doc.setLineWidth(0.8);
   doc.line(10, 25, W - 10, 25);
@@ -3979,46 +3322,38 @@ async function imprimirIndividualPDF(col, id) {
     if(!snap.exists) return;
     const d = snap.data();
     
-    if (col === 'dace_q137_1') {
-      await exportarPDF_Q1_Single(d);
-      return;
-    }
-    
-    if (col === 'dace_q137_3') {
-      let incluirFotos = false;
-      if (d.fotoUrl) {
-        incluirFotos = confirm('¿Deseas incluir la evidencia fotográfica en el PDF?');
-      }
-      const { PDFDocument } = PDFLib;
-      const arrayBuffer = base64ToArrayBuffer(PDF_137_3);
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
-      await renderSingleQ3PageWithPdfLib(pdfDoc, d, incluirFotos);
-      
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `Trabajo_PPR-137.3_${d.numero || id.substring(0,6)}.pdf`;
-      link.click();
-      
-      showToast('<i class="ph-bold ph-check"></i> PDF Guardado', '#166534');
-      return;
-    }
-    
-    // Si no es Q1 ni Q3, seguimos usando jsPDF (para mantenimiento)
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
     const W = doc.internal.pageSize.getWidth();
     const azul = [10, 25, 47];
     
-    let titulo = 'Registro Mantenimiento (Indiv.)';
-    let campos = [
-      ['Lugar', d.lugar], ['Departamento', d.departamento],
-      ['Fecha', `${d.fecha||''} ${d.hora||''}`],
-      ['Descripción', d.descripcion], ['Notificado A', d.notificadoA],
-      ['Estatus', d.estatus]
-    ];
+    let titulo = '';
+    let campos = [];
+    if(col === 'dace_q137_1') {
+      titulo = 'Orden de Trabajo PPR-137.1 (Indiv.)';
+      campos = [
+        ['Número', d.numero], ['Fecha', `${d.fecha||''} ${d.hora||''}`],
+        ['Solicitante', d.solicitante], ['Unidad', d.unidad],
+        ['Tipos de Trabajo', d.trabajos?.join(', ')], ['Descripción', d.descripcion],
+        ['Estatus', d.estatus], ['Observaciones', d.observaciones]
+      ];
+    } else if(col === 'dace_q137_3') {
+      titulo = 'Inspección PPR-137.3 (Indiv.)';
+      campos = [
+        ['Número', d.numero], ['Fecha', `${d.fecha||''} ${d.hora||''}`],
+        ['Lugar', d.lugar], ['Supervisor', d.supervisor],
+        ['Hallazgos', d.hallazgos], ['Recomendaciones', d.recomendaciones],
+        ['Estatus', d.estatus], ['Medidas Tomadas', d.medidas]
+      ];
+    } else if(col === 'dace_mantenimiento') {
+      titulo = 'Registro Mantenimiento (Indiv.)';
+      campos = [
+        ['Lugar', d.lugar], ['Departamento', d.departamento],
+        ['Fecha', `${d.fecha||''} ${d.hora||''}`],
+        ['Descripción', d.descripcion], ['Notificado A', d.notificadoA],
+        ['Estatus', d.estatus]
+      ];
+    }
     
     let y = pdfHeaderSingle(doc, titulo);
     doc.setFillColor(240, 244, 248);
@@ -4429,16 +3764,4 @@ window.changeThemeMode = changeThemeMode;
 window.toggleFabMenu = toggleFabMenu;
 window.fabAction = fabAction;
 window.resaltarValidacion = resaltarValidacion;
-window.exportarPDF_Q1_Single = exportarPDF_Q1_Single;
-window.exportarPDF_Q1_Single_By_Id = exportarPDF_Q1_Single_By_Id;
-window.imprimirIndividualPDF = imprimirIndividualPDF;
-
-// PPR-312.2 Exports
-window.guardarInsp312_2 = guardarInsp312_2;
-window.buscarInsp312_2 = buscarInsp312_2;
-window.exportarPDF_312_2_Single_By_Id = exportarPDF_312_2_Single_By_Id;
-window.eliminarInsp312_2 = eliminarInsp312_2;
-window.editarInsp312_2 = editarInsp312_2;
-
 initTheme();
-
