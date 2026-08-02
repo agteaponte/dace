@@ -16,6 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <!-- jsPDF para exportar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- pdf-lib para rellenar PDFs oficiales -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
@@ -736,12 +738,12 @@ mark.search-highlight {
 <body>
 
 <!-- PANTALLA DE LOGIN FIREBASE -->
-<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:10000; background:linear-gradient(160deg, #06101e 0%, #0d1b2e 50%, #061624 100%); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
   <img src="https://agteaponte.github.io/dace/dace-logo-pin.png"
        style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin-bottom:20px"
        alt="DACE" onerror="this.style.display='none'">
   <div style="color:white;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:4px">DACE ARECIBO</div>
-  <div style="color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;text-align:center;margin-bottom:36px">Sistema de Coordinación — NPPR</div>
+  <div style="color:#f59e0b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;text-align:center;margin-bottom:36px">Sistema de Coordinación — Policía de Puerto Rico</div>
 
   <div style="width:100%;max-width:320px">
     <div style="margin-bottom:14px">
@@ -758,7 +760,7 @@ mark.search-highlight {
              onkeydown="if(event.key==='Enter') loginFirebase()">
     </div>
     <button onclick="loginFirebase()"
-            style="width:100%;padding:17px;background:var(--gold);color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
+             style="width:100%;padding:17px;background:#f59e0b;color:#1a0e00;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;letter-spacing:0.5px">
       🔐 ACCEDER
     </button>
     <div id="login_error" style="color:#fca5a5;font-size:12px;font-weight:700;text-align:center;margin-top:14px;min-height:18px"></div>
@@ -766,7 +768,7 @@ mark.search-highlight {
 </div>
 
 <!-- PANTALLA DE ACCESO PIN -->
-<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--navy); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
+<div id="lockScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:linear-gradient(160deg, #06101e 0%, #0d1b2e 50%, #061624 100%); flex-direction:column; align-items:center; justify-content:center; padding:40px 30px;">
   <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
        onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>🏛️</div>'">
   <div class="lock-title">DACE Arecibo</div>
@@ -854,65 +856,57 @@ mark.search-highlight {
             <input type="date" id="q1_fecha">
           </div>
         </div>
-        <div class="input-group">
-          <label>Unidad Solicitante *</label>
-          <select id="q1_unidad">
-            <option value="">— Seleccionar —</option>
-            <option>DACE Arecibo</option>
-            <option>Comandancia Administracion</option>
-            <option>Comandancia Seguridad y Proteccion</option>
-            <option>Comandancia Adiestramientos</option>
-            <option>Comandancia Asuntos Antidiscrimen</option>
-            <option>Comandancia Oficina Legal</option>
-            <option>Comandancia Estadisticas</option>
-            <option>Comandancia Centro de Mando</option>
-            <option>Comandancia Prensa</option>
-            <option>Comandancia CIC Administracion</option>
-            <option>Comandancia CIC Homicidios</option>
-            <option>Comandancia CIC Violencia Domestica</option>
-            <option>Comandancia CIC Ayuda Juvenil</option>
-            <option>Comandancia CIC Delitos Sexuales</option>
-            <option>Comandancia CIC Ley 266</option>
-            <option>Comandancia CIC Ley 300</option>
-            <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
-            <option>Comandancia Relaciones Con la Comunidad</option>
-            <option>Comandancia Liga Atletica</option>
-            <option>Comandancia CRADIC</option>
-            <option>Comandancia Armas</option>
-            <option>Comandancia Servicios Tecnicos</option>
-            <option>Comandancia Precinto 107 Administracion</option>
-            <option>Comandancia Investigaciones Administrativas</option>
-            <option>Comandancia Oficina Psicologia</option>
-            <option>Comandancia Division Transportacion</option>
-            <option>Comandancia Taller de Radio</option>
-            <option>Comandancia Taller Mecanica</option>
-            <option>Comandancia UMA</option>
-            <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
-            <option>Prec. 107</option><option>Prec. 207</option>
-            <option>Almacen</option><option>UMA</option><option>Poligono</option>
-            <option>Operaciones Tacticas</option><option>Florida</option>
-            <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
-            <option>Morovis</option><option>Transito Arecibo</option>
-            <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
-          </select>
-        </div>
-        <div class="row-2">
-          <div class="input-group">
+        <div class="row-2" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label>Unidad Solicitante *</label>
+            <select id="q1_unidad">
+              <option value="">— Seleccionar —</option>
+              <option>DACE Arecibo</option>
+              <option>Comandancia Administracion</option>
+              <option>Comandancia Seguridad y Proteccion</option>
+              <option>Comandancia Adiestramientos</option>
+              <option>Comandancia Asuntos Antidiscrimen</option>
+              <option>Comandancia Oficina Legal</option>
+              <option>Comandancia Estadisticas</option>
+              <option>Comandancia Centro de Mando</option>
+              <option>Comandancia Prensa</option>
+              <option>Comandancia CIC Administracion</option>
+              <option>Comandancia CIC Homicidios</option>
+              <option>Comandancia CIC Violencia Domestica</option>
+              <option>Comandancia CIC Ayuda Juvenil</option>
+              <option>Comandancia CIC Delitos Sexuales</option>
+              <option>Comandancia CIC Ley 266</option>
+              <option>Comandancia CIC Ley 300</option>
+              <option>Comandancia Partes Policiacas y Antecedentes Penales</option>
+              <option>Comandancia Relaciones Con la Comunidad</option>
+              <option>Comandancia Liga Atletica</option>
+              <option>Comandancia CRADIC</option>
+              <option>Comandancia Armas</option>
+              <option>Comandancia Servicios Tecnicos</option>
+              <option>Comandancia Precinto 107 Administracion</option>
+              <option>Comandancia Investigaciones Administrativas</option>
+              <option>Comandancia Oficina Psicologia</option>
+              <option>Comandancia Division Transportacion</option>
+              <option>Comandancia Taller de Radio</option>
+              <option>Comandancia Taller Mecanica</option>
+              <option>Comandancia UMA</option>
+              <option>Quebradillas</option><option>Camuy</option><option>Hatillo</option>
+              <option>Prec. 107</option><option>Prec. 207</option>
+              <option>Almacen</option><option>UMA</option><option>Poligono</option>
+              <option>Operaciones Tacticas</option><option>Florida</option>
+              <option>Barceloneta</option><option>Manati</option><option>Ciales</option>
+              <option>Morovis</option><option>Transito Arecibo</option>
+              <option>Vehiculos Hurtados</option><option>Maritima</option><option>Tecnologia</option>
+            </select>
+          </div>
+          <div class="input-group" style="margin-bottom:0">
             <label>Área</label>
             <input type="text" id="q1_area" value="Arecibo" autocomplete="off">
           </div>
-          <div class="input-group">
-            <label>Director/Supervisor</label>
+          <div class="input-group" style="margin-bottom:0">
+            <label>Director/supervisor solicita</label>
             <input type="text" id="q1_director" placeholder="Nombre" autocomplete="off">
           </div>
-        </div>
-        <div class="input-group">
-          <label>Nombre del Solicitante</label>
-          <input type="text" id="q1_solicitante" placeholder="Nombre completo del solicitante" autocomplete="off">
-        </div>
-        <div class="input-group">
-          <label>Teléfono de Contacto</label>
-          <input type="text" id="q1_tel" placeholder="787-000-0000" autocomplete="off">
         </div>
       </div>
 
@@ -971,7 +965,7 @@ mark.search-highlight {
       <!-- Localización -->
       <div class="ppr-section-title">📍 Localización Avería o Propiedad</div>
       <div style="padding:14px">
-        <div class="row-2">
+        <div class="row-2" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px">
           <div class="input-group">
             <label>Sección</label>
             <input type="text" id="q1_seccion" placeholder="Sección" autocomplete="off">
@@ -980,8 +974,6 @@ mark.search-highlight {
             <label>División</label>
             <input type="text" id="q1_division" placeholder="División" autocomplete="off">
           </div>
-        </div>
-        <div class="row-2">
           <div class="input-group">
             <label>Distrito/Precinto</label>
             <input type="text" id="q1_distrito" placeholder="Distrito/Precinto" autocomplete="off">
@@ -991,7 +983,7 @@ mark.search-highlight {
             <input type="text" id="q1_area2" value="Arecibo" autocomplete="off">
           </div>
         </div>
-        <div class="row-2">
+        <div class="row-2" style="margin-top:10px">
           <div class="input-group">
             <label>Negociado</label>
             <input type="text" id="q1_negociado" value="NPPR" autocomplete="off">
@@ -1001,9 +993,54 @@ mark.search-highlight {
             <input type="text" id="q1_super" placeholder="Superintendencia" autocomplete="off">
           </div>
         </div>
+        <div class="row-2" style="margin-top:10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label>Firma del Solicitante *</label>
+            <input type="text" id="q1_solicitante" placeholder="Nombre completo" autocomplete="off">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label>Teléfono de contacto</label>
+            <input type="text" id="q1_tel" placeholder="787-000-0000" autocomplete="off">
+          </div>
+        </div>
       </div>
 
       <!-- Estatus -->
+      <!-- Administración (Uso Oficial) -->
+      <div class="ppr-section-title">🏢 Para Uso Oficial División Administración</div>
+      <div style="padding:14px">
+        <div class="row-2" style="grid-template-columns: 3fr 1fr; gap: 8px">
+          <div class="input-group">
+            <label>Autorizado por</label>
+            <input type="text" id="q1_admin_autorizado" placeholder="Nombre de quien autoriza" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>Fecha</label>
+            <input type="date" id="q1_admin_fecha">
+          </div>
+        </div>
+        <div class="row-2" style="margin-top:10px">
+          <div class="input-group">
+            <label>Se autoriza a</label>
+            <input type="text" id="q1_admin_autoriza_a" placeholder="Persona autorizada" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label>A viajar a</label>
+            <input type="text" id="q1_admin_viajar_a" placeholder="Destino de viaje" autocomplete="off">
+          </div>
+        </div>
+        <div class="row-2" style="margin-top:10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label>Tablilla vehículo Oficial asignado</label>
+            <input type="text" id="q1_admin_tablilla" placeholder="Tablilla" autocomplete="off">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label>Acompañante</label>
+            <input type="text" id="q1_admin_acompanante" placeholder="Nombre del acompañante" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
       <div class="ppr-section-title">📌 Estatus</div>
       <div style="padding:14px">
         <div class="input-group">
@@ -1593,13 +1630,17 @@ mark.search-highlight {
     <div class="page-title">🔋 Bitácora de Generadores</div>
 
     <!-- TABS INTERNOS -->
-    <div style="display:flex;gap:8px;margin-bottom:16px">
+    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn-save" id="gen_tab_btn1" onclick="switchGenTab('registro')"
-        style="padding:10px;font-size:11px;background:var(--blue)">⚡ Generador</button>
+        style="padding:10px 14px;font-size:11px;background:var(--blue)">⚡ Evento Bitácora</button>
       <button class="btn-save" id="gen_tab_btn2" onclick="switchGenTab('historial')"
-        style="padding:10px;font-size:11px;background:var(--muted)">📋 Historial</button>
-      <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('resumen')"
-        style="padding:10px;font-size:11px;background:var(--muted)">📊 Resumen</button>
+        style="padding:10px 14px;font-size:11px;background:var(--muted)">📋 Historial Eventos</button>
+      <button class="btn-save" id="gen_tab_btn3" onclick="switchGenTab('ppr_registro')"
+        style="padding:10px 14px;font-size:11px;background:var(--muted)">📝 Registro PPR-312.2</button>
+      <button class="btn-save" id="gen_tab_btn4" onclick="switchGenTab('ppr_historial')"
+        style="padding:10px 14px;font-size:11px;background:var(--muted)">📋 Historial PPR-312.2</button>
+      <button class="btn-save" id="gen_tab_btn5" onclick="switchGenTab('resumen')"
+        style="padding:10px 14px;font-size:11px;background:var(--muted)">📊 Resumen</button>
     </div>
 
     <!-- TAB: REGISTRO -->
@@ -1777,6 +1818,84 @@ mark.search-highlight {
       </div>
       <div class="list-header">Registros (<span id="gen_total">0</span>)</div>
       <div id="lista_gen"><div class="loading-state">⏳ Cargando...</div></div>
+    </div>
+
+    <!-- TAB: REGISTRO PPR-312.2 -->
+    <div id="gen_sec_ppr_registro" style="display:none">
+      <div class="ppr-header">
+        <h2>🔋 INSPECCIÓN GENERADOR ELÉCTRICO (PPR-312.2)</h2>
+        <p>Negociado de la Policía de Puerto Rico</p>
+      </div>
+      <div class="ppr-section">
+        <div class="ppr-section-title">⚡ Identificación del Generador y Mes</div>
+        <div style="padding:14px">
+          <div class="input-group">
+            <label>Distrito/Precinto/Unidad *</label>
+            <select id="gen_312_lugar">
+              <option value="">— Seleccionar —</option>
+              <!-- Se clonará dinámicamente desde gen_lugar -->
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Número de Propiedad Generador Eléctrico *</label>
+              <input type="text" id="gen_312_propiedad" placeholder="Ej: GEN-098273" autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Mes de Inspección *</label>
+              <select id="gen_312_mes">
+                <option value="">— Seleccionar —</option>
+                <option>Enero</option><option>Febrero</option><option>Marzo</option>
+                <option>Abril</option><option>Mayo</option><option>Junio</option>
+                <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+                <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+              </select>
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="input-group">
+              <label>Director de Dependencia</label>
+              <input type="text" id="gen_312_director" placeholder="Nombre del Director" autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Fecha de Firma</label>
+              <input type="date" id="gen_312_fecha_firma">
+            </div>
+          </div>
+        </div>
+
+        <div class="ppr-section-title">📋 Bitácora Mensual de Inspecciones (Hasta 10 registros)</div>
+        <div style="padding:14px; overflow-x: auto;">
+          <table class="ppr-table" style="width:100%; border-collapse:collapse; min-width:600px;">
+            <thead>
+              <tr style="background:#f1f5f9; text-align:left; font-size:11px; border-bottom:2px solid #cbd5e1;">
+                <th style="padding:8px; width:30px;">#</th>
+                <th style="padding:8px; width:120px;">Fecha</th>
+                <th style="padding:8px; width:90px;">Hora Prendida</th>
+                <th style="padding:8px; width:90px;">Hora Apagada</th>
+                <th style="padding:8px; width:150px;">Operador (Nombre)</th>
+                <th style="padding:8px;">Observaciones / Notas</th>
+              </tr>
+            </thead>
+            <tbody id="tabla_rows_312">
+              <!-- Se generarán dinámicamente en app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <button class="btn-save" style="background:#15803d; margin-top:12px;" onclick="guardarInsp312_2()">💾 REGISTRAR INSPECCIÓN PPR-312.2</button>
+    </div>
+
+    <!-- TAB: HISTORIAL PPR-312.2 -->
+    <div id="gen_sec_ppr_historial" style="display:none">
+      <div class="input-group" style="margin-bottom:10px">
+        <input type="text" class="filter-search" id="gen_312_search"
+          placeholder="🔍 Buscar por lugar, mes, director..."
+          oninput="buscarInsp312_2()" style="margin-bottom:0">
+      </div>
+      <div class="list-header">Inspecciones Mensuales (<span id="gen_312_total">0</span>)</div>
+      <div id="lista_insp_312"><div class="loading-state">⏳ Cargando...</div></div>
     </div>
 
     <!-- TAB: RESUMEN -->
@@ -2376,7 +2495,7 @@ mark.search-highlight {
       <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
       <p><strong>Sincronización:</strong> Tiempo real (iPhone ↔ PC)</p>
       <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel · 31093</p>
-      <p><strong>Unidad:</strong> DACE Arecibo — NPPR</p>
+      <p><strong>Unidad:</strong> DACE Arecibo — Policía de Puerto Rico</p>
       <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
     </div>
     <div class="info-card" style="margin-top:12px">
@@ -2456,10 +2575,11 @@ mark.search-highlight {
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT — FIREBASE + LÓGICA DE LA APP
      ═══════════════════════════════════════════════════════════ -->
-<script src="SECURITY_UTILS.js"></script>
-<script src="REFACTORED_RENDERING.js"></script>
-<script src="REFACTORED_CRUD.js"></script>
-<script src="REFACTORED_AUTH.js"></script>
-<script src="src/app.js"></script>
+<script src="SECURITY_UTILS.js?v=2"></script>
+<script src="REFACTORED_RENDERING.js?v=2"></script>
+<script src="REFACTORED_CRUD.js?v=2"></script>
+<script src="REFACTORED_AUTH.js?v=2"></script>
+<script src="pdfs.js?v=2"></script>
+<script src="src/app.js?v=3"></script>
 </body>
 </html>

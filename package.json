@@ -5,7 +5,7 @@
   "main": "fix_errors.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"const fs = require('fs'); fs.mkdirSync('docs/src', {recursive: true}); ['SECURITY_UTILS.js', 'REFACTORED_RENDERING.js', 'REFACTORED_CRUD.js', 'REFACTORED_AUTH.js'].forEach(f => fs.copyFileSync(f, 'docs/' + f)); fs.copyFileSync('src/app.js', 'docs/src/app.js');\"",
+    "build": "vite build && node -e \"const fs = require('fs'); fs.mkdirSync('docs/src', {recursive: true}); ['SECURITY_UTILS.js', 'REFACTORED_RENDERING.js', 'REFACTORED_CRUD.js', 'REFACTORED_AUTH.js', 'logo_pr_clean.jpg', 'logo_dsp_clean.jpg', 'pdfs.js'].forEach(f => fs.copyFileSync(f, 'docs/' + f)); fs.copyFileSync('src/app.js', 'docs/src/app.js');\"",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },

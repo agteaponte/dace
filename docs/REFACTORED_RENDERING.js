@@ -205,19 +205,14 @@ function item_Q1_data(d) {
   const footer = createSafeElement('div', '', { 'class': 'record-foot' });
   footer.appendChild(bEstatus(d.estatus));
 
-  const btnEdit = createSafeButton(
-    '✏️ Editar',
-    'btn-edit',
-    () => editarQ1(d._id)
-  );
-
-  const btnDel = createSafeButton(
-    '🗑️ Eliminar',
-    'btn-del',
-    () => eliminar('dace_q137_1', d._id, 'Orden')
+  const btnPDF = createSafeButton(
+    '📄 PDF Oficial',
+    'btn-pdf-single',
+    () => exportarPDF_Q1_Single(d)
   );
 
   footer.appendChild(btnEdit);
+  footer.appendChild(btnPDF);
   footer.appendChild(btnDel);
 
   // Armar el contenedor
@@ -299,6 +294,12 @@ function item_Q3_data(d) {
     () => editarQ3(d._id)
   );
 
+  const btnPDF = createSafeButton(
+    '📄 Imprimir',
+    'btn-pdf-single',
+    () => imprimirIndividualPDF('dace_q137_3', d._id)
+  );
+
   const btnDel = createSafeButton(
     '🗑️ Eliminar',
     'btn-del',
@@ -306,7 +307,9 @@ function item_Q3_data(d) {
   );
 
   footer.appendChild(btnEdit);
+  footer.appendChild(btnPDF);
   footer.appendChild(btnDel);
+
 
   // Armar el contenedor
   container.appendChild(header);
