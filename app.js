@@ -2144,7 +2144,7 @@ function verificarPin() {
 
 /* â”€â”€ FIREBASE CONFIG â€” DACE-ARECIBO-OFICIAL â”€â”€ */
 const firebaseConfig = {
-  apiKey:            "***REMOVED_API_KEY_2***",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain:        "dace-arecibo-oficial.firebaseapp.com",
   projectId:         "dace-arecibo-oficial",
   storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
@@ -3765,4 +3765,5 @@ window.toggleFabMenu = toggleFabMenu;
 window.fabAction = fabAction;
 window.resaltarValidacion = resaltarValidacion;
 initTheme();
+
 

@@ -1949,7 +1949,7 @@ function verificarPin() {
 
 /* â”€â”€ FIREBASE CONFIG â€” DACE-ARECIBO-OFICIAL â”€â”€ */
 const firebaseConfig = {
-  apiKey:            "***REMOVED_API_KEY_2***",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain:        "dace-arecibo-oficial.firebaseapp.com",
   projectId:         "dace-arecibo-oficial",
   storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
@@ -2951,4 +2951,5 @@ if (typeof db !== 'undefined') window.db = db;
 if (typeof auth !== 'undefined') window.auth = auth;
 if (typeof storage !== 'undefined') window.storage = storage;
 if (typeof fbFunctions !== 'undefined') window.fbFunctions = fbFunctions;
+
 

@@ -1988,7 +1988,7 @@ function verificarPin() {
 
 /* â”€â”€ FIREBASE CONFIG â€” DACE-ARECIBO-OFICIAL â”€â”€ */
 const firebaseConfig = {
-  apiKey:            "***REMOVED_API_KEY_2***",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain:        "dace-arecibo-oficial.firebaseapp.com",
   projectId:         "dace-arecibo-oficial",
   storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
@@ -2864,3 +2864,4 @@ function imprimirCisternaPDF(id, tipo) {
     showToast('<i class="ph-bold ph-check"></i> PDF Guardado', '#166534');
   }).catch(e => showToast('<i class="ph-bold ph-x"></i> Error: ' + e.message, '#dc2626'));
 }
+
