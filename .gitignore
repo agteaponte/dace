@@ -1,3 +1,19 @@
 node_modules/
 dist/
 .env
+
+# Environment variables - NEVER COMMIT
+.env.local
+.env.*.local
+.env
+
+# Credentials and secrets
+**/firebaseConfig.js
+src/firebaseConfig.js
+config.js
+
+# Build artifacts
+/dist
+/build
+/node_modules
+.DS_Store
