@@ -2699,7 +2699,7 @@ function loginFirebase() {
   if (!email || !pass) { errEl.textContent = 'âš ï¸ Completa correo y contraseÃ±a.'; return; }
 
   const btn = document.querySelector('#loginScreen button');
-  btn.textContent = '<i class="ph-fill ph-hourglass"></i> Verificando...';
+  btn.innerHTML = '<i class="ph-fill ph-hourglass"></i> Verificando...';
   btn.disabled = true;
 
   firebase.auth().signInWithEmailAndPassword(email, pass)
@@ -2712,7 +2712,7 @@ function loginFirebase() {
       }
     })
     .catch(err => {
-      btn.textContent = '<i class="ph-fill ph-lock-key"></i> ACCEDER';
+      btn.innerHTML = '<i class="ph-fill ph-lock-key"></i> ACCEDER';
       btn.disabled = false;
       const msgs = {
         'auth/wrong-password':    '<i class="ph-bold ph-x"></i> ContraseÃ±a incorrecta.',
@@ -2721,7 +2721,7 @@ function loginFirebase() {
         'auth/too-many-requests': 'â›” Demasiados intentos. Espera unos minutos.',
         'auth/invalid-credential':'<i class="ph-bold ph-x"></i> Credenciales incorrectas.',
       };
-      errEl.textContent = msgs[err.code] || '<i class="ph-bold ph-x"></i> Error: ' + err.message;
+      errEl.innerHTML = msgs[err.code] || '<i class="ph-bold ph-x"></i> Error: ' + err.message;
     });
 }
 
