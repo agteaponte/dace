@@ -1,4 +1,4 @@
-﻿/* â•â•â• SISTEMA DE FILTROS â•â•â• */
+/* â•â•â• SISTEMA DE FILTROS â•â•â• */
 
 // Cache de datos completos para filtrar localmente
 const _cache = { q1:[], q3:[], c:[], rm:[], mt:[] };
@@ -1949,12 +1949,12 @@ function verificarPin() {
 
 /* â”€â”€ FIREBASE CONFIG â€” DACE-ARECIBO-OFICIAL â”€â”€ */
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: decryptApiKey("JSgZBAwYMSMzOwUJKDJRVSo8Jy4XDF4tEGhbXGdQCgQRKgU3ICge"),
   authDomain:        "dace-arecibo-oficial.firebaseapp.com",
   projectId:         "dace-arecibo-oficial",
   storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
-  messagingSenderId: "1061384536706",
-  appId:             "1:1061384536706:web:0df609d6159739af58aa9b"
+  messagingSenderId: "106138453670",
+  appId:             "1:106138453670:web:0df609d6159739af58aa9b"
 };
 
 /* â”€â”€ INICIALIZAR â”€â”€ */

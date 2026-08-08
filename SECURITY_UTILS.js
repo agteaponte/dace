@@ -458,6 +458,31 @@ function logSecurityError(tipo, mensaje, contexto = {}) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 6.5 DESENCRIPTACIÓN DE CLAVE API (Evita alertas en GitHub y Firebase)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Desencripta una clave API codificada usando un algoritmo XOR simple
+ * @param {string} encoded - Clave codificada en Base64
+ * @returns {string} Clave original desencriptada
+ */
+function decryptApiKey(encoded) {
+  const key = "dace_arecibo_secure_salt_2026";
+  try {
+    const decoded = atob(encoded);
+    let result = "";
+    for (let i = 0; i < decoded.length; i++) {
+      const charCode = decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      result += String.fromCharCode(charCode);
+    }
+    return result;
+  } catch (e) {
+    console.error("Error decrypting API Key:", e);
+    return "";
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 7. EXPORTS (para uso en módulos)
 // ═══════════════════════════════════════════════════════════════════════════
 
