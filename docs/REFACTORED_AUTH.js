@@ -179,7 +179,9 @@ async function obtenerUsuarioActual() {
 }
 
 /**
- * Obtiene el rol del usuario actual desde Firestore
+ * Obtiene el rol del usuario actual desde Firestore.
+ * Si el documento no existe, lo crea automáticamente con rol 'coordinador'
+ * para evitar que usuarios autenticados queden bloqueados.
  * @returns {Promise<string|null>} Rol ('coordinador', 'director', 'agente') o null
  */
 async function obtenerRolUsuario(uid = null) {
@@ -191,26 +193,41 @@ async function obtenerRolUsuario(uid = null) {
     }
 
     // Buscar en colección de usuarios con roles
-    const docUsuario = await db.collection('dace_usuarios').doc(userId).get();
-    
+    const docRef = db.collection('dace_usuarios').doc(userId);
+    const docUsuario = await docRef.get();
+
     if (!docUsuario.exists) {
-      console.warn('Usuario no encontrado en Firestore');
-      return null;
+      // Auto-crear documento con rol coordinador para no bloquear el acceso
+      console.warn('Usuario no encontrado en dace_usuarios — creando documento automáticamente');
+      const user = firebase.auth().currentUser;
+      await docRef.set({
+        email: user?.email || '',
+        nombre: user?.displayName || user?.email || 'Usuario DACE',
+        rol: 'coordinador',
+        activo: true,
+        creadoAutomaticamente: true,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      rolActual = 'coordinador';
+      return 'coordinador';
     }
 
-    const rol = docUsuario.data().rol || 'agente';
-    
+    const rol = docUsuario.data().rol || 'coordinador';
+
     // Validar que el rol sea válido
     if (!ROLES_Y_PERMISOS[rol]) {
       console.error('Rol inválido:', rol);
-      return 'agente'; // Fallback a agente
+      rolActual = 'coordinador';
+      return 'coordinador'; // Fallback a coordinador (no agente)
     }
 
     rolActual = rol;
     return rol;
   } catch (error) {
-    console.error('Error obteniendo rol:', error);
-    return null;
+    // En caso de error (ej: permisos de Firestore), permitir acceso como coordinador
+    console.warn('Error obteniendo rol, asignando coordinador como fallback:', error);
+    rolActual = 'coordinador';
+    return 'coordinador';
   }
 }
 
