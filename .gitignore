@@ -13,7 +13,6 @@ src/firebaseConfig.js
 config.js
 
 # Build artifacts
-/dist
 /build
 /node_modules
 .DS_Store
