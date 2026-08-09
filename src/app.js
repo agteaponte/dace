@@ -2780,7 +2780,7 @@ function verificarPin() {
 
 /* ��� FIREBASE CONFIG � DACE-ARECIBO-OFICIAL ��� */
 const firebaseConfig = {
-  apiKey: decryptApiKey("JSgZBAwYMAxOMBQgFx9XDhQ9Ag8RGF0lPERXeF8rAwEkLio4PzQO"),
+  apiKey: decryptApiKey("JSgZBAwYMBQwXyhaOBUGJR8LCR0QOzkRHEZmYXMvCCFTF1ATU1oa"),
   authDomain:        "dace-arecibo-oficial.firebaseapp.com",
   projectId:         "dace-arecibo-oficial",
   storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
