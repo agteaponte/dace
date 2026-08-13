@@ -1,0 +1,1502 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DACE ARECIBO">
+<title>DACE ARECIBO</title>
+
+<!-- Firebase SDK (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- jsPDF para exportar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+:root {
+  --blue:  #0a192f;
+  --gold:  #c5a059;
+  --bg:    #f0f4f8;
+  --red:   #dc2626;
+  --green: #16a34a;
+  --card:  #ffffff;
+  --text:  #1d1d1f;
+  --muted: #64748b;
+  --border:#e2e8f0;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* â”€â”€ PANTALLA DE ACCESO â”€â”€ */
+#lockScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--blue);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 30px;
+}
+#lockScreen .lock-logo {
+  width: 80px; height: 80px; object-fit: contain;
+  border-radius: 16px; margin-bottom: 20px;
+}
+#lockScreen .lock-title {
+  color: white; font-size: 22px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 1px;
+  text-align: center; margin-bottom: 4px;
+}
+#lockScreen .lock-sub {
+  color: var(--gold); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: center; margin-bottom: 40px;
+}
+#lockScreen .pin-dots {
+  display: flex; gap: 14px; margin-bottom: 32px;
+}
+#lockScreen .pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: transparent; transition: background 0.2s, border-color 0.2s;
+}
+#lockScreen .pin-dot.filled {
+  background: var(--gold); border-color: var(--gold);
+}
+#lockScreen .pin-dot.error {
+  background: var(--red); border-color: var(--red);
+}
+#lockScreen .pin-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; width: 100%; max-width: 280px;
+}
+#lockScreen .pin-key {
+  background: rgba(255,255,255,0.1); border: none;
+  border-radius: 14px; padding: 18px 10px;
+  color: white; font-size: 22px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+#lockScreen .pin-key:active { background: rgba(255,255,255,0.22); transform: scale(0.95); }
+#lockScreen .pin-key.zero { grid-column: 2; }
+#lockScreen .pin-key.del  { background: rgba(220,38,38,0.25); }
+#lockScreen .pin-key sub  { font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; letter-spacing: 1px; }
+#lockScreen .lock-msg {
+  color: rgba(255,255,255,0.5); font-size: 11px;
+  font-weight: 600; margin-top: 24px; text-align: center;
+  min-height: 18px;
+}
+
+/* â”€â”€ CABECERA â”€â”€ */
+.app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 58px 14px 14px;
+  background: white;
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.1);
+  position: sticky; top: 0; z-index: 200;
+}
+.header-logo {
+  width: 52px; height: 52px; object-fit: contain;
+  flex-shrink: 0; border-radius: 6px;
+}
+.header-logo-placeholder {
+  width: 52px; height: 52px; background: var(--blue);
+  border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.header-text { text-align: center; flex: 1; padding: 0 8px; }
+.header-text h1 {
+  font-size: 17px; font-weight: 900; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;
+}
+.header-text .sub { font-size: 10px; font-weight: 600; color: #555; margin-top: 2px; }
+.header-text .oficial {
+  font-size: 9px; font-weight: 800; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;
+}
+
+/* â”€â”€ BARRA FIREBASE â”€â”€ */
+.firebase-bar {
+  background: var(--blue); color: rgba(255,255,255,0.85);
+  font-size: 10px; font-weight: 700; text-align: center;
+  padding: 6px 12px; letter-spacing: 0.3px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.fb-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #94a3b8; flex-shrink: 0; transition: background 0.4s;
+}
+.fb-dot.online { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+.fb-dot.error  { background: var(--red); }
+
+/* â”€â”€ NAVEGACIÃ“N â”€â”€ */
+.nav-bar {
+  position: fixed; bottom: 0;
+  width: 100%; max-width: 540px;
+  left: 50%; transform: translateX(-50%);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  padding: 10px 0 env(safe-area-inset-bottom, 22px);
+  border-top: 1px solid var(--border);
+  z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+.nav-btn {
+  flex: 1; border: none; background: none;
+  color: #94a3b8; font-size: 9px; font-weight: 700;
+  cursor: pointer; padding: 2px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-transform: uppercase; letter-spacing: 0.3px; transition: color 0.2s;
+}
+.nav-btn.active { color: var(--blue); }
+.nav-icon { font-size: 21px; line-height: 1; }
+
+/* â”€â”€ CONTENIDO â”€â”€ */
+.main-content {
+  padding: 18px 14px 120px;
+  max-width: 540px; margin: 0 auto;
+}
+.tab-page { display: none; }
+.tab-page.active { display: block; animation: fadeUp 0.25s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* â”€â”€ TÃTULO â”€â”€ */
+.page-title {
+  font-size: 24px; font-weight: 900; color: var(--blue);
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--gold);
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* â”€â”€ DASHBOARD â”€â”€ */
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 11px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card); padding: 18px 14px; border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+  border-left: 5px solid var(--blue); cursor: pointer;
+}
+.stat-card.gold  { border-left-color: var(--gold); }
+.stat-card.green { border-left-color: var(--green); }
+.stat-card.red   { border-left-color: var(--red); }
+.stat-num { font-size: 38px; font-weight: 900; color: var(--blue); line-height: 1; }
+.stat-card.gold  .stat-num { color: #92700a; }
+.stat-card.green .stat-num { color: var(--green); }
+.stat-card.red   .stat-num { color: var(--red); }
+.stat-label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
+
+/* â”€â”€ FEED â”€â”€ */
+.feed-title {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px; margin: 4px 0 10px;
+}
+.activity-item {
+  background: var(--card); padding: 13px 15px; border-radius: 14px;
+  margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex; align-items: center; gap: 12px;
+}
+.activity-icon { font-size: 22px; flex-shrink: 0; }
+.activity-info { flex: 1; min-width: 0; }
+.activity-info strong {
+  display: block; font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.activity-info span { font-size: 11px; color: #94a3b8; }
+
+/* â”€â”€ FORMULARIO â”€â”€ */
+.form-card {
+  background: var(--card); padding: 20px; border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07); margin-bottom: 16px;
+}
+.form-section-label {
+  font-size: 11px; font-weight: 800; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.input-group { margin-bottom: 13px; }
+label {
+  display: block; font-size: 10px; font-weight: 800; color: var(--blue);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px;
+}
+input[type=text], input[type=date], input[type=time], select, textarea {
+  width: 100%; padding: 13px 12px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 16px; background: #f8fafc;
+  color: var(--text); -webkit-appearance: none; appearance: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--blue); background: white;
+}
+textarea { resize: vertical; min-height: 88px; }
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 10px center;
+  background-size: 18px; padding-right: 36px;
+}
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+/* â”€â”€ BOTONES â”€â”€ */
+.btn-save {
+  width: 100%; padding: 17px; background: var(--blue); color: white;
+  border: none; border-radius: 14px; font-weight: 800; font-size: 14px;
+  cursor: pointer; margin-top: 4px; letter-spacing: 0.5px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-save:active { opacity: 0.82; transform: scale(0.99); }
+.btn-save.gold-btn  { background: var(--gold); color: #1a0e00; }
+.btn-save.green-btn { background: var(--green); }
+
+/* â”€â”€ BADGES â”€â”€ */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.b-pending  { background: #fef3c7; color: #92400e; }
+.b-process  { background: #dbeafe; color: #1e40af; }
+.b-done     { background: #dcfce7; color: #166534; }
+.b-archived { background: #f1f5f9; color: #475569; }
+.b-alta     { background: #fee2e2; color: #991b1b; }
+.b-media    { background: #fef3c7; color: #92400e; }
+.b-baja     { background: #f0fdf4; color: #166534; }
+
+/* â”€â”€ LISTA REGISTROS â”€â”€ */
+.list-header {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 12px;
+}
+.record-item {
+  background: var(--card); padding: 14px 15px; border-radius: 14px;
+  margin-bottom: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--blue);
+}
+.record-item.gold  { border-left-color: var(--gold); }
+.record-item.green { border-left-color: var(--green); }
+.record-item.red   { border-left-color: var(--red); }
+.record-item.gray  { border-left-color: #94a3b8; }
+.record-head {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 6px; gap: 8px;
+}
+.record-id {
+  font-size: 13px; font-weight: 800; color: var(--blue);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.record-ts { font-size: 10px; color: #94a3b8; flex-shrink: 0; }
+.record-body { font-size: 12px; color: #475569; line-height: 1.55; margin-bottom: 2px; }
+.record-body strong { color: var(--text); font-weight: 700; }
+.record-foot { margin-top: 9px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.btn-del {
+  background: none; border: none; color: var(--red);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  margin-left: auto; padding: 4px 8px; border-radius: 6px;
+}
+.btn-del:active { background: #fee2e2; }
+
+/* â”€â”€ MÃS â”€â”€ */
+.more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.more-card {
+  background: var(--card); padding: 22px 15px; border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.07); text-align: center; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.2s, transform 0.1s;
+}
+.more-card:active { border-color: var(--blue); transform: scale(0.97); }
+.more-icon { font-size: 30px; display: block; margin-bottom: 8px; }
+.more-title { font-size: 12px; font-weight: 800; color: var(--blue); text-transform: uppercase; }
+.more-sub { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+
+/* â”€â”€ INFO CARD â”€â”€ */
+.info-card {
+  background: var(--card); border-radius: 14px;
+  padding: 16px 18px; margin-top: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+.info-card p { font-size: 12px; color: #475569; margin: 5px 0; line-height: 1.5; }
+.info-card strong { color: var(--text); }
+.info-title {
+  font-size: 11px; font-weight: 800; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+}
+
+/* â”€â”€ TOAST â”€â”€ */
+.toast {
+  position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
+  background: #1d1d1f; color: white; padding: 13px 26px; border-radius: 30px;
+  font-size: 13px; font-weight: 700; z-index: 9999; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.toast.show { opacity: 1; }
+
+/* â”€â”€ ESTADOS â”€â”€ */
+.empty-state { text-align: center; padding: 36px 20px; color: #94a3b8; }
+.empty-icon  { font-size: 44px; display: block; margin-bottom: 10px; }
+.empty-state p { font-size: 13px; font-weight: 600; }
+.loading-state { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; font-weight: 600; }
+.btn-pdf {
+  width: 100%; padding: 15px;
+  background: #dc2626; color: white;
+  border: none; border-radius: 14px;
+  font-weight: 800; font-size: 13px;
+  cursor: pointer; margin-top: 8px;
+  letter-spacing: 0.5px;
+  display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-pdf:active { opacity: 0.82; transform: scale(0.99); }
+.btn-pdf.gold-pdf { background: #92700a; }
+.btn-pdf.green-pdf { background: #166534; }
+.btn-pdf.blue-pdf { background: var(--blue); }
+
+.sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- PANTALLA DE ACCESO -->
+<div id="lockScreen">
+  <img src="https://agteaponte.github.io/dace/dace-logo-pin.png" class="lock-logo" alt="DACE"
+       onerror="this.outerHTML='<div style=\'width:80px;height:80px;background:rgba(197,160,89,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px\'>ðŸ›ï¸</div>'">
+  <div class="lock-title">DACE Arecibo</div>
+  <div class="lock-sub">Negociado de la PolicÃ­a de Puerto Rico</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2<sub>ABC</sub></button>
+    <button class="pin-key" onclick="pinPress('3')">3<sub>DEF</sub></button>
+    <button class="pin-key" onclick="pinPress('4')">4<sub>GHI</sub></button>
+    <button class="pin-key" onclick="pinPress('5')">5<sub>JKL</sub></button>
+    <button class="pin-key" onclick="pinPress('6')">6<sub>MNO</sub></button>
+    <button class="pin-key" onclick="pinPress('7')">7<sub>PQRS</sub></button>
+    <button class="pin-key" onclick="pinPress('8')">8<sub>TUV</sub></button>
+    <button class="pin-key" onclick="pinPress('9')">9<sub>WXYZ</sub></button>
+    <button class="pin-key zero" onclick="pinPress('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">âŒ«</button>
+  </div>
+  <div class="lock-msg" id="lockMsg">Introduce tu PIN de acceso</div>
+</div>
+
+<!-- CABECERA -->
+<header class="app-header">
+  <img src="./Logo.png" class="header-logo" alt="DACE"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>ðŸ›ï¸</div>'">
+  <div class="header-text">
+    <h1>DACE ARECIBO</h1>
+    <div class="sub">Negociado de la PolicÃ­a de Puerto Rico</div>
+    <div class="oficial">Agte. Jose Aponte Cancel Â· Placa 31093</div>
+    <div class="oficial">Coordinador Auxiliar DACE Arecibo</div>
+  </div>
+  <img src="./policia.png" class="header-logo" alt="PPR"
+       onerror="this.outerHTML='<div class=\'header-logo-placeholder\'>âš–ï¸</div>'">
+</header>
+
+<!-- BARRA ESTADO FIREBASE -->
+<div class="firebase-bar">
+  <div class="fb-dot" id="fbDot"></div>
+  <span id="fbText">Conectando con Firebase...</span>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+
+  <!-- PANEL -->
+  <div id="inicio" class="tab-page active">
+    <div class="page-title">ðŸ“Š Panel General</div>
+    <div class="stats-grid">
+      <div class="stat-card"       onclick="changeTab('q137_1')"><div class="stat-num" id="cnt1">â€”</div><div class="stat-label">Querellas 137.1</div></div>
+      <div class="stat-card gold"  onclick="changeTab('q137_3')"><div class="stat-num" id="cnt3">â€”</div><div class="stat-label">Inspecciones 137.3</div></div>
+      <div class="stat-card green" onclick="changeTab('casos')" ><div class="stat-num" id="cntC">â€”</div><div class="stat-label">Casos Activos</div></div>
+      <div class="stat-card red"   onclick="changeTab('maestro')"><div class="stat-num" id="cntM">â€”</div><div class="stat-label">Registro Maestro</div></div>
+    </div>
+    <div class="feed-title">Actividad Reciente</div>
+    <div id="feedArea"><div class="loading-state">â³ Cargando actividad...</div></div>
+    <hr class="sep">
+    <button class="btn-pdf blue-pdf" onclick="exportarPanelPDF()">ðŸ“„ EXPORTAR REPORTE GENERAL PDF</button>
+  </div>
+
+  <!-- PPR-137.1 -->
+  <div id="q137_1" class="tab-page">
+    <div class="page-title">âš–ï¸ Querellas 137.1</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Querella</div>
+      <div class="input-group">
+        <label>NÃºmero de Querella *</label>
+        <input type="text" id="q1_num" placeholder="Ej: Q-137.1-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="q1_fecha"></div>
+        <div class="input-group"><label>Hora *</label><input type="time" id="q1_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Nombre del Querellante</label>
+        <input type="text" id="q1_querellante" placeholder="Nombre completo" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Agencia / Unidad Involucrada</label>
+        <input type="text" id="q1_agencia" placeholder="Ej: DACE, PPR, DSP..." autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>DescripciÃ³n del Asunto *</label>
+        <textarea id="q1_desc" placeholder="Describa los hechos de manera clara y concisa..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="q1_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+          <option value="Archivado">Archivado</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Observaciones / Seguimiento</label>
+        <textarea id="q1_obs" rows="3" placeholder="Notas adicionales, referencias, documentos..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarQ1()">ðŸ’¾ GUARDAR QUERELLA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q1_total">0</span> querellas)</div>
+    <button class="btn-pdf" onclick="exportarPDF('q137_1')">ðŸ“„ EXPORTAR QUERELLAS 137.1 A PDF</button>
+    <div id="lista_q1"><div class="loading-state">â³ Cargando...</div></div>
+  </div>
+
+  <!-- PPR-137.3 -->
+  <div id="q137_3" class="tab-page">
+    <div class="page-title">ðŸ—ï¸ Inspecciones 137.3</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva InspecciÃ³n</div>
+      <div class="input-group">
+        <label>NÃºmero de InspecciÃ³n *</label>
+        <input type="text" id="q3_num" placeholder="Ej: INS-137.3-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha *</label><input type="date" id="q3_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="q3_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>Lugar / Cuartel Inspeccionado *</label>
+        <input type="text" id="q3_lugar" placeholder="Nombre del lugar o cuartel" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Tipo de InspecciÃ³n</label>
+        <select id="q3_tipo">
+          <option value="Estructural">Estructural</option>
+          <option value="Celda / Calabozo">Celda / Calabozo</option>
+          <option value="Seguridad General">Seguridad General</option>
+          <option value="Equipos y Material">Equipos y Material</option>
+          <option value="Rutinaria">Rutinaria</option>
+          <option value="Especial">Especial</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Hallazgos *</label>
+        <textarea id="q3_hallazgos" placeholder="Describa los hallazgos observados..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Recomendaciones</label>
+        <textarea id="q3_rec" rows="3" placeholder="Acciones correctivas recomendadas..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="q3_estatus">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </div>
+      <button class="btn-save gold-btn" onclick="guardarQ3()">ðŸ’¾ GUARDAR INSPECCIÃ“N</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="q3_total">0</span> inspecciones)</div>
+    <button class="btn-pdf gold-pdf" onclick="exportarPDF('q137_3')">ðŸ“„ EXPORTAR INSPECCIONES 137.3 A PDF</button>
+    <div id="lista_q3"><div class="loading-state">â³ Cargando...</div></div>
+  </div>
+
+  <!-- CASOS ACTIVOS -->
+  <div id="casos" class="tab-page">
+    <div class="page-title">ðŸ“‹ Casos Activos</div>
+    <div class="form-card">
+      <div class="form-section-label">Registrar Caso</div>
+      <div class="input-group">
+        <label>NÃºmero de Caso *</label>
+        <input type="text" id="c_num" placeholder="Ej: CASO-2026-001" autocomplete="off">
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha Apertura</label><input type="date" id="c_fecha"></div>
+        <div class="input-group">
+          <label>Prioridad</label>
+          <select id="c_prioridad">
+            <option value="Alta">Alta</option>
+            <option value="Media" selected>Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>DescripciÃ³n del Caso *</label>
+        <textarea id="c_desc" placeholder="Describa el caso con todos los detalles relevantes..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Responsable / Asignado</label>
+        <input type="text" id="c_resp" placeholder="Nombre del agente responsable" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>PrÃ³xima AcciÃ³n</label>
+        <input type="text" id="c_accion" placeholder="Â¿QuÃ© debe hacerse a continuaciÃ³n?" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Estatus</label>
+        <select id="c_estatus">
+          <option value="Activo">Activo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Pendiente ResoluciÃ³n">Pendiente ResoluciÃ³n</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+      </div>
+      <button class="btn-save green-btn" onclick="guardarCaso()">ðŸ’¾ GUARDAR CASO</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Registro (<span id="c_total">0</span> casos)</div>
+    <button class="btn-pdf green-pdf" onclick="exportarPDF('casos')">ðŸ“„ EXPORTAR CASOS ACTIVOS A PDF</button>
+    <div id="lista_casos"><div class="loading-state">â³ Cargando...</div></div>
+  </div>
+
+  <!-- REGISTRO MAESTRO -->
+  <div id="maestro" class="tab-page">
+    <div class="page-title">ðŸ“ Registro Maestro</div>
+    <div class="form-card">
+      <div class="form-section-label">Nueva Entrada</div>
+      <div class="input-group">
+        <label>Tipo de Actividad</label>
+        <select id="rm_tipo">
+          <option value="Querella 137.1">Querella 137.1</option>
+          <option value="InspecciÃ³n 137.3">InspecciÃ³n 137.3</option>
+          <option value="Caso Activo">Caso Activo</option>
+          <option value="CoordinaciÃ³n Interagencial">CoordinaciÃ³n Interagencial</option>
+          <option value="GestiÃ³n Administrativa">GestiÃ³n Administrativa</option>
+          <option value="CapacitaciÃ³n / Adiestramiento">CapacitaciÃ³n / Adiestramiento</option>
+          <option value="ReuniÃ³n Oficial">ReuniÃ³n Oficial</option>
+          <option value="ComunicaciÃ³n Oficial">ComunicaciÃ³n Oficial</option>
+          <option value="Archivo / DocumentaciÃ³n">Archivo / DocumentaciÃ³n</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="row-2">
+        <div class="input-group"><label>Fecha</label><input type="date" id="rm_fecha"></div>
+        <div class="input-group"><label>Hora</label><input type="time" id="rm_hora"></div>
+      </div>
+      <div class="input-group">
+        <label>DescripciÃ³n / Detalle *</label>
+        <textarea id="rm_desc" placeholder="Describa la actividad realizada de forma clara y detallada..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Notas / Referencias</label>
+        <textarea id="rm_notas" rows="3" placeholder="Notas adicionales, nÃºmero de documento, referencias..."></textarea>
+      </div>
+      <button class="btn-save" onclick="guardarMaestro()">ðŸ’¾ GUARDAR ENTRADA</button>
+    </div>
+    <hr class="sep">
+    <div class="list-header">Entradas (<span id="rm_total">0</span> registros)</div>
+    <button class="btn-pdf blue-pdf" onclick="exportarPDF('maestro')">ðŸ“„ EXPORTAR REGISTRO MAESTRO A PDF</button>
+    <div id="lista_maestro"><div class="loading-state">â³ Cargando...</div></div>
+  </div>
+
+  <!-- MÃS -->
+  <div id="mas" class="tab-page">
+    <div class="page-title">â‹¯ MÃ¡s Opciones</div>
+    <div class="more-grid">
+      <div class="more-card" onclick="changeTab('maestro')">
+        <span class="more-icon">ðŸ“</span>
+        <div class="more-title">Registro Maestro</div>
+        <div class="more-sub">Log de actividades</div>
+      </div>
+      <div class="more-card" onclick="showToast('ðŸ”§ MÃ³dulo Agenda â€” prÃ³ximamente')">
+        <span class="more-icon">ðŸ“…</span>
+        <div class="more-title">Agenda</div>
+        <div class="more-sub">Tareas y compromisos</div>
+      </div>
+      <div class="more-card" onclick="showToast('ðŸ”§ MÃ³dulo Directorio â€” prÃ³ximamente')">
+        <span class="more-icon">ðŸ‘¥</span>
+        <div class="more-title">Directorio</div>
+        <div class="more-sub">Personal DACE</div>
+      </div>
+      <div class="more-card" onclick="showToast('ðŸ”§ MÃ³dulo Reportes â€” prÃ³ximamente')">
+        <span class="more-icon">ðŸ“Š</span>
+        <div class="more-title">Reportes</div>
+        <div class="more-sub">EstadÃ­sticas</div>
+      </div>
+      <div class="more-card" onclick="showToast('ðŸ”§ MÃ³dulo Archivo â€” prÃ³ximamente')">
+        <span class="more-icon">ðŸ—ƒï¸</span>
+        <div class="more-title">Archivo DACE</div>
+        <div class="more-sub">Documentos</div>
+      </div>
+      <div class="more-card" onclick="showToast('âš™ï¸ Sistema DACE Arecibo v7.0')">
+        <span class="more-icon">âš™ï¸</span>
+        <div class="more-title">ConfiguraciÃ³n</div>
+        <div class="more-sub">Sistema v7.0</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">Estado del Sistema</div>
+      <p><strong>VersiÃ³n:</strong> DACE Arecibo v7.0</p>
+      <p><strong>Proyecto Firebase:</strong> dace-arecibo-oficial</p>
+      <p><strong>SincronizaciÃ³n:</strong> Tiempo real (iPhone â†” PC)</p>
+      <p><strong>Usuario:</strong> Agte. Jose Aponte Cancel Â· 31093</p>
+      <p><strong>Unidad:</strong> DACE Arecibo â€” NPPR</p>
+      <p id="masStatus" style="margin-top:8px; font-weight:700;"></p>
+    </div>
+  </div>
+
+</main>
+
+<!-- NAVEGACIÃ“N -->
+<nav class="nav-bar">
+  <button id="btn-inicio"  class="nav-btn active" onclick="changeTab('inicio')"><span class="nav-icon">ðŸ“Š</span>PANEL</button>
+  <button id="btn-q137_1" class="nav-btn"         onclick="changeTab('q137_1')"><span class="nav-icon">âš–ï¸</span>137.1</button>
+  <button id="btn-q137_3" class="nav-btn"         onclick="changeTab('q137_3')"><span class="nav-icon">ðŸ—ï¸</span>137.3</button>
+  <button id="btn-casos"  class="nav-btn"         onclick="changeTab('casos')"><span class="nav-icon">ðŸ“‹</span>CASOS</button>
+  <button id="btn-mas"    class="nav-btn"         onclick="changeTab('mas')"><span class="nav-icon">â‹¯</span>MÃS</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     JAVASCRIPT â€” FIREBASE + LÃ“GICA DE LA APP
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<script>
+
+/* â•â•â• EXPORTAR PDF â•â•â• */
+function pdfHeader(doc, titulo) {
+  const azul  = [10, 25, 47];
+  const gold  = [197, 160, 89];
+  const W     = doc.internal.pageSize.getWidth();
+
+  // Fondo encabezado
+  doc.setFillColor(...azul);
+  doc.rect(0, 0, W, 38, 'F');
+
+  // TÃ­tulo principal
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DACE ARECIBO', W / 2, 13, { align: 'center' });
+
+  // SubtÃ­tulo
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Negociado de la PolicÃ­a de Puerto Rico', W / 2, 20, { align: 'center' });
+
+  // LÃ­nea dorada
+  doc.setDrawColor(...gold);
+  doc.setLineWidth(0.8);
+  doc.line(10, 25, W - 10, 25);
+
+  // TÃ­tulo del reporte
+  doc.setTextColor(...gold);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(titulo.toUpperCase(), W / 2, 33, { align: 'center' });
+
+  // Fecha generaciÃ³n
+  doc.setTextColor(180, 180, 180);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  const ts = new Date().toLocaleString('es-PR');
+  doc.text(`Generado: ${ts}  |  Agte. Aponte Cancel Â· Placa 31093`, W / 2, 37, { align: 'center' });
+
+  return 45; // y de inicio del contenido
+}
+
+function pdfLinea(doc, y, W) {
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(10, y, W - 10, y);
+  return y + 4;
+}
+
+function checkPage(doc, y, needed = 20) {
+  const H = doc.internal.pageSize.getHeight();
+  if (y + needed > H - 15) {
+    doc.addPage();
+    return 15;
+  }
+  return y;
+}
+
+async function exportarPDF(modulo) {
+  showToast('â³ Generando PDF...', '#0a192f');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W   = doc.internal.pageSize.getWidth();
+  const azul  = [10, 25, 47];
+  const gold  = [197, 160, 89];
+
+  let titulo, snap, y;
+
+  try {
+    if (modulo === 'q137_1') {
+      titulo = 'Registro de Querellas PPR-137.1';
+      snap   = await db.collection('dace_q137_1').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay querellas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          // NÃºmero y fecha
+          doc.setFillColor(240, 244, 248);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'â€”'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          // Campos
+          const campos = [
+            ['Querellante', d.querellante],
+            ['Agencia/Unidad', d.agencia],
+            ['DescripciÃ³n', d.descripcion],
+            ['Estatus', d.estatus],
+            ['Observaciones', d.observaciones],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'q137_3') {
+      titulo = 'Registro de Inspecciones PPR-137.3';
+      snap   = await db.collection('dace_q137_3').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay inspecciones registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          doc.setFillColor(255, 249, 235);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(92, 70, 10);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'â€”'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          const campos = [
+            ['Lugar', d.lugar],
+            ['Tipo', d.tipo],
+            ['Hallazgos', d.hallazgos],
+            ['Recomendaciones', d.recomendaciones],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(92, 70, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'casos') {
+      titulo = 'Registro de Casos Activos';
+      snap   = await db.collection('dace_casos').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay casos registrados.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 40);
+
+          const prioColor = { Alta:[220,38,38], Media:[146,112,10], Baja:[22,163,74] }[d.prioridad] || [60,60,60];
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...prioColor);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.numero||'â€”'}  [${d.prioridad||''}]`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          const campos = [
+            ['DescripciÃ³n', d.descripcion],
+            ['Responsable', d.responsable],
+            ['PrÃ³xima AcciÃ³n', d.accion],
+            ['Estatus', d.estatus],
+          ];
+          campos.forEach(([label, val]) => {
+            if (!val) return;
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(...azul);
+            doc.setFontSize(7);
+            doc.setFont('helvetica','bold');
+            doc.text(label + ':', 13, y);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(60,60,60);
+            const lines = doc.splitTextToSize(val, W - 55);
+            doc.text(lines, 45, y);
+            y += (lines.length * 4) + 2;
+          });
+
+          y = pdfLinea(doc, y+2, W);
+        });
+      }
+    }
+
+    else if (modulo === 'maestro') {
+      titulo = 'Registro Maestro de Actividades';
+      snap   = await db.collection('dace_maestro').orderBy('createdAt','desc').get();
+      y      = pdfHeader(doc, titulo);
+
+      if (snap.empty) {
+        doc.setTextColor(150,150,150);
+        doc.setFontSize(10);
+        doc.text('No hay entradas registradas.', W/2, y+10, {align:'center'});
+      } else {
+        snap.docs.forEach((docSnap, i) => {
+          const d = docSnap.data();
+          y = checkPage(doc, y, 30);
+
+          doc.setFillColor(245, 245, 245);
+          doc.rect(10, y, W-20, 7, 'F');
+          doc.setTextColor(...azul);
+          doc.setFontSize(9);
+          doc.setFont('helvetica','bold');
+          doc.text(`#${i+1}  ${d.tipo||'â€”'}`, 13, y+5);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,100);
+          doc.setFontSize(7);
+          doc.text(`${d.fecha||''} ${d.hora||''}`, W-13, y+5, {align:'right'});
+          y += 10;
+
+          if (d.descripcion) {
+            y = checkPage(doc, y, 10);
+            doc.setTextColor(60,60,60);
+            doc.setFontSize(8);
+            doc.setFont('helvetica','normal');
+            const lines = doc.splitTextToSize(d.descripcion, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+          if (d.notas) {
+            y = checkPage(doc, y, 8);
+            doc.setTextColor(130,130,130);
+            doc.setFontSize(7);
+            const lines = doc.splitTextToSize('Notas: ' + d.notas, W - 25);
+            doc.text(lines, 13, y);
+            y += (lines.length * 4) + 2;
+          }
+
+          y = pdfLinea(doc, y+1, W);
+        });
+      }
+    }
+
+    // Pie de pÃ¡gina en todas las pÃ¡ginas
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPags; p++) {
+      doc.setPage(p);
+      doc.setFillColor(...azul);
+      doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+      doc.setTextColor(150,150,150);
+      doc.setFontSize(7);
+      doc.setFont('helvetica','normal');
+      doc.text(`DACE Arecibo â€” NPPR â€” Documento oficial  |  PÃ¡gina ${p} de ${totalPags}`,
+        W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
+    }
+
+    // Nombre del archivo
+    const nombres = {
+      q137_1: 'PPR-137.1_Querellas',
+      q137_3: 'PPR-137.3_Inspecciones',
+      casos:  'Casos_Activos',
+      maestro:'Registro_Maestro'
+    };
+    const fecha = new Date().toISOString().split('T')[0];
+    doc.save(`DACE_Arecibo_${nombres[modulo]}_${fecha}.pdf`);
+    showToast('âœ… PDF generado correctamente', '#166534');
+
+  } catch(e) {
+    showToast('âŒ Error al generar PDF: ' + e.message, '#dc2626');
+    console.error(e);
+  }
+}
+
+/* â•â•â• EXPORTAR REPORTE GENERAL (PANEL) â•â•â• */
+async function exportarPanelPDF() {
+  showToast('â³ Generando reporte general...', '#0a192f');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W   = doc.internal.pageSize.getWidth();
+  const azul = [10, 25, 47];
+  const gold  = [197, 160, 89];
+
+  try {
+    let y = pdfHeader(doc, 'Reporte General del Sistema');
+
+    // Contadores
+    const [s1, s2, s3, s4] = await Promise.all([
+      db.collection('dace_q137_1').get(),
+      db.collection('dace_q137_3').get(),
+      db.collection('dace_casos').get(),
+      db.collection('dace_maestro').get(),
+    ]);
+
+    y += 5;
+    doc.setTextColor(...azul);
+    doc.setFontSize(11);
+    doc.setFont('helvetica','bold');
+    doc.text('RESUMEN ESTADÃSTICO', W/2, y, {align:'center'});
+    y += 8;
+
+    const stats = [
+      ['Querellas PPR-137.1', s1.size, [10,25,47]],
+      ['Inspecciones PPR-137.3', s2.size, [92,112,10]],
+      ['Casos Activos', s3.size, [22,163,74]],
+      ['Registro Maestro', s4.size, [220,38,38]],
+    ];
+
+    stats.forEach(([label, count, color]) => {
+      doc.setFillColor(...color);
+      doc.rect(10, y, W-20, 12, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text(label, 16, y+8);
+      doc.setFontSize(14);
+      doc.text(String(count), W-16, y+9, {align:'right'});
+      y += 15;
+    });
+
+    y += 5;
+    doc.setTextColor(...azul);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('ACTIVIDAD RECIENTE â€” QUERELLAS 137.1', 10, y);
+    y += 5;
+
+    s1.docs.slice(0,5).forEach((docSnap, i) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(245,248,252);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(...azul);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'â€”'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      const desc = (d.descripcion||'').substring(0,60) + ((d.descripcion||'').length>60?'â€¦':'');
+      doc.text(desc, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
+
+    y += 3;
+    doc.setTextColor(...azul);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('ACTIVIDAD RECIENTE â€” INSPECCIONES 137.3', 10, y);
+    y += 5;
+
+    s2.docs.slice(0,5).forEach((docSnap) => {
+      const d = docSnap.data();
+      y = checkPage(doc, y, 12);
+      doc.setFillColor(255,251,235);
+      doc.rect(10, y, W-20, 9, 'F');
+      doc.setTextColor(92,70,10);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold');
+      doc.text(`${d.numero||'â€”'}`, 13, y+6);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(100,100,100);
+      doc.setFontSize(7);
+      doc.text(`${d.lugar||''} Â· ${d.tipo||''}`, 50, y+4);
+      doc.text(d.estatus||'', 50, y+8);
+      doc.text(`${d.fecha||''}`, W-13, y+6, {align:'right'});
+      y += 12;
+    });
+
+    // Pie de pÃ¡gina
+    doc.setFillColor(...azul);
+    doc.rect(0, doc.internal.pageSize.getHeight()-10, W, 10, 'F');
+    doc.setTextColor(150,150,150);
+    doc.setFontSize(7);
+    doc.text('DACE Arecibo â€” NPPR â€” Documento oficial',
+      W/2, doc.internal.pageSize.getHeight()-3, {align:'center'});
+
+    const fecha = new Date().toISOString().split('T')[0];
+    doc.save(`DACE_Arecibo_Reporte_General_${fecha}.pdf`);
+    showToast('âœ… Reporte general generado', '#166534');
+
+  } catch(e) {
+    showToast('âŒ Error: ' + e.message, '#dc2626');
+    console.error(e);
+  }
+}
+
+/* â”€â”€ SISTEMA DE PIN â”€â”€ */
+const PIN_CORRECTO = '5464';
+const SESSION_KEY  = 'dace_auth_ok';
+let pinActual = '';
+
+// Si ya autenticÃ³ en esta sesiÃ³n, ocultar pantalla directamente
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('lockScreen').style.display = 'none';
+}
+
+function pinPress(n) {
+  if (pinActual.length >= 4) return;
+  pinActual += n;
+  actualizarDots();
+  if (pinActual.length === 4) {
+    setTimeout(verificarPin, 120);
+  }
+}
+
+function pinDel() {
+  pinActual = pinActual.slice(0, -1);
+  actualizarDots();
+  document.getElementById('lockMsg').textContent = 'Introduce tu PIN de acceso';
+}
+
+function actualizarDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.classList.toggle('filled', i < pinActual.length);
+    dot.classList.remove('error');
+  }
+}
+
+function verificarPin() {
+  if (pinActual === PIN_CORRECTO) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    const ls = document.getElementById('lockScreen');
+    ls.style.transition = 'opacity 0.4s';
+    ls.style.opacity = '0';
+    setTimeout(() => ls.style.display = 'none', 400);
+  } else {
+    // PIN incorrecto â€” animar en rojo
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.add('error');
+      document.getElementById('d' + i).classList.remove('filled');
+    }
+    document.getElementById('lockMsg').textContent = 'âŒ PIN incorrecto. Intenta de nuevo.';
+    pinActual = '';
+    setTimeout(actualizarDots, 800);
+  }
+}
+
+/* â”€â”€ FIREBASE CONFIG â€” DACE-ARECIBO-OFICIAL â”€â”€ */
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        "dace-arecibo-oficial.firebaseapp.com",
+  projectId:         "dace-arecibo-oficial",
+  storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
+  messagingSenderId: "1061384536706",
+  appId:             "1:1061384536706:web:0df609d6159739af58aa9b"
+};
+
+/* â”€â”€ INICIALIZAR â”€â”€ */
+let db;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+
+  // Persistencia offline: si pierdes internet, guarda local y sincroniza al reconectarte
+  db.enablePersistence({ synchronizeTabs: true })
+    .catch(err => {
+      if (err.code === 'failed-precondition') {
+        // MÃºltiples tabs abiertas â€” persistencia solo funciona en una
+        console.warn('Persistencia: mÃºltiples tabs detectadas');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Persistencia offline no soportada en este navegador');
+      }
+    });
+
+  setFbStatus('online', 'âœ… Firebase conectado Â· dace-arecibo-oficial Â· SincronizaciÃ³n activa');
+  initListeners();
+
+} catch(e) {
+  setFbStatus('error', 'âŒ Error de conexiÃ³n: ' + e.message);
+  console.error('Firebase init error:', e);
+}
+
+/* â”€â”€ ESTADO CONEXIÃ“N â”€â”€ */
+function setFbStatus(state, msg) {
+  document.getElementById('fbDot').className = 'fb-dot ' + state;
+  document.getElementById('fbText').textContent = msg;
+  const ms = document.getElementById('masStatus');
+  if (ms) {
+    ms.textContent = msg;
+    ms.style.color = state === 'online' ? '#16a34a' : '#dc2626';
+  }
+}
+
+/* â”€â”€ NAVEGACIÃ“N â”€â”€ */
+function changeTab(id) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + id);
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* â”€â”€ TOAST â”€â”€ */
+let _tTimer;
+function showToast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg || '#1d1d1f';
+  clearTimeout(_tTimer);
+  t.classList.add('show');
+  _tTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* â”€â”€ FECHA / HORA â”€â”€ */
+function hoy()  { return new Date().toISOString().split('T')[0]; }
+function ahora(){ return new Date().toTimeString().slice(0, 5); }
+
+function prefill() {
+  ['q1_fecha','q3_fecha','c_fecha','rm_fecha'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = hoy();
+  });
+  ['q1_hora','q3_hora','rm_hora'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = ahora();
+  });
+}
+
+/* â”€â”€ BADGES â”€â”€ */
+function bEstatus(e) {
+  const m = {
+    'Pendiente':'b-pending','En Proceso':'b-process',
+    'Completado':'b-done','Activo':'b-process',
+    'Cerrado':'b-done','Archivado':'b-archived',
+    'Pendiente ResoluciÃ³n':'b-pending'
+  };
+  return `<span class="badge ${m[e]||'b-pending'}">${e||'â€”'}</span>`;
+}
+function bPrio(p) {
+  const m = { 'Alta':'b-alta','Media':'b-media','Baja':'b-baja' };
+  return `<span class="badge ${m[p]||'b-media'}">${p||'â€”'}</span>`;
+}
+
+/* â•â•â• LISTENERS TIEMPO REAL â•â•â•
+   onSnapshot dispara automÃ¡ticamente cada vez que Firestore
+   detecta un cambio â€” en cualquier dispositivo conectado.
+   Sin necesidad de recargar la pÃ¡gina.
+*/
+let feedCache = {};
+
+function initListeners() {
+  prefill();
+
+  /* 137.1 */
+  db.collection('dace_q137_1')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cnt1').textContent     = snap.size;
+      document.getElementById('q1_total').textContent = snap.size;
+      renderLista('lista_q1', snap.docs, item_Q1);
+      feedCache.q1 = snap.docs.slice(0,3).map(d => feedRow('âš–ï¸', d.data().numero||'Querella', `137.1 Â· ${d.data().fecha||''} Â· ${d.data().estatus||''}`));
+      renderFeed();
+    }, e => console.error('137.1:', e));
+
+  /* 137.3 */
+  db.collection('dace_q137_3')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cnt3').textContent     = snap.size;
+      document.getElementById('q3_total').textContent = snap.size;
+      renderLista('lista_q3', snap.docs, item_Q3);
+      feedCache.q3 = snap.docs.slice(0,3).map(d => feedRow('ðŸ—ï¸', d.data().numero||'InspecciÃ³n', `137.3 Â· ${d.data().lugar||''} Â· ${d.data().estatus||''}`));
+      renderFeed();
+    }, e => console.error('137.3:', e));
+
+  /* CASOS */
+  db.collection('dace_casos')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cntC').textContent    = snap.size;
+      document.getElementById('c_total').textContent = snap.size;
+      renderLista('lista_casos', snap.docs, item_Caso);
+      feedCache.casos = snap.docs.slice(0,3).map(d => feedRow('ðŸ“‹', d.data().numero||'Caso', trunc(d.data().descripcion||'', 55)));
+      renderFeed();
+    }, e => console.error('casos:', e));
+
+  /* MAESTRO */
+  db.collection('dace_maestro')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      document.getElementById('cntM').textContent     = snap.size;
+      document.getElementById('rm_total').textContent = snap.size;
+      renderLista('lista_maestro', snap.docs, item_Maestro);
+      feedCache.maestro = snap.docs.slice(0,2).map(d => feedRow('ðŸ“', d.data().tipo||'Entrada', trunc(d.data().descripcion||'', 55)));
+      renderFeed();
+    }, e => console.error('maestro:', e));
+}
+
+/* â”€â”€ FEED RECIENTE â”€â”€ */
+function feedRow(icon, title, sub) { return { icon, title, sub }; }
+function trunc(s, n) { return s.length > n ? s.substring(0, n) + 'â€¦' : s; }
+
+function renderFeed() {
+  const all = Object.values(feedCache).flat().slice(0, 7);
+  const el  = document.getElementById('feedArea');
+  if (!all.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">ðŸ“­</span><p>Sin actividad registrada aÃºn</p></div>';
+    return;
+  }
+  el.innerHTML = all.map(r => `
+    <div class="activity-item">
+      <span class="activity-icon">${r.icon}</span>
+      <div class="activity-info">
+        <strong>${r.title}</strong>
+        <span>${r.sub}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* â”€â”€ RENDER GENÃ‰RICO â”€â”€ */
+function renderLista(cid, docs, fn) {
+  const el = document.getElementById(cid);
+  if (!docs || !docs.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-icon">ðŸ“„</span><p>No hay registros aÃºn</p></div>';
+    return;
+  }
+  el.innerHTML = docs.map(fn).join('');
+}
+
+/* â”€â”€ RENDER: 137.1 â”€â”€ */
+function item_Q1(doc) {
+  const d = doc.data();
+  return `<div class="record-item">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'â€”'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.querellante ? `<p class="record-body"><strong>Querellante:</strong> ${d.querellante}</p>` : ''}
+    ${d.agencia     ? `<p class="record-body"><strong>Agencia:</strong> ${d.agencia}</p>` : ''}
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.observaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.observaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_1','${doc.id}','Querella')">ðŸ—‘ Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* â”€â”€ RENDER: 137.3 â”€â”€ */
+function item_Q3(doc) {
+  const d = doc.data();
+  return `<div class="record-item gold">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'â€”'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    ${d.lugar ? `<p class="record-body"><strong>Lugar:</strong> ${d.lugar}</p>` : ''}
+    ${d.tipo  ? `<p class="record-body"><strong>Tipo:</strong> ${d.tipo}</p>` : ''}
+    <p class="record-body">${d.hallazgos||''}</p>
+    ${d.recomendaciones ? `<p class="record-body" style="color:#94a3b8;font-style:italic"><strong>Rec:</strong> ${d.recomendaciones}</p>` : ''}
+    <div class="record-foot">
+      ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_q137_3','${doc.id}','InspecciÃ³n')">ðŸ—‘ Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* â”€â”€ RENDER: CASOS â”€â”€ */
+function item_Caso(doc) {
+  const d   = doc.data();
+  const cls = { Alta:'red', Media:'gold', Baja:'green' }[d.prioridad] || '';
+  return `<div class="record-item ${cls}">
+    <div class="record-head">
+      <span class="record-id">${d.numero||'â€”'}</span>
+      <span class="record-ts">${d.fecha||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.responsable ? `<p class="record-body"><strong>Responsable:</strong> ${d.responsable}</p>` : ''}
+    ${d.accion      ? `<p class="record-body"><strong>PrÃ³xima acciÃ³n:</strong> ${d.accion}</p>` : ''}
+    <div class="record-foot">
+      ${bPrio(d.prioridad)} ${bEstatus(d.estatus)}
+      <button class="btn-del" onclick="eliminar('dace_casos','${doc.id}','Caso')">ðŸ—‘ Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* â”€â”€ RENDER: MAESTRO â”€â”€ */
+function item_Maestro(doc) {
+  const d = doc.data();
+  return `<div class="record-item gray">
+    <div class="record-head">
+      <span class="record-id">${d.tipo||'â€”'}</span>
+      <span class="record-ts">${d.fecha||''} ${d.hora||''}</span>
+    </div>
+    <p class="record-body">${d.descripcion||''}</p>
+    ${d.notas ? `<p class="record-body" style="color:#94a3b8;font-style:italic">${d.notas}</p>` : ''}
+    <div class="record-foot">
+      <button class="btn-del" onclick="eliminar('dace_maestro','${doc.id}','Entrada')">ðŸ—‘ Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* â•â•â• GUARDAR: 137.1 â•â•â• */
+async function guardarQ1() {
+  const num  = v('q1_num'), desc = v('q1_desc');
+  if (!num || !desc) { showToast('âš ï¸ NÃºmero y descripciÃ³n son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_q137_1').add({
+      numero: num, fecha: v('q1_fecha'), hora: v('q1_hora'),
+      querellante: v('q1_querellante'), agencia: v('q1_agencia'),
+      descripcion: desc, estatus: v('q1_estatus'), observaciones: v('q1_obs'),
+      usuario: 'Agte. Aponte Cancel Â· 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('âœ… Querella guardada y sincronizada', '#166534');
+    limpiar(['q1_num','q1_querellante','q1_agencia','q1_desc','q1_obs']);
+    set('q1_estatus','Pendiente'); set('q1_fecha', hoy()); set('q1_hora', ahora());
+  } catch(e) { showToast('âŒ Error: ' + e.message, '#dc2626'); }
+}
+
+/* â•â•â• GUARDAR: 137.3 â•â•â• */
+async function guardarQ3() {
+  const num = v('q3_num'), hall = v('q3_hallazgos');
+  if (!num || !hall) { showToast('âš ï¸ NÃºmero y hallazgos son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_q137_3').add({
+      numero: num, fecha: v('q3_fecha'), hora: v('q3_hora'),
+      lugar: v('q3_lugar'), tipo: v('q3_tipo'),
+      hallazgos: hall, recomendaciones: v('q3_rec'), estatus: v('q3_estatus'),
+      usuario: 'Agte. Aponte Cancel Â· 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('âœ… InspecciÃ³n guardada y sincronizada', '#166534');
+    limpiar(['q3_num','q3_lugar','q3_hallazgos','q3_rec']);
+    set('q3_estatus','Pendiente'); set('q3_fecha', hoy()); set('q3_hora', ahora());
+  } catch(e) { showToast('âŒ Error: ' + e.message, '#dc2626'); }
+}
+
+/* â•â•â• GUARDAR: CASOS â•â•â• */
+async function guardarCaso() {
+  const num = v('c_num'), desc = v('c_desc');
+  if (!num || !desc) { showToast('âš ï¸ NÃºmero y descripciÃ³n son requeridos', '#92400e'); return; }
+  try {
+    await db.collection('dace_casos').add({
+      numero: num, fecha: v('c_fecha'), prioridad: v('c_prioridad'),
+      descripcion: desc, responsable: v('c_resp'), accion: v('c_accion'),
+      estatus: v('c_estatus'),
+      usuario: 'Agte. Aponte Cancel Â· 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('âœ… Caso guardado y sincronizado', '#166534');
+    limpiar(['c_num','c_desc','c_resp','c_accion']);
+    set('c_estatus','Activo'); set('c_prioridad','Media'); set('c_fecha', hoy());
+  } catch(e) { showToast('âŒ Error: ' + e.message, '#dc2626'); }
+}
+
+/* â•â•â• GUARDAR: MAESTRO â•â•â• */
+async function guardarMaestro() {
+  const desc = v('rm_desc');
+  if (!desc) { showToast('âš ï¸ La descripciÃ³n es requerida', '#92400e'); return; }
+  try {
+    await db.collection('dace_maestro').add({
+      tipo: v('rm_tipo'), fecha: v('rm_fecha'), hora: v('rm_hora'),
+      descripcion: desc, notas: v('rm_notas'),
+      usuario: 'Agte. Aponte Cancel Â· 31093',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('âœ… Entrada guardada y sincronizada', '#166534');
+    limpiar(['rm_desc','rm_notas']);
+    set('rm_fecha', hoy()); set('rm_hora', ahora());
+  } catch(e) { showToast('âŒ Error: ' + e.message, '#dc2626'); }
+}
+
+/* â•â•â• ELIMINAR â•â•â• */
+async function eliminar(col, id, tipo) {
+  if (!confirm(`Â¿Eliminar este registro de ${tipo}?\n\nEsta acciÃ³n es permanente.`)) return;
+  try {
+    await db.collection(col).doc(id).delete();
+    showToast(`ðŸ—‘ ${tipo} eliminado`, '#475569');
+  } catch(e) { showToast('âŒ Error al eliminar: ' + e.message, '#dc2626'); }
+}
+
+/* â”€â”€ HELPERS â”€â”€ */
+function v(id)        { return document.getElementById(id)?.value?.trim() || ''; }
+function set(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function limpiar(ids) { ids.forEach(id => set(id, '')); }
+</script>
+</body>
+</html>
+
+

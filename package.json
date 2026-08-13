@@ -1,0 +1,28 @@
+{
+  "name": "dace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fix_errors.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node -e \"const fs = require('fs'); fs.mkdirSync('docs/src', {recursive: true}); ['SECURITY_UTILS.js', 'REFACTORED_RENDERING.js', 'REFACTORED_CRUD.js', 'REFACTORED_AUTH.js', 'logo_pr_clean.jpg', 'logo_dsp_clean.jpg', 'pdfs.js'].forEach(f => fs.copyFileSync(f, 'docs/' + f)); fs.copyFileSync('src/app.js', 'docs/src/app.js');\"",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agteaponte/dace.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/agteaponte/dace/issues"
+  },
+  "homepage": "https://github.com/agteaponte/dace#readme",
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "vite": "^8.0.9"
+  }
+}

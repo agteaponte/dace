@@ -1,0 +1,168 @@
+=== LAYOUT FOR PPR-137.1.pdf ===
+
+--- Page 1 ---
+Page size: Width=612, Height=792
+
+--- Lines ---
+
+--- Rectangles ---
+Rect: x0=36.0, y0=153.0, x1=36.5, y1=153.5, width=0.5, height=0.5
+Rect: x0=36.0, y0=153.0, x1=36.5, y1=153.5, width=0.5, height=0.5
+Rect: x0=36.5, y0=153.0, x1=205.6, y1=153.5, width=169.1, height=0.5
+Rect: x0=205.6, y0=153.0, x1=206.1, y1=153.5, width=0.5, height=0.5
+Rect: x0=206.1, y0=153.0, x1=321.4, y1=153.5, width=115.3, height=0.5
+Rect: x0=321.4, y0=153.0, x1=321.9, y1=153.5, width=0.5, height=0.5
+Rect: x0=321.9, y0=153.0, x1=575.6, y1=153.5, width=253.7, height=0.5
+Rect: x0=575.6, y0=153.0, x1=576.1, y1=153.5, width=0.5, height=0.5
+Rect: x0=575.6, y0=153.0, x1=576.1, y1=153.5, width=0.5, height=0.5
+Rect: x0=36.0, y0=153.5, x1=36.5, y1=182.3, width=0.5, height=28.8
+Rect: x0=205.6, y0=153.5, x1=206.1, y1=182.3, width=0.5, height=28.8
+Rect: x0=321.4, y0=153.5, x1=321.9, y1=182.3, width=0.5, height=28.8
+Rect: x0=575.6, y0=153.5, x1=576.1, y1=182.3, width=0.5, height=28.8
+Rect: x0=36.0, y0=182.3, x1=36.5, y1=182.8, width=0.5, height=0.5
+Rect: x0=36.5, y0=182.3, x1=205.6, y1=182.8, width=169.1, height=0.5
+Rect: x0=205.6, y0=182.3, x1=206.1, y1=182.8, width=0.5, height=0.5
+Rect: x0=206.1, y0=182.3, x1=321.4, y1=182.8, width=115.3, height=0.5
+Rect: x0=321.4, y0=182.3, x1=321.9, y1=182.8, width=0.5, height=0.5
+Rect: x0=321.9, y0=182.3, x1=575.6, y1=182.8, width=253.7, height=0.5
+Rect: x0=575.6, y0=182.3, x1=576.1, y1=182.8, width=0.5, height=0.5
+Rect: x0=36.0, y0=182.8, x1=36.5, y1=211.6, width=0.5, height=28.8
+Rect: x0=205.6, y0=182.8, x1=206.1, y1=211.6, width=0.5, height=28.8
+Rect: x0=575.6, y0=182.8, x1=576.1, y1=211.6, width=0.5, height=28.8
+Rect: x0=36.0, y0=211.6, x1=36.5, y1=212.1, width=0.5, height=0.5
+Rect: x0=36.5, y0=211.6, x1=205.6, y1=212.1, width=169.1, height=0.5
+Rect: x0=205.6, y0=211.6, x1=206.1, y1=212.1, width=0.5, height=0.5
+Rect: x0=206.1, y0=211.6, x1=575.6, y1=212.1, width=369.5, height=0.5
+Rect: x0=575.6, y0=211.6, x1=576.1, y1=212.1, width=0.5, height=0.5
+Rect: x0=36.0, y0=212.1, x1=36.5, y1=257.1, width=0.5, height=45.0
+Rect: x0=575.6, y0=212.1, x1=576.1, y1=257.1, width=0.5, height=45.0
+Rect: x0=36.5, y0=257.6, x1=575.6, y1=279.2, width=539.1, height=21.6
+Rect: x0=41.6, y0=261.4, x1=570.5, y1=275.2, width=528.8, height=13.8
+Rect: x0=36.0, y0=257.1, x1=36.5, y1=257.6, width=0.5, height=0.5
+Rect: x0=36.5, y0=257.1, x1=575.6, y1=257.6, width=539.1, height=0.5
+Rect: x0=575.6, y0=257.1, x1=576.1, y1=257.6, width=0.5, height=0.5
+Rect: x0=36.0, y0=257.6, x1=36.5, y1=279.2, width=0.5, height=21.6
+Rect: x0=575.6, y0=257.6, x1=576.1, y1=279.2, width=0.5, height=21.6
+Rect: x0=36.0, y0=279.2, x1=36.5, y1=279.6, width=0.5, height=0.5
+Rect: x0=36.5, y0=279.2, x1=575.6, y1=279.6, width=539.1, height=0.5
+Rect: x0=575.6, y0=279.2, x1=576.1, y1=279.6, width=0.5, height=0.5
+Rect: x0=36.0, y0=279.6, x1=36.5, y1=481.3, width=0.5, height=201.6
+Rect: x0=575.6, y0=279.6, x1=576.1, y1=481.3, width=0.5, height=201.6
+Rect: x0=36.5, y0=481.8, x1=575.6, y1=503.4, width=539.1, height=21.6
+Rect: x0=41.6, y0=485.7, x1=570.5, y1=499.5, width=528.8, height=13.8
+Rect: x0=36.0, y0=481.3, x1=36.5, y1=481.8, width=0.5, height=0.5
+Rect: x0=36.5, y0=481.3, x1=575.6, y1=481.8, width=539.1, height=0.5
+Rect: x0=575.6, y0=481.3, x1=576.1, y1=481.8, width=0.5, height=0.5
+Rect: x0=36.0, y0=481.8, x1=36.5, y1=503.4, width=0.5, height=21.6
+Rect: x0=575.6, y0=481.8, x1=576.1, y1=503.4, width=0.5, height=21.6
+Rect: x0=36.0, y0=503.3, x1=36.5, y1=503.8, width=0.5, height=0.5
+Rect: x0=36.5, y0=503.3, x1=163.9, y1=503.8, width=127.5, height=0.5
+Rect: x0=163.9, y0=503.3, x1=164.4, y1=503.8, width=0.5, height=0.5
+Rect: x0=164.4, y0=503.3, x1=290.9, y1=503.8, width=126.5, height=0.5
+Rect: x0=290.9, y0=503.3, x1=291.4, y1=503.8, width=0.5, height=0.5
+Rect: x0=291.4, y0=503.3, x1=422.0, y1=503.8, width=130.6, height=0.5
+Rect: x0=422.0, y0=503.3, x1=422.5, y1=503.8, width=0.5, height=0.5
+Rect: x0=422.5, y0=503.3, x1=575.6, y1=503.8, width=153.1, height=0.5
+Rect: x0=575.6, y0=503.3, x1=576.1, y1=503.8, width=0.5, height=0.5
+Rect: x0=36.0, y0=503.8, x1=36.5, y1=532.6, width=0.5, height=28.8
+Rect: x0=163.9, y0=503.8, x1=164.4, y1=532.6, width=0.5, height=28.8
+Rect: x0=290.9, y0=503.8, x1=291.4, y1=532.6, width=0.5, height=28.8
+Rect: x0=422.0, y0=503.8, x1=422.5, y1=532.6, width=0.5, height=28.8
+Rect: x0=575.6, y0=503.8, x1=576.1, y1=532.6, width=0.5, height=28.8
+Rect: x0=36.0, y0=532.6, x1=36.5, y1=533.1, width=0.5, height=0.5
+Rect: x0=36.5, y0=532.6, x1=163.9, y1=533.1, width=127.5, height=0.5
+Rect: x0=163.9, y0=532.6, x1=164.4, y1=533.1, width=0.5, height=0.5
+Rect: x0=164.4, y0=532.6, x1=290.9, y1=533.1, width=126.5, height=0.5
+Rect: x0=290.9, y0=532.6, x1=291.4, y1=533.1, width=0.5, height=0.5
+Rect: x0=291.4, y0=532.6, x1=422.0, y1=533.1, width=130.6, height=0.5
+Rect: x0=422.0, y0=532.6, x1=422.5, y1=533.1, width=0.5, height=0.5
+Rect: x0=422.5, y0=532.6, x1=575.6, y1=533.1, width=153.1, height=0.5
+Rect: x0=575.6, y0=532.6, x1=576.1, y1=533.1, width=0.5, height=0.5
+Rect: x0=36.0, y0=533.1, x1=36.5, y1=562.0, width=0.5, height=28.9
+Rect: x0=290.9, y0=533.1, x1=291.4, y1=562.0, width=0.5, height=28.9
+Rect: x0=575.6, y0=533.1, x1=576.1, y1=562.0, width=0.5, height=28.9
+Rect: x0=36.0, y0=562.0, x1=36.5, y1=562.5, width=0.5, height=0.5
+Rect: x0=36.5, y0=562.0, x1=290.9, y1=562.5, width=254.5, height=0.5
+Rect: x0=290.9, y0=562.0, x1=291.4, y1=562.5, width=0.5, height=0.5
+Rect: x0=291.4, y0=562.0, x1=370.0, y1=562.5, width=78.6, height=0.5
+Rect: x0=370.0, y0=562.0, x1=370.5, y1=562.5, width=0.5, height=0.5
+Rect: x0=370.5, y0=562.0, x1=575.6, y1=562.5, width=205.1, height=0.5
+Rect: x0=575.6, y0=562.0, x1=576.1, y1=562.5, width=0.5, height=0.5
+Rect: x0=36.0, y0=562.5, x1=36.5, y1=591.3, width=0.5, height=28.8
+Rect: x0=370.0, y0=562.5, x1=370.5, y1=591.3, width=0.5, height=28.8
+Rect: x0=575.6, y0=562.5, x1=576.1, y1=591.3, width=0.5, height=28.8
+Rect: x0=36.5, y0=591.8, x1=575.6, y1=613.4, width=539.1, height=21.6
+Rect: x0=41.6, y0=595.6, x1=570.5, y1=609.5, width=528.8, height=13.8
+Rect: x0=36.0, y0=591.3, x1=36.5, y1=591.8, width=0.5, height=0.5
+Rect: x0=36.5, y0=591.3, x1=370.0, y1=591.8, width=333.6, height=0.5
+Rect: x0=370.0, y0=591.3, x1=370.5, y1=591.8, width=0.5, height=0.5
+Rect: x0=370.5, y0=591.3, x1=575.6, y1=591.8, width=205.1, height=0.5
+Rect: x0=575.6, y0=591.3, x1=576.1, y1=591.8, width=0.5, height=0.5
+Rect: x0=36.0, y0=591.8, x1=36.5, y1=613.4, width=0.5, height=21.6
+Rect: x0=575.6, y0=591.8, x1=576.1, y1=613.4, width=0.5, height=21.6
+Rect: x0=36.5, y0=613.9, x1=413.2, y1=642.7, width=376.8, height=28.8
+Rect: x0=41.6, y0=613.9, x1=408.1, y1=627.7, width=366.4, height=13.8
+Rect: x0=413.7, y0=613.9, x1=575.6, y1=642.7, width=161.9, height=28.8
+Rect: x0=418.9, y0=613.9, x1=570.5, y1=627.7, width=151.6, height=13.8
+Rect: x0=36.0, y0=613.4, x1=36.5, y1=613.9, width=0.5, height=0.5
+Rect: x0=36.5, y0=613.4, x1=413.2, y1=613.9, width=376.8, height=0.5
+Rect: x0=413.2, y0=613.4, x1=413.7, y1=613.9, width=0.5, height=0.5
+Rect: x0=413.7, y0=613.4, x1=575.6, y1=613.9, width=161.9, height=0.5
+Rect: x0=575.6, y0=613.4, x1=576.1, y1=613.9, width=0.5, height=0.5
+Rect: x0=36.0, y0=613.9, x1=36.5, y1=642.7, width=0.5, height=28.8
+Rect: x0=413.2, y0=613.9, x1=413.7, y1=642.7, width=0.5, height=28.8
+Rect: x0=575.6, y0=613.9, x1=576.1, y1=642.7, width=0.5, height=28.8
+Rect: x0=36.5, y0=643.2, x1=335.0, y1=672.0, width=298.5, height=28.8
+Rect: x0=41.6, y0=643.2, x1=329.8, y1=657.0, width=288.2, height=13.8
+Rect: x0=335.5, y0=643.2, x1=575.6, y1=672.0, width=240.1, height=28.8
+Rect: x0=340.6, y0=643.2, x1=570.5, y1=657.0, width=229.8, height=13.8
+Rect: x0=36.0, y0=642.7, x1=36.5, y1=643.2, width=0.5, height=0.5
+Rect: x0=36.5, y0=642.7, x1=335.0, y1=643.2, width=298.5, height=0.5
+Rect: x0=335.0, y0=642.7, x1=335.5, y1=643.2, width=0.5, height=0.5
+Rect: x0=335.5, y0=642.7, x1=413.2, y1=643.2, width=77.8, height=0.5
+Rect: x0=413.2, y0=642.7, x1=413.7, y1=643.2, width=0.5, height=0.5
+Rect: x0=413.7, y0=642.7, x1=575.6, y1=643.2, width=161.9, height=0.5
+Rect: x0=575.6, y0=642.7, x1=576.1, y1=643.2, width=0.5, height=0.5
+Rect: x0=36.0, y0=643.2, x1=36.5, y1=672.0, width=0.5, height=28.8
+Rect: x0=335.0, y0=643.2, x1=335.5, y1=672.0, width=0.5, height=28.8
+Rect: x0=575.6, y0=643.2, x1=576.1, y1=672.0, width=0.5, height=28.8
+Rect: x0=36.5, y0=672.5, x1=290.9, y1=701.3, width=254.5, height=28.8
+Rect: x0=41.6, y0=672.5, x1=285.8, y1=686.3, width=244.1, height=13.8
+Rect: x0=291.4, y0=672.5, x1=575.6, y1=701.3, width=284.2, height=28.8
+Rect: x0=296.6, y0=672.5, x1=570.5, y1=686.3, width=273.9, height=13.8
+Rect: x0=36.0, y0=672.0, x1=36.5, y1=672.5, width=0.5, height=0.5
+Rect: x0=36.5, y0=672.0, x1=290.9, y1=672.5, width=254.5, height=0.5
+Rect: x0=290.9, y0=672.0, x1=291.4, y1=672.5, width=0.5, height=0.5
+Rect: x0=291.4, y0=672.0, x1=335.0, y1=672.5, width=43.6, height=0.5
+Rect: x0=335.0, y0=672.0, x1=335.5, y1=672.5, width=0.5, height=0.5
+Rect: x0=335.5, y0=672.0, x1=575.6, y1=672.5, width=240.1, height=0.5
+Rect: x0=575.6, y0=672.0, x1=576.1, y1=672.5, width=0.5, height=0.5
+Rect: x0=36.0, y0=672.5, x1=36.5, y1=701.4, width=0.5, height=28.9
+Rect: x0=36.0, y0=701.4, x1=36.5, y1=701.9, width=0.5, height=0.5
+Rect: x0=36.0, y0=701.4, x1=36.5, y1=701.9, width=0.5, height=0.5
+Rect: x0=36.5, y0=701.4, x1=290.9, y1=701.9, width=254.5, height=0.5
+Rect: x0=290.9, y0=672.5, x1=291.4, y1=701.4, width=0.5, height=28.9
+Rect: x0=290.9, y0=701.4, x1=291.4, y1=701.9, width=0.5, height=0.5
+Rect: x0=291.4, y0=701.4, x1=575.6, y1=701.9, width=284.2, height=0.5
+Rect: x0=575.6, y0=672.5, x1=576.1, y1=701.4, width=0.5, height=28.9
+Rect: x0=575.6, y0=701.4, x1=576.1, y1=701.9, width=0.5, height=0.5
+Rect: x0=575.6, y0=701.4, x1=576.1, y1=701.9, width=0.5, height=0.5
+
+--- Words / Texts ---
+Text (y=89.5, x=36.0): PPR-137.1
+Text (y=99.5, x=209.7): SOLICITUD ORDEN DE TRABAJO
+Text (y=127.1, x=379.1): Número de solicitud _________
+Text (y=155.2, x=41.6): Unidad Solicitante Área Director/supervisor solicita
+Text (y=184.5, x=41.6): Fecha
+Text (y=213.7, x=41.6): Trabajo solicitado
+Text (y=228.1, x=41.6): ☐ Carpintería ☐ Electricidad ☐ Pintura ☐ Refrigeración ☐ Ebanistería ☐ Limpieza
+Text (y=243.7, x=41.6): ☐ Plomería
+Text (y=263.1, x=195.4): DESCRIPCIÓN SERVICIO SOLICITADO
+Text (y=487.4, x=192.6): LOCALIZACIÓN AVERÍA O PROPIEDAD
+Text (y=505.5, x=41.6): Sección División Distrito/Precinto Área
+Text (y=534.9, x=41.6): Negociado Superintendencia Auxiliar
+Text (y=564.2, x=41.6): Firma del Solicitante Teléfono de contacto
+Text (y=597.3, x=166.5): PARA USO OFICIAL DIVISIÓN ADMINISTRACIÓN
+Text (y=615.6, x=41.6): Autorizado por Fecha
+Text (y=644.9, x=41.6): Se autoriza a A viajar a
+Text (y=674.1, x=41.6): Tablilla vehículo Oficial asignado Acompañante

@@ -1,0 +1,1058 @@
+{
+  "ext": [
+    {
+      "index": 0,
+      "name": "Portón de entrada",
+      "page": 1,
+      "y": 246.4,
+      "x": 31.4,
+      "matched_text": "1. Portón de entrada ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Verja periferal",
+      "page": 1,
+      "y": 262.4,
+      "x": 31.4,
+      "matched_text": "2. Verja periferal ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Estacionamiento",
+      "page": 1,
+      "y": 277.9,
+      "x": 31.4,
+      "matched_text": "3. Estacionamiento"
+    },
+    {
+      "index": 3,
+      "name": "Parrillas Pluviales",
+      "page": 1,
+      "y": 389.4,
+      "x": 31.4,
+      "matched_text": "4. Parrillas Pluviales ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Estación de Basura",
+      "page": 1,
+      "y": 405.5,
+      "x": 31.4,
+      "matched_text": "5. Estación de Basura ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Luminarias y Postes",
+      "page": 1,
+      "y": 421.5,
+      "x": 31.4,
+      "matched_text": "6. Luminarias y Postes ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Hidrante",
+      "page": 1,
+      "y": 437.5,
+      "x": 31.4,
+      "matched_text": "7. Hidrante ☐ ☐ ☐"
+    },
+    {
+      "index": 7,
+      "name": "Mangueras",
+      "page": 1,
+      "y": 453.5,
+      "x": 31.4,
+      "matched_text": "8. Mangueras ☐ ☐ ☐"
+    },
+    {
+      "index": 8,
+      "name": "Áreas Verdes",
+      "page": 1,
+      "y": 469.7,
+      "x": 31.4,
+      "matched_text": "9. Áreas Verdes ☐ ☐ ☐"
+    },
+    {
+      "index": 9,
+      "name": "Astas de Banderas",
+      "page": 1,
+      "y": 485.8,
+      "x": 31.4,
+      "matched_text": "10. Astas de Banderas ☐ ☐ ☐"
+    },
+    {
+      "index": 10,
+      "name": "Pintura Exterior",
+      "page": 1,
+      "y": 501.9,
+      "x": 31.4,
+      "matched_text": "11. Pintura Exterior ☐ ☐ ☐"
+    },
+    {
+      "index": 11,
+      "name": "Iluminación Perímetro",
+      "page": 1,
+      "y": 517.9,
+      "x": 31.4,
+      "matched_text": "12. Iluminación Perímetro ☐ ☐ ☐"
+    },
+    {
+      "index": 12,
+      "name": "Rotulación",
+      "page": 1,
+      "y": 533.9,
+      "x": 31.4,
+      "matched_text": "13. Rotulación ☐ ☐ ☐"
+    }
+  ],
+  "int": [
+    {
+      "index": 0,
+      "name": "Portones",
+      "page": 1,
+      "y": 579.2,
+      "x": 31.4,
+      "matched_text": "1. Portones ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Pasamanos",
+      "page": 1,
+      "y": 595.3,
+      "x": 31.4,
+      "matched_text": "2. Pasamanos ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Rejas",
+      "page": 1,
+      "y": 611.3,
+      "x": 31.4,
+      "matched_text": "3. Rejas ☐ ☐ ☐"
+    },
+    {
+      "index": 3,
+      "name": "Pintura",
+      "page": 1,
+      "y": 374.6,
+      "x": 49.4,
+      "matched_text": "pintura logo"
+    },
+    {
+      "index": 4,
+      "name": "Áreas verdes",
+      "page": 1,
+      "y": 469.7,
+      "x": 31.4,
+      "matched_text": "9. Áreas Verdes ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Gazebo",
+      "page": 1,
+      "y": 738.9,
+      "x": 31.4,
+      "matched_text": "6. Gazebo ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Paredes",
+      "page": 1,
+      "y": 754.5,
+      "x": 31.4,
+      "matched_text": "7. Paredes"
+    },
+    {
+      "index": 7,
+      "name": "Pisos",
+      "page": 1,
+      "y": 782.6,
+      "x": 31.4,
+      "matched_text": "8. Pisos"
+    },
+    {
+      "index": 8,
+      "name": "Aceras",
+      "page": 1,
+      "y": 333.2,
+      "x": 49.4,
+      "matched_text": "d. cond. Aceras."
+    },
+    {
+      "index": 9,
+      "name": "Rampas",
+      "page": 1,
+      "y": 668.5,
+      "x": 49.4,
+      "matched_text": "c. rampa"
+    },
+    {
+      "index": 10,
+      "name": "Iluminación",
+      "page": 1,
+      "y": 517.9,
+      "x": 31.4,
+      "matched_text": "12. Iluminación Perímetro ☐ ☐ ☐"
+    },
+    {
+      "index": 11,
+      "name": "Desagües pluviales",
+      "page": 1,
+      "y": 859.4,
+      "x": 31.4,
+      "matched_text": "12. Desagües pluviales ☐ ☐ ☐"
+    },
+    {
+      "index": 12,
+      "name": "Barandas",
+      "page": 1,
+      "y": 875.4,
+      "x": 31.4,
+      "matched_text": "13. Barandas ☐ ☐ ☐"
+    },
+    {
+      "index": 13,
+      "name": "Juntas de Expansión",
+      "page": 1,
+      "y": 891.6,
+      "x": 31.4,
+      "matched_text": "14. Juntas de Expansión ☐ ☐ ☐"
+    }
+  ],
+  "com": [
+    {
+      "index": 0,
+      "name": "Enchapado",
+      "page": 2,
+      "y": 57.1,
+      "x": 31.4,
+      "matched_text": "1. Enchapado de paredes y"
+    },
+    {
+      "index": 1,
+      "name": "Campana de Extracción",
+      "page": 2,
+      "y": 85.2,
+      "x": 31.4,
+      "matched_text": "2. Campana de Extracción"
+    },
+    {
+      "index": 2,
+      "name": "Plomería",
+      "page": 2,
+      "y": 127.1,
+      "x": 31.4,
+      "matched_text": "3. Plomería"
+    },
+    {
+      "index": 3,
+      "name": "Trampa de grasa",
+      "page": 2,
+      "y": 183.3,
+      "x": 31.4,
+      "matched_text": "4. Trampa de grasa ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Walk-in Cooler",
+      "page": 2,
+      "y": 198.9,
+      "x": 31.4,
+      "matched_text": "5. Walk-in Cooler and Freezer"
+    },
+    {
+      "index": 5,
+      "name": "Calentador de agua",
+      "page": 2,
+      "y": 241.3,
+      "x": 31.4,
+      "matched_text": "6. Calentador de agua ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Sistema de Gas",
+      "page": 2,
+      "y": 270.6,
+      "x": 49.4,
+      "matched_text": "Gas"
+    },
+    {
+      "index": 7,
+      "name": "Ventanas",
+      "page": 2,
+      "y": 367.7,
+      "x": 31.4,
+      "matched_text": "8. Ventanas"
+    },
+    {
+      "index": 8,
+      "name": "Puertas",
+      "page": 2,
+      "y": 423.4,
+      "x": 31.4,
+      "matched_text": "9. Puertas"
+    },
+    {
+      "index": 9,
+      "name": "Baños",
+      "page": 2,
+      "y": 451.5,
+      "x": 31.4,
+      "matched_text": "10. Baños"
+    },
+    {
+      "index": 10,
+      "name": "Luminarias",
+      "page": 2,
+      "y": 521.5,
+      "x": 31.4,
+      "matched_text": "11. Luminarias ☐ ☐ ☐"
+    }
+  ],
+  "adm": [
+    {
+      "index": 0,
+      "name": "A/C",
+      "page": 2,
+      "y": 784.8,
+      "x": 31.4,
+      "matched_text": "1. Aire Acondicionado (A/C) ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Paredes",
+      "page": 2,
+      "y": 57.1,
+      "x": 31.4,
+      "matched_text": "1. Enchapado de paredes y"
+    },
+    {
+      "index": 2,
+      "name": "Piso",
+      "page": 2,
+      "y": 70.9,
+      "x": 49.4,
+      "matched_text": "Piso"
+    },
+    {
+      "index": 3,
+      "name": "Baños",
+      "page": 2,
+      "y": 451.5,
+      "x": 31.4,
+      "matched_text": "10. Baños"
+    },
+    {
+      "index": 4,
+      "name": "Pintura",
+      "page": 2,
+      "y": 637.3,
+      "x": 31.4,
+      "matched_text": "5. Pintura ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Enfriador de Agua",
+      "page": 2,
+      "y": 653.5,
+      "x": 31.4,
+      "matched_text": "6. Enfriador de Agua ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "ADA",
+      "page": 2,
+      "y": 669.5,
+      "x": 31.4,
+      "matched_text": "7. Cumplimiento ADA ☐ ☐ ☐"
+    },
+    {
+      "index": 7,
+      "name": "Iluminación",
+      "page": 2,
+      "y": 685.5,
+      "x": 31.4,
+      "matched_text": "8. Iluminación ☐ ☐ ☐"
+    },
+    {
+      "index": 8,
+      "name": "Ventanas",
+      "page": 2,
+      "y": 367.7,
+      "x": 31.4,
+      "matched_text": "8. Ventanas"
+    },
+    {
+      "index": 9,
+      "name": "Plafón",
+      "page": 2,
+      "y": 717.7,
+      "x": 31.4,
+      "matched_text": "10. Plafón Acústico ☐ ☐ ☐"
+    },
+    {
+      "index": 10,
+      "name": "Intercom",
+      "page": 2,
+      "y": 733.7,
+      "x": 31.4,
+      "matched_text": "11. Intercom ☐ ☐ ☐"
+    },
+    {
+      "index": 11,
+      "name": "Timbre",
+      "page": 2,
+      "y": 749.9,
+      "x": 31.4,
+      "matched_text": "12. Sistema de Timbre ☐ ☐ ☐"
+    }
+  ],
+  "bib": [
+    {
+      "index": 0,
+      "name": "A/C",
+      "page": 2,
+      "y": 784.8,
+      "x": 31.4,
+      "matched_text": "1. Aire Acondicionado (A/C) ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Paredes",
+      "page": 2,
+      "y": 57.1,
+      "x": 31.4,
+      "matched_text": "1. Enchapado de paredes y"
+    },
+    {
+      "index": 2,
+      "name": "Pisos",
+      "page": 2,
+      "y": 70.9,
+      "x": 49.4,
+      "matched_text": "Piso"
+    },
+    {
+      "index": 3,
+      "name": "Oficina Bibliotecario",
+      "page": 2,
+      "y": 832.5,
+      "x": 31.4,
+      "matched_text": "4. Oficina Bibliotecario"
+    },
+    {
+      "index": 4,
+      "name": "Ventanas",
+      "page": 2,
+      "y": 367.7,
+      "x": 31.4,
+      "matched_text": "8. Ventanas"
+    },
+    {
+      "index": 5,
+      "name": "Pinturas",
+      "page": 2,
+      "y": 872.5,
+      "x": 31.4,
+      "matched_text": "6. Pinturas ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Puertas",
+      "page": 2,
+      "y": 423.4,
+      "x": 31.4,
+      "matched_text": "9. Puertas"
+    },
+    {
+      "index": 7,
+      "name": "Luminaria",
+      "page": 2,
+      "y": 521.5,
+      "x": 31.4,
+      "matched_text": "11. Luminarias ☐ ☐ ☐"
+    }
+  ],
+  "aca": [
+    {
+      "index": 0,
+      "name": "Salones",
+      "page": 3,
+      "y": 79.4,
+      "x": 31.4,
+      "matched_text": "1. Cantidad de Salones ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Pizarras",
+      "page": 3,
+      "y": 95.4,
+      "x": 31.4,
+      "matched_text": "2. Pizarras ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Iluminación",
+      "page": 3,
+      "y": 111.5,
+      "x": 31.4,
+      "matched_text": "3. Iluminación ☐ ☐ ☐"
+    },
+    {
+      "index": 3,
+      "name": "Receptáculos",
+      "page": 3,
+      "y": 127.7,
+      "x": 31.4,
+      "matched_text": "4. Receptáculos e Interruptores ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Puertas",
+      "page": 3,
+      "y": 143.6,
+      "x": 31.4,
+      "matched_text": "5. Puertas ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Gabinetes",
+      "page": 3,
+      "y": 159.7,
+      "x": 31.4,
+      "matched_text": "6. gabinetes ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Abanicos",
+      "page": 3,
+      "y": 175.9,
+      "x": 31.4,
+      "matched_text": "7. Abanicos de techos ☐ ☐ ☐"
+    },
+    {
+      "index": 7,
+      "name": "Ventanas",
+      "page": 3,
+      "y": 191.8,
+      "x": 31.4,
+      "matched_text": "8. Ventanas ☐ ☐ ☐"
+    },
+    {
+      "index": 8,
+      "name": "Pintura",
+      "page": 3,
+      "y": 208.0,
+      "x": 31.4,
+      "matched_text": "9. Condición de Pintura ☐ ☐ ☐"
+    }
+  ],
+  "ban": [
+    {
+      "index": 0,
+      "name": "Enchapado",
+      "page": 3,
+      "y": 242.8,
+      "x": 31.4,
+      "matched_text": "1. Enchapado ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Particiones",
+      "page": 3,
+      "y": 258.8,
+      "x": 31.4,
+      "matched_text": "2. Particiones ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Ventanas",
+      "page": 3,
+      "y": 191.8,
+      "x": 31.4,
+      "matched_text": "8. Ventanas ☐ ☐ ☐"
+    },
+    {
+      "index": 3,
+      "name": "Drenajes",
+      "page": 3,
+      "y": 291.0,
+      "x": 31.4,
+      "matched_text": "4. Drenajes ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Inodoros",
+      "page": 3,
+      "y": 307.1,
+      "x": 31.4,
+      "matched_text": "5. Inodoros ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Lavamanos",
+      "page": 3,
+      "y": 323.2,
+      "x": 31.4,
+      "matched_text": "6. Lavamanos ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Urinales",
+      "page": 3,
+      "y": 339.2,
+      "x": 31.4,
+      "matched_text": "7. Urinales ☐ ☐ ☐"
+    },
+    {
+      "index": 7,
+      "name": "Llaves",
+      "page": 3,
+      "y": 355.4,
+      "x": 31.4,
+      "matched_text": "8. Llaves de Agua ☐ ☐ ☐"
+    },
+    {
+      "index": 8,
+      "name": "Extractores",
+      "page": 3,
+      "y": 371.3,
+      "x": 31.4,
+      "matched_text": "9. Extractores ☐ ☐ ☐"
+    },
+    {
+      "index": 9,
+      "name": "Pintura",
+      "page": 3,
+      "y": 208.0,
+      "x": 31.4,
+      "matched_text": "9. Condición de Pintura ☐ ☐ ☐"
+    },
+    {
+      "index": 10,
+      "name": "ADA",
+      "page": 3,
+      "y": 403.0,
+      "x": 31.4,
+      "matched_text": "11. Cumplimiento ley ADA"
+    }
+  ],
+  "tec": [
+    {
+      "index": 0,
+      "name": "Acceso",
+      "page": 3,
+      "y": 455.1,
+      "x": 31.4,
+      "matched_text": "1. Acceso ☐ ☐ ☐"
+    },
+    {
+      "index": 1,
+      "name": "Escotillas",
+      "page": 3,
+      "y": 471.2,
+      "x": 31.4,
+      "matched_text": "2. Escotillas ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Drenajes",
+      "page": 3,
+      "y": 291.0,
+      "x": 31.4,
+      "matched_text": "4. Drenajes ☐ ☐ ☐"
+    },
+    {
+      "index": 3,
+      "name": "Limpieza",
+      "page": 3,
+      "y": 503.3,
+      "x": 31.4,
+      "matched_text": "4. Limpieza ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Empozamientos",
+      "page": 3,
+      "y": 519.4,
+      "x": 31.4,
+      "matched_text": "5. Empozamientos ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Filtraciones",
+      "page": 3,
+      "y": 535.4,
+      "x": 31.4,
+      "matched_text": "6. Filtraciones ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Tratamiento",
+      "page": 3,
+      "y": 551.5,
+      "x": 31.4,
+      "matched_text": "7. Tratamiento ☐ ☐ ☐"
+    }
+  ],
+  "can": [
+    {
+      "index": 0,
+      "name": "Canastos",
+      "page": 3,
+      "y": 586.0,
+      "x": 31.4,
+      "matched_text": "1. Canastos"
+    },
+    {
+      "index": 1,
+      "name": "Portones",
+      "page": 3,
+      "y": 619.1,
+      "x": 31.4,
+      "matched_text": "2. Portones ☐ ☐ ☐"
+    },
+    {
+      "index": 2,
+      "name": "Rejas y Barandas",
+      "page": 3,
+      "y": 635.4,
+      "x": 31.4,
+      "matched_text": "3. Rejas y Barandas ☐ ☐ ☐"
+    },
+    {
+      "index": 3,
+      "name": "Estructura",
+      "page": 3,
+      "y": 651.2,
+      "x": 31.4,
+      "matched_text": "4. Estructura ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Gradas",
+      "page": 3,
+      "y": 667.3,
+      "x": 31.4,
+      "matched_text": "5. Gradas ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Iluminación",
+      "page": 3,
+      "y": 111.5,
+      "x": 31.4,
+      "matched_text": "3. Iluminación ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Piso",
+      "page": 3,
+      "y": 699.6,
+      "x": 31.4,
+      "matched_text": "7. Condiciones y Pintura Piso ☐ ☐ ☐"
+    },
+    {
+      "index": 7,
+      "name": "Control Palomas",
+      "page": 3,
+      "y": 715.7,
+      "x": 31.4,
+      "matched_text": "8. Control de Palomas ☐ ☐ ☐"
+    },
+    {
+      "index": 8,
+      "name": "Extractores",
+      "page": 3,
+      "y": 371.3,
+      "x": 31.4,
+      "matched_text": "9. Extractores ☐ ☐ ☐"
+    },
+    {
+      "index": 9,
+      "name": "Baños",
+      "page": 3,
+      "y": 224.9,
+      "x": 109.3,
+      "matched_text": "Baños Buen Observaciones"
+    },
+    {
+      "index": 10,
+      "name": "Fuentes",
+      "page": 3,
+      "y": 763.8,
+      "x": 31.4,
+      "matched_text": "11. Fuentes de Agua ☐ ☐ ☐"
+    },
+    {
+      "index": 11,
+      "name": "Abanicos",
+      "page": 3,
+      "y": 175.9,
+      "x": 31.4,
+      "matched_text": "7. Abanicos de techos ☐ ☐ ☐"
+    },
+    {
+      "index": 12,
+      "name": "Filtraciones",
+      "page": 3,
+      "y": 535.4,
+      "x": 31.4,
+      "matched_text": "6. Filtraciones ☐ ☐ ☐"
+    },
+    {
+      "index": 13,
+      "name": "Drenajes",
+      "page": 3,
+      "y": 291.0,
+      "x": 31.4,
+      "matched_text": "4. Drenajes ☐ ☐ ☐"
+    }
+  ],
+  "seg": [
+    {
+      "index": 0,
+      "name": "Intercomunicador",
+      "page": 3,
+      "y": 846.5,
+      "x": 31.4,
+      "matched_text": "1. Sistema de Intercomunicador"
+    },
+    {
+      "index": 1,
+      "name": "Alarma incendios",
+      "page": 3,
+      "y": 892.9,
+      "x": 49.4,
+      "matched_text": "incendios"
+    },
+    {
+      "index": 2,
+      "name": "Gabinetes Mangueras",
+      "page": 3,
+      "y": 944.0,
+      "x": 31.4,
+      "matched_text": "3. Gabinetes de Mangueras"
+    },
+    {
+      "index": 3,
+      "name": "Extintores",
+      "page": 4,
+      "y": 38.6,
+      "x": 31.4,
+      "matched_text": "4. Extintores ☐ ☐ ☐"
+    },
+    {
+      "index": 4,
+      "name": "Luces Salida",
+      "page": 4,
+      "y": 54.8,
+      "x": 31.4,
+      "matched_text": "5. Luces de Salida ☐ ☐ ☐"
+    },
+    {
+      "index": 5,
+      "name": "Luces Emergencia",
+      "page": 4,
+      "y": 70.9,
+      "x": 31.4,
+      "matched_text": "6. Luces de Emergencia ☐ ☐ ☐"
+    },
+    {
+      "index": 6,
+      "name": "Sistema Seguridad",
+      "page": 4,
+      "y": 86.4,
+      "x": 31.4,
+      "matched_text": "7. Sistema de Seguridad"
+    }
+  ],
+  "ele": [
+    {
+      "index": 0,
+      "name": "Subestación",
+      "page": 4,
+      "y": 128.8,
+      "x": 31.4,
+      "matched_text": "1. Subestación"
+    },
+    {
+      "index": 1,
+      "name": "Paneles Eléctricos",
+      "page": 4,
+      "y": 161.5,
+      "x": 31.4,
+      "matched_text": "2. Paneles Eléctricos"
+    },
+    {
+      "index": 2,
+      "name": "Distribución",
+      "page": 4,
+      "y": 194.2,
+      "x": 31.4,
+      "matched_text": "3. Distribución Eléctrica"
+    },
+    {
+      "index": 3,
+      "name": "Bombeo Agua",
+      "page": 4,
+      "y": 226.8,
+      "x": 31.4,
+      "matched_text": "4. Sistema de Bombeo de Agua"
+    },
+    {
+      "index": 4,
+      "name": "Bombeo Sanitario",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 5,
+      "name": "Planta Tratamiento",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 6,
+      "name": "Tanques",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 7,
+      "name": "Leaching Field",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 8,
+      "name": "Energía Renovable",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 9,
+      "name": "Generador",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 10,
+      "name": "Fuentes Agua",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 11,
+      "name": "Cisterna",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 12,
+      "name": "A/C",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 13,
+      "name": "Elevadores",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 14,
+      "name": "Montasillas",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    }
+  ],
+  "dor": [
+    {
+      "index": 0,
+      "name": "Pintura",
+      "page": 4,
+      "y": 142.0,
+      "x": 49.4,
+      "matched_text": "a. pintura b. rotulación c. candados"
+    },
+    {
+      "index": 1,
+      "name": "Ventanas",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 2,
+      "name": "Puertas",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 3,
+      "name": "Linternas",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 4,
+      "name": "Pisos",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 5,
+      "name": "Duchas",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 6,
+      "name": "Aire",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    },
+    {
+      "index": 7,
+      "name": "Lavamanos",
+      "page": 4,
+      "y": 240.6,
+      "x": 49.4,
+      "matched_text": "Potable"
+    }
+  ]
+}

@@ -1,0 +1,314 @@
+
+=== Inspecting PPR-137.1.pdf ===
+Number of pages: 1
+--- Page 1 ---
+ 
+ 
+PPR-137.1  
+SOLICITUD ORDEN DE TRABAJO  
+ 
+                   Número de solicitud _________ 
+ 
+Unidad Solicitante  Área  Director/supervisor solicita 
+Fecha   
+Trabajo solicitado 
+☐ Carpintería    ☐ Electricidad ☐ Pintura ☐ Refrigeración  ☐ Ebanistería    ☐ Limpieza 
+☐ Plomería  
+DESCRIPCIÓN SERVICIO SOLICITADO 
+ 
+LOCALIZACIÓN AVERÍA O PROPIEDAD 
+Sección  División  Distrito/Precinto Área 
+Negociado  Superintendencia Auxiliar  
+Firma del Solicitante  Teléfono de contacto  
+PARA USO OFICIAL DIVISIÓN ADMINISTRACIÓN  
+Autorizado por Fecha  
+Se autoriza a A viajar a 
+Tablilla vehículo Oficial asignado  Acompañante 
+ 
+
+--- End of Page 1 ---
+
+=== Inspecting PPR-137.3.pdf ===
+Number of pages: 4
+--- Page 1 ---
+ 
+PPR-137.3  
+INSPECCIÓN PREVENTIVA  
+Núm. Proyecto AEP Precinto/Distrito/Unidad  Área  
+Nombre Director  Teléfono  
+Dirección  Fecha  
+Exterior del Edificio Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Portón de entrada ☐ ☐ ☐   
+2. Verja periferal  ☐ ☐ ☐   
+3. Estacionamiento  
+a. condición asfalto 
+b. líneas  
+c. Wheel stop  
+d. cond. Aceras.  
+e. encintados  
+f. Ley ADA (rótulos, rampa, 
+pintura logo 
+☐ ☐ ☐  
+ 
+4. Parrillas Pluviales  ☐ ☐ ☐   
+5. Estación de Basura  ☐ ☐ ☐   
+6. Luminarias y Postes ☐ ☐ ☐   
+7. Hidrante ☐ ☐ ☐   
+8. Mangueras ☐ ☐ ☐   
+9. Áreas Verdes  ☐ ☐ ☐   
+10. Astas de Banderas ☐ ☐ ☐   
+11. Pintura Exterior  ☐ ☐ ☐   
+12. Iluminación Perímetro  ☐ ☐ ☐   
+13. Rotulación  ☐ ☐ ☐   
+Interior Edificio  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Portones ☐ ☐ ☐   
+2. Pasamanos  ☐ ☐ ☐   
+3. Rejas  ☐ ☐ ☐   
+4. Pintura 
+a. lobby  
+b. pasillos  
+c. rampa  
+d. parapetos  
+e. plafones 
+☐ ☐ ☐  
+ 
+5. Áreas verdes 
+a. poda y jardinería  ☐ ☐ ☐   
+6. Gazebo  ☐ ☐ ☐   
+7. Paredes  
+a. grietas b. empañetado  ☐ ☐ ☐   
+8. Pisos  
+a. nivelación b. grietas  ☐ ☐ ☐   
+9. Aceras ☐ ☐ ☐   
+10. Rampas ☐ ☐ ☐   
+11. Iluminación  ☐ ☐ ☐   
+12. Desagües pluviales  ☐ ☐ ☐   
+13. Barandas  ☐ ☐ ☐   
+14. Juntas de Expansión  ☐ ☐ ☐   
+ 
+ 
+ 
+ 
+
+--- End of Page 1 ---
+--- Page 2 ---
+Comedor  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Enchapado de paredes y 
+Piso  ☐ ☐ ☐   
+2. Campana de Extracción  
+a. Operación de extractores sistema de 
+supresión.  
+☐ ☐ ☐  
+ 
+3. Plomería  
+a. drenajes  
+b. llaves desagüe  
+c. lavamano  
+☐ ☐ ☐  
+ 
+4. Trampa de grasa ☐ ☐ ☐   
+5. Walk-in Cooler and Freezer  
+a. Sistema de refrigeración 
+b. drenajes 
+☐ ☐ ☐  
+ 
+6. Calentador de agua  ☐ ☐ ☐   
+7. Sistema de Distribución de 
+Gas 
+a. Tubería de gas b. válvula 
+de cierre de emergencia de 
+la alimentación de gas c. 
+tanques de gas incluyendo 
+relojería, válvulas y 
+reguladores  
+☐ ☐ ☐  
+ 
+8. Ventanas  
+a. operador  
+b. escrín  
+c. expanded metal 
+☐ ☐ ☐  
+ 
+9. Puertas 
+a. escrines herrajes ☐ ☐ ☐   
+10. Baños  
+a. Inodoros b. Lavamanos c. Urinales d. 
+Mezcladoras e. Sistema Extracción f. Flush 
+valve g. Tapa inodoros h. Llaves Angulares 
+i. Ventilación natural ii. Extracción Mecánica 
+(especificar tipo de abanico) f. Duchas i. 
+Rociadores ii. Mezcladoras   
+☐ ☐ ☐  
+ 
+11. Luminarias  ☐ ☐ ☐   
+Administración  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Acondicionador de Aire  ☐ ☐ ☐   
+2. Condición de Paredes ☐ ☐ ☐   
+3. Condición de Piso  ☐ ☐ ☐   
+4. Condición de baños  
+a.extractor   
+b.equipo sanitario 
+☐ ☐ ☐   
+5. Pintura  ☐ ☐ ☐   
+6. Enfriador de Agua  ☐ ☐ ☐   
+7. Cumplimiento ADA ☐ ☐ ☐   
+8. Iluminación  ☐ ☐ ☐   
+9. Ventanas  ☐ ☐ ☐   
+10. Plafón Acústico  ☐ ☐ ☐   
+11. Intercom ☐ ☐ ☐   
+12. Sistema de Timbre ☐ ☐ ☐   
+Biblioteca  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Aire Acondicionado (A/C) ☐ ☐ ☐   
+2. Condición de Paredes  ☐ ☐ ☐   
+3. Condición de Pisos  ☐ ☐ ☐   
+4. Oficina Bibliotecario  
+a. mostrador  ☐ ☐ ☐   
+5. Ventanas ☐ ☐ ☐   
+6. Pinturas ☐ ☐ ☐   
+7. Puertas ☐ ☐ ☐   
+8. Luminaria  ☐ ☐ ☐   
+ 
+ 
+ 
+ 
+--- End of Page 2 ---
+--- Page 3 ---
+ 
+Sistemas Académicos y/o 
+adiestramiento 
+Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Cantidad de Salones ☐ ☐ ☐   
+2. Pizarras ☐ ☐ ☐   
+3. Iluminación  ☐ ☐ ☐   
+4. Receptáculos e Interruptores  ☐ ☐ ☐   
+5. Puertas ☐ ☐ ☐   
+6. gabinetes ☐ ☐ ☐   
+7. Abanicos de techos  ☐ ☐ ☐   
+8. Ventanas ☐ ☐ ☐   
+9. Condición de Pintura  ☐ ☐ ☐   
+Baños Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Enchapado ☐ ☐ ☐   
+2. Particiones  ☐ ☐ ☐   
+3. Ventanas ☐ ☐ ☐   
+4. Drenajes ☐ ☐ ☐   
+5. Inodoros ☐ ☐ ☐   
+6. Lavamanos  ☐ ☐ ☐   
+7. Urinales ☐ ☐ ☐   
+8. Llaves de Agua  ☐ ☐ ☐   
+9. Extractores  ☐ ☐ ☐   
+10. Pintura  ☐ ☐ ☐   
+11. Cumplimiento ley ADA 
+a. dimensiones  
+b. “grab bars” 
+☐ ☐ ☐   
+Techos  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Acceso ☐ ☐ ☐   
+2. Escotillas ☐ ☐ ☐   
+3. Drenajes ☐ ☐ ☐   
+4. Limpieza ☐ ☐ ☐   
+5. Empozamientos ☐ ☐ ☐   
+6. Filtraciones ☐ ☐ ☐   
+7. Tratamiento  ☐ ☐ ☐   
+Cancha  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Canastos  
+a. Tableros  
+b. Operación  
+☐ ☐ ☐   
+2. Portones ☐ ☐ ☐   
+3. Rejas y Barandas ☐ ☐ ☐   
+4. Estructura  ☐ ☐ ☐   
+5. Gradas ☐ ☐ ☐   
+6. Iluminación   ☐ ☐ ☐   
+7. Condiciones y Pintura Piso ☐ ☐ ☐   
+8. Control de Palomas  ☐ ☐ ☐   
+9. Extractores  ☐ ☐ ☐   
+10. Baños  ☐ ☐ ☐   
+11. Fuentes de Agua  ☐ ☐ ☐   
+12. Abanicos  ☐ ☐ ☐   
+13. Filtraciones  ☐ ☐ ☐   
+14. Drenajes  ☐ ☐ ☐   
+Seguridad Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Sistema de Intercomunicador 
+a. panel principal  
+b. bocinas 
+☐ ☐ ☐   
+2. Sistema de Alarma contra 
+incendios  
+a. panel principal  
+b. “pull station”  
+c. detectores de humo/ calor  
+d. strobes lights horns  
+☐ ☐ ☐   
+3. Gabinetes de Mangueras 
+Contra Incendios  ☐ ☐ ☐   
+--- End of Page 3 ---
+--- Page 4 ---
+4. Extintores  ☐ ☐ ☐   
+5. Luces de Salida  ☐ ☐ ☐   
+6. Luces de Emergencia  ☐ ☐ ☐   
+7. Sistema de Seguridad  
+a. panel b. sensores c. cámaras  ☐ ☐ ☐   
+Electricidad General  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Subestación  
+a. pintura b. rotulación c. candados  
+d. desyerbo  
+☐ ☐ ☐   
+2. Paneles Eléctricos  
+a. tapas b cerraduras 
+c identificación/leyenda 
+☐ ☐ ☐   
+3. Distribución Eléctrica 
+a. sobrecarga b. condición conductos 
+(cabrería expuesta)  
+☐ ☐ ☐   
+4. Sistema de Bombeo de Agua 
+Potable ☐ ☐ ☐   
+5. Sistema de Bombeo 
+Sanitario  ☐ ☐ ☐   
+6. Planta de Tratamiento ☐ ☐ ☐   
+7. Tanques de Retención de 
+Aguas Usadas  ☐ ☐ ☐   
+8. “Leaching Field” ☐ ☐ ☐   
+9. Sistemas de Energia 
+Renovable  ☐ ☐ ☐   
+10. Generador de Emergencia 
+a. transfer switch b. tanque diesel  ☐ ☐ ☐   
+11. Fuentes de Agua  ☐ ☐ ☐   
+12. Cisterna Agua de Lluvia  ☐ ☐ ☐   
+13. Aire Acondicionado ☐ ☐ ☐   
+14. Elevadores ☐ ☐ ☐   
+15. Montasillas  ☐ ☐ ☐   
+Dormitorios  Reemplazo Reparación Buen 
+Estado Cantidad Observaciones 
+1. Pintura ☐ ☐ ☐   
+2. Ventanas ☐ ☐ ☐   
+3. Puertas ☐ ☐ ☐   
+4. Linternas ☐ ☐ ☐   
+5. Pisos ☐ ☐ ☐   
+6. Duchas ☐ ☐ ☐   
+7. Aire ☐ ☐ ☐   
+8. Lavamanos  ☐ ☐ ☐   
+OBSERVACIONES GENERALES 
+ 
+ 
+ 
+PARA USO COORDINADOR DACE 
+INSPECCIONADFO POR 
+Nombre en letra de molde  Firma  
+Puesto que ocupa  Fecha  
+Director de Áreas 
+Nombre en letra de molde  Firma  
+Puesto que ocupa  Fecha  
+ 
+--- End of Page 4 ---
